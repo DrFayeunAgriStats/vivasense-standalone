@@ -20,10 +20,21 @@
     /* Deep Forest Green - Primary brand */
     --primary: 152 45% 22%;
     --primary-foreground: 45 25% 97%;
+    --primary-soft: 152 35% 85%;
 
     /* Warm Sand - Secondary */
     --secondary: 38 35% 92%;
     --secondary-foreground: 150 25% 20%;
+
+    /* Sidebar */
+    --sidebar: 45 25% 97%;
+    --sidebar-foreground: 150 25% 15%;
+    --sidebar-primary: 152 45% 22%;
+    --sidebar-primary-foreground: 45 25% 97%;
+    --sidebar-accent: 152 35% 85%;
+    --sidebar-accent-foreground: 152 45% 22%;
+    --sidebar-border: 145 20% 85%;
+    --sidebar-ring: 152 45% 22%;
 
     /* Muted sage */
     --muted: 145 15% 90%;
@@ -75,6 +86,7 @@
 
     --primary: 145 40% 50%;
     --primary-foreground: 150 25% 8%;
+    --primary-soft: 150 25% 20%;
 
     --secondary: 150 20% 15%;
     --secondary-foreground: 45 20% 95%;
@@ -91,6 +103,16 @@
     --border: 150 20% 20%;
     --input: 150 20% 20%;
     --ring: 145 40% 50%;
+
+    /* Sidebar dark */
+    --sidebar: 150 25% 10%;
+    --sidebar-foreground: 45 20% 95%;
+    --sidebar-primary: 145 40% 50%;
+    --sidebar-primary-foreground: 150 25% 8%;
+    --sidebar-accent: 150 25% 20%;
+    --sidebar-accent-foreground: 45 20% 95%;
+    --sidebar-border: 150 20% 20%;
+    --sidebar-ring: 145 40% 50%;
   }
 }
 

@@ -1,96 +1,43 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu, X, FlaskConical } from "lucide-react";
-import { VivaSenseUserMenu } from "@/components/vivasense/VivaSenseUserMenu";
-import { VivaSensePlanBadge } from "@/components/vivasense/VivaSensePlanBadge";
+import { Link } from "react-router-dom";
+import { Sprout } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-1.5 rounded-md text-sm transition-colors ${
-    isActive
-      ? "bg-primary/10 text-primary font-medium"
-      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-  }`;
+interface ExtProfile {
+  full_name?: string | null;
+}
 
 export function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<ExtProfile | null>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    if (!user) { setProfile(null); return; }
+    supabase.from("profiles")
+      .select("full_name")
+      .eq("id", user.id).maybeSingle()
+      .then(({ data }) => setProfile(data as ExtProfile | null));
+  }, [user]);
+
+  const initial = (profile?.full_name?.[0] || user?.email?.[0] || "?").toUpperCase();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      <nav className="container-wide flex items-center justify-between py-4" ref={navRef}>
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-            <FlaskConical className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-serif font-semibold text-base text-foreground">
-              VivaSense
-            </span>
-            <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">
-              Statistical Workspace
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop: Spacer */}
-        <div className="hidden lg:block flex-1" />
-
-        {/* Desktop: Route Nav (real routes only) */}
-        <div className="hidden lg:flex items-center gap-1 rounded-lg border border-border/70 bg-background/80 px-1.5 py-1">
-          <NavLink to="/workspace" className={navLinkClass}>
-            Workspace
-          </NavLink>
-          <NavLink to="/auth" className={navLinkClass}>
-            Account
-          </NavLink>
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur">
+      <Link to="/" className="flex items-center gap-2.5">
+        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+          <Sprout className="h-4 w-4" />
+        </span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-[15px] font-semibold tracking-tight">VivaSense</span>
+          <span className="hidden text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:inline">
+            Statistical Analysis Platform
+          </span>
         </div>
-
-        {/* Desktop: Plan Badge + User Menu */}
-        <div className="hidden lg:flex items-center gap-4">
-          <VivaSensePlanBadge />
-          <VivaSenseUserMenu />
-        </div>
-
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </nav>
-
-      {/* Mobile: User Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-background border-b border-border py-3 px-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <NavLink to="/workspace" className={navLinkClass}>
-              Workspace
-            </NavLink>
-            <NavLink to="/auth" className={navLinkClass}>
-              Account
-            </NavLink>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <VivaSensePlanBadge />
-            <VivaSenseUserMenu />
-          </div>
-        </div>
-      )}
+      </Link>
+      <div className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-[11px] font-semibold text-primary">
+        {initial}
+      </div>
     </header>
   );
 }
