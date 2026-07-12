@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// ─ DEVELOPMENT OVERRIDE ─────────────────────────────────────────────
+// During active development of Phase 6+ modules, this flag temporarily
+// permits all Pro features regardless of subscription status. This is a
+// deliberate, reversible override — NOT a permanent security decision.
+// To restore gating: change this to `false` (one-line revert).
+const TEMP_ALL_FEATURES_PERMITTED = true;
+// ────────────────────────────────────────────────────────────────────
+
 export type VivaSenseMode = "free" | "pro";
 
 export const VIVASENSE_MODE_KEY = "vivasense_mode";
@@ -130,6 +138,9 @@ export class ProFeatureError extends Error {
 }
 
 export function guardProModule(moduleName: string): void {
+  // DEVELOPMENT OVERRIDE: permit all features during active development.
+  if (TEMP_ALL_FEATURES_PERMITTED) return;
+
   const mode = getVivaSenseMode();
   if (mode !== "pro") {
     console.log(`[PRO GUARD] mode = free, blocked module = ${moduleName}`);

@@ -88,15 +88,15 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   }
 
   const factorAColumns = allColumns.filter(
-    (col) => col !== treatmentCol && col !== repColumn
+    (col: string) => col !== treatmentCol && col !== repColumn
   );
 
   const factorBColumns = allColumns.filter(
-    (col) => col !== treatmentCol && col !== repColumn && col !== factorA
+    (col: string) => col !== treatmentCol && col !== repColumn && col !== factorA
   );
 
   const factorCColumns = allColumns.filter(
-    (col) => col !== treatmentCol && col !== repColumn && col !== factorA && col !== factorB
+    (col: string) => col !== treatmentCol && col !== repColumn && col !== factorA && col !== factorB
   );
 
   const toggleTrait = (t: string) =>

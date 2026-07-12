@@ -73,11 +73,13 @@ export function CorrelationModulePanel({ datasetContext }: Props) {
     lines.push("");
     lines.push("Correlation Matrix (r-values):");
     lines.push(["", ...result.trait_names].join("\t"));
-    result.r_matrix.forEach((row, i) => {
-      lines.push([result.trait_names[i], ...row.map(v => v.toFixed(4))].join("\t"));
-    });
+    if (result.r_matrix) {
+      result.r_matrix.forEach((row, i) => {
+        lines.push([result.trait_names[i], ...row.map(v => v.toFixed(4))].join("\t"));
+      });
+    }
     lines.push("");
-    if (result.p_matrix.length > 0) {
+    if (result.p_matrix && result.p_matrix.length > 0) {
       lines.push("P-value Matrix:");
       lines.push(["", ...result.trait_names].join("\t"));
       result.p_matrix.forEach((row, i) => {
@@ -101,12 +103,14 @@ export function CorrelationModulePanel({ datasetContext }: Props) {
   };
 
   const deriveInsight = () => {
-    if (!result) return undefined;
+    if (!result || !result.r_matrix) return undefined;
     const pairs: { t1: string; t2: string; r: number }[] = [];
     result.trait_names.forEach((t1, i) => {
       result.trait_names.slice(i + 1).forEach((t2, jOff) => {
         const j = i + 1 + jOff;
-        pairs.push({ t1, t2, r: result.r_matrix[i][j] });
+        if (result.r_matrix?.[i]?.[j] != null) {
+          pairs.push({ t1, t2, r: result.r_matrix[i][j] });
+        }
       });
     });
     const strongest = pairs.reduce((a, b) => Math.abs(a.r) > Math.abs(b.r) ? a : b, pairs[0]);
@@ -196,8 +200,8 @@ export function CorrelationModulePanel({ datasetContext }: Props) {
                     {result.trait_names.map((t1, i) =>
                       result.trait_names.slice(i + 1).map((t2, jOff) => {
                         const j = i + 1 + jOff;
-                        const r = result.r_matrix[i]?.[j] ?? 0;
-                        const p = result.p_matrix[i]?.[j] ?? null;
+                        const r = result.r_matrix?.[i]?.[j] ?? 0;
+                        const p = result.p_matrix?.[i]?.[j] ?? null;
                         const stars = p != null ? (p < 0.001 ? "***" : p < 0.01 ? "**" : p < 0.05 ? "*" : "ns") : "—";
                         return (
                           <tr key={`${i}-${j}`} className="even:bg-muted/30">

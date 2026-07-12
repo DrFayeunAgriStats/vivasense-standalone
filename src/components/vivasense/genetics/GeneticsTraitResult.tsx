@@ -13,9 +13,8 @@ import {
 } from "@/components/ui/tooltip";
 import ReactMarkdown from "react-markdown";
 import { GeneticsFormulaPanel } from "./GeneticsFormulaPanel";
-// PHASE 7 DEFERRED: PathAnalysisDisplay and PathAnalysisResultsDisplay
-// import { PathAnalysisDisplay } from "./PathAnalysisDisplay";
-// import { PathAnalysisResultsDisplay } from "./PathAnalysisResultsDisplay";
+import { PathAnalysisDisplay } from "./PathAnalysisDisplay";
+import { PathAnalysisResultsDisplay } from "./PathAnalysisResultsDisplay";
 import { CorrelationMatrixDisplay } from "./CorrelationMatrixDisplay";
 import { RegressionDisplay } from "./RegressionDisplay";
 import { RegressionResultsDisplay } from "./RegressionResultsDisplay";
@@ -140,7 +139,7 @@ const INTELLIGENCE_SECTIONS = [
 export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG }: Props) {
   const [showStatDetails, setShowStatDetails] = useState(false);
 
-  const vc = data.variance_components;
+  const vc = data.variance_components as any;
   const h2 = data.heritability;
   const ga = data.genetic_advance;
   const meta = data.meta;
@@ -221,7 +220,7 @@ export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG 
       )}
 
       {/* ─── SECTION 2: Statistical Analysis (ANOVA + Mean Separation) ─── */}
-      {(data.anova_table || tables) && (
+      {(data.anova_table != null || tables != null) ? (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -258,7 +257,7 @@ export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG 
           {showStatDetails && (
             <CardContent className="space-y-6">
               {/* ANOVA Table */}
-              {data.anova_table && (
+              {data.anova_table != null ? (
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-primary" />
@@ -266,10 +265,10 @@ export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG 
                   </h4>
                   {renderAnovaTable(data.anova_table)}
                 </div>
-              )}
+              ) : null}
 
               {/* Remaining tables (mean separation, etc.) */}
-              {tables && Object.entries(tables)
+              {tables != null && Object.entries(tables)
                 .filter(([name]) => !["correlations", "path_analysis", "selection_index", "combined_anova", "variance_components", "genotype_means", "assumptions", "assumption_guidance"].includes(name) && !/regress/i.test(name))
                 .map(([name, tData]) => {
                   if (!tData) return null;
@@ -286,7 +285,7 @@ export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG 
             </CardContent>
           )}
         </Card>
-      )}
+      ) : null}
 
       {/* ─── SECTION 3: Variance Components Breakdown ─── */}
       {vc && (
@@ -347,9 +346,9 @@ export function GeneticsTraitResult({ data, traitName, onExportCSV, onExportPNG 
       )}
 
       {/* ─── SECTION 4: Trait Relationships (Correlations, Path, Regression) ─── */}
-      {tables?.correlations && (
+      {tables?.correlations != null ? (
         <CorrelationMatrixDisplay data={tables.correlations as Record<string, unknown>} />
-      )}
+      ) : null}
 
       {/* PHASE 7 DEFERRED: Path Analysis sections */}
       {/* {tables?.path_analysis && (() => {

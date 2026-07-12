@@ -24,6 +24,14 @@
  *   - Advanced AI interpretation
  */
 
+// ─ DEVELOPMENT OVERRIDE ─────────────────────────────────────────────
+// During active development of Phase 6+ modules, this flag temporarily
+// permits all Pro features regardless of subscription status. This is a
+// deliberate, reversible override — NOT a permanent security decision.
+// To restore gating: change this to `false` (one-line revert).
+const TEMP_ALL_FEATURES_PERMITTED = true;
+// ────────────────────────────────────────────────────────────────────
+
 export type VivaSenseMode = "free" | "pro";
 
 const STORAGE_KEY = "vivasense_mode";
@@ -226,6 +234,9 @@ export function classifyAnovaRequest(
   _analysisType: string,
   formData: FormData
 ): ProGuardInfo | null {
+  // DEVELOPMENT OVERRIDE: permit all features during active development.
+  if (TEMP_ALL_FEATURES_PERMITTED) return null;
+
   // Fields that, if present, may carry an environment factor name.
   const candidateFields = [
     "factor",
@@ -276,6 +287,9 @@ const GENETICS_PRO_MAP: Record<string, ProGuardKey> = {
 export function classifyGeneticsRequest(
   analysisType: string
 ): ProGuardInfo | null {
+  // DEVELOPMENT OVERRIDE: permit all features during active development.
+  if (TEMP_ALL_FEATURES_PERMITTED) return null;
+
   const key = GENETICS_PRO_MAP[analysisType];
   return key ? PRO_GUARDS[key] : null;
 }
