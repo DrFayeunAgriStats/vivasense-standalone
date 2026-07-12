@@ -45,30 +45,39 @@ function AnalysisModuleCard({
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_8px_24px_-12px_rgba(20,80,40,0.15)]"
+      className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg md:p-7"
     >
-      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${tone}`}>
-        <Icon className="h-5 w-5" />
+      {/* Icon Badge */}
+      <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${tone} transition-transform group-hover:scale-110`}>
+        <Icon className="h-6 w-6" />
       </span>
-      <h3 className="mt-4 text-[15px] font-semibold text-foreground">
+
+      {/* Title */}
+      <h3 className="mt-5 text-lg font-semibold leading-tight text-foreground">
         {title}
       </h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+
+      {/* Description */}
+      <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground flex-1">
         {description}
       </p>
-      <div className="mt-4 flex flex-wrap gap-1.5">
+
+      {/* Tags */}
+      <div className="mt-5 flex flex-wrap gap-2">
         {analyses.map((a) => (
           <span
             key={a}
-            className="rounded-md border border-border bg-secondary/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+            className="rounded-md border border-border/50 bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground"
           >
             {a}
           </span>
         ))}
       </div>
-      <div className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
-        Start Analysis
-        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+
+      {/* Link */}
+      <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-70 transition-all group-hover:opacity-100">
+        Launch Module
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </div>
     </button>
   );
@@ -213,44 +222,73 @@ export default function VivaSenseWorkspace() {
       <div className="bg-background flex-1">
         {/* Module Selection Screen */}
         {currentModule === "selection" && (
-          <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
-            {/* Header */}
-            <section>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                Research Workspace
-              </p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground md:text-[38px] md:leading-[1.15]">
-                Welcome to VivaSense
-              </h1>
-              <p className="mt-2 text-lg text-muted-foreground">
-                Professional statistical analysis for agricultural research.
-              </p>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Choose an analysis module below to begin. Each workflow guides you from dataset
-                upload through model configuration to publication-ready results.
-              </p>
-              <div className="mt-6">
-                <button
-                  onClick={() => handleModuleSelect("anova")}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:brightness-110"
-                >
-                  <FlaskConical className="h-4 w-4" />
-                  Start New Analysis
-                </button>
+          <div className="flex-1">
+            {/* Hero Section */}
+            <div className="bg-gradient-to-br from-primary/5 via-background to-background px-6 py-16 md:px-10 md:py-24">
+              <div className="mx-auto max-w-5xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                  v2.4 · Agricultural Analytics Suite
+                </p>
+                <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground md:text-5xl md:leading-[1.2]">
+                  Welcome to VivaSense — Professional Statistical Analysis for Agricultural Research
+                </h1>
+                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                  Design experiments, analyze breeding data, and interpret results with a modern workflow built for research teams.
+                </p>
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={() => handleModuleSelect("anova")}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:brightness-110"
+                  >
+                    <FlaskConical className="h-5 w-5" />
+                    Start New Analysis
+                  </button>
+                  <button
+                    onClick={() => handleModuleSelect("anova")}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    View documentation →
+                  </button>
+                </div>
               </div>
-            </section>
+            </div>
 
-            {/* Modules */}
-            <section className="mt-14">
-              <div className="mb-5 flex items-baseline justify-between">
+            {/* Stats Cards Section */}
+            <div className="mx-auto max-w-5xl px-6 py-12 md:px-10">
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Active projects</p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Analyses this month</p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Datasets</p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Team members</p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modules Section */}
+            <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+              <div className="mb-8">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Analysis Modules
                 </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Choose an analysis workflow to launch.
+                </p>
               </div>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-3">
                 <AnalysisModuleCard
                   title="Experimental Design"
-                  description="Plan randomized trials with power analysis, replication, and layout generation."
+                  description="Plan RCBD, split-plot and factorial trials with power analysis and randomization plans."
                   analyses={["RCBD", "Split-plot", "Factorial", "Latin square"]}
                   tone="text-primary bg-primary-soft"
                   icon={FlaskConical}
@@ -259,7 +297,7 @@ export default function VivaSenseWorkspace() {
 
                 <AnalysisModuleCard
                   title="Genetics & Breeding"
-                  description="Estimate breeding values, heritability, and marker–trait associations."
+                  description="Compute BLUPs, heritability, and marker–trait associations from your genotype data."
                   analyses={["BLUP", "Heritability", "GWAS", "Selection index"]}
                   tone="text-sky-700 bg-sky-50"
                   icon={Dna}
@@ -268,24 +306,26 @@ export default function VivaSenseWorkspace() {
 
                 <AnalysisModuleCard
                   title="Advanced Analytics"
-                  description="Fit mixed models and multivariate methods with AI-assisted interpretation."
+                  description="Mixed models, multivariate methods and ML-assisted interpretation with AI narratives."
                   analyses={["Mixed models", "PCA", "AMMI", "GGE biplot"]}
                   tone="text-violet-700 bg-violet-50"
                   icon={Sparkles}
                   onClick={() => handleModuleSelect("advanced")}
                 />
               </div>
-            </section>
+            </div>
 
             {/* Pro Feature Notice */}
             {!isProMode() && (
-              <Alert className="mt-8 bg-primary/5 border-primary/20">
-                <AlertCircle className="h-4 w-4 text-primary" />
-                <AlertDescription className="text-foreground/80">
-                  Some features are Pro-only (multi-environment ANOVA, genetics parameters, advanced analytics).
-                  Upgrade to Pro for full access.
-                </AlertDescription>
-              </Alert>
+              <div className="mx-auto max-w-5xl px-6 py-4 md:px-10">
+                <Alert className="bg-primary/5 border-primary/20">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="text-foreground/80">
+                    Some features are Pro-only (multi-environment ANOVA, genetics parameters, advanced analytics).
+                    Upgrade to Pro for full access.
+                  </AlertDescription>
+                </Alert>
+              </div>
             )}
           </div>
         )}
