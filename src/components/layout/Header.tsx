@@ -1,8 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { Menu, X, FlaskConical } from "lucide-react";
 import { VivaSenseUserMenu } from "@/components/vivasense/VivaSenseUserMenu";
 import { VivaSensePlanBadge } from "@/components/vivasense/VivaSensePlanBadge";
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `px-3 py-1.5 rounded-md text-sm transition-colors ${
+    isActive
+      ? "bg-primary/10 text-primary font-medium"
+      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+  }`;
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,6 +46,16 @@ export function Header() {
         {/* Desktop: Spacer */}
         <div className="hidden lg:block flex-1" />
 
+        {/* Desktop: Route Nav (real routes only) */}
+        <div className="hidden lg:flex items-center gap-1 rounded-lg border border-border/70 bg-background/80 px-1.5 py-1">
+          <NavLink to="/workspace" className={navLinkClass}>
+            Workspace
+          </NavLink>
+          <NavLink to="/auth" className={navLinkClass}>
+            Account
+          </NavLink>
+        </div>
+
         {/* Desktop: Plan Badge + User Menu */}
         <div className="hidden lg:flex items-center gap-4">
           <VivaSensePlanBadge />
@@ -59,9 +76,19 @@ export function Header() {
 
       {/* Mobile: User Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-background border-b border-border py-2 px-4 flex items-center justify-between gap-3">
-          <VivaSensePlanBadge />
-          <VivaSenseUserMenu />
+        <div className="lg:hidden bg-background border-b border-border py-3 px-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <NavLink to="/workspace" className={navLinkClass}>
+              Workspace
+            </NavLink>
+            <NavLink to="/auth" className={navLinkClass}>
+              Account
+            </NavLink>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <VivaSensePlanBadge />
+            <VivaSenseUserMenu />
+          </div>
         </div>
       )}
     </header>

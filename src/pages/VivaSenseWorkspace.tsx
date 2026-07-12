@@ -1,8 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyAnovaRequest, classifyGeneticsRequest } from "@/lib/vivasenseGating";
-import { ArrowLeft, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, FileText, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
@@ -11,10 +10,12 @@ import { VivaSenseGeneticsForm, type GeneticsAnalysisType } from "@/components/v
 import { VivaSenseResults } from "@/components/vivasense/VivaSenseResults";
 import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisplay";
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
+import { ModuleCard } from "@/components/vivasense/shared";
 import { computeAnova, computeCorrelation } from "@/lib/geneticsUploadApi";
 import { computeDescriptiveStats } from "@/lib/descriptiveStatsApi";
 
 type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results";
+type WorkspaceSection = "overview" | "anova" | "genetics" | "advanced";
 
 interface AnalysisState {
   type: "anova" | "genetics" | "descriptive";
@@ -27,9 +28,17 @@ export default function VivaSenseWorkspace() {
   const { user } = useAuth();
   const [mode, setMode] = useState(getVivaSenseMode());
   const [currentModule, setCurrentModule] = useState<ModuleType>("selection");
+  const [activeSection, setActiveSection] = useState<WorkspaceSection>("overview");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
+
+  const sectionMeta: Record<WorkspaceSection, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+    overview: { label: "Overview", icon: LayoutGrid },
+    anova: { label: "ANOVA & Descriptive", icon: Sigma },
+    genetics: { label: "Genetics & Breeding", icon: Dna },
+    advanced: { label: "Advanced Analytics", icon: Sparkles },
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeVivaSenseMode((newMode: string) => {
@@ -40,6 +49,7 @@ export default function VivaSenseWorkspace() {
 
   const handleModuleSelect = (module: "anova" | "genetics" | "advanced") => {
     setError(null);
+    setActiveSection(module);
     setCurrentModule(module);
   };
 
@@ -142,6 +152,7 @@ export default function VivaSenseWorkspace() {
   };
 
   const handleBackToModules = () => {
+    setActiveSection("overview");
     setCurrentModule("selection");
     setAnalysisState(null);
     setError(null);
@@ -150,78 +161,94 @@ export default function VivaSenseWorkspace() {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-background">
-        <div className="container-wide py-8 px-4">
+        <div className="container-wide py-8 px-4 lg:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+          <aside className="rounded-2xl border border-border/70 bg-card/70 backdrop-blur-sm p-4 lg:p-5 h-fit sticky top-24">
+            <div className="mb-5">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Workspace</p>
+              <h2 className="text-sm font-semibold text-foreground mt-1">Analysis Navigator</h2>
+            </div>
+            <nav className="space-y-1.5">
+              {(Object.keys(sectionMeta) as WorkspaceSection[]).map((sectionKey) => {
+                const item = sectionMeta[sectionKey];
+                const Icon = item.icon;
+                const isActive = activeSection === sectionKey;
+                return (
+                  <button
+                    key={sectionKey}
+                    type="button"
+                    onClick={() => {
+                      setActiveSection(sectionKey);
+                      if (sectionKey === "overview") {
+                        setCurrentModule("selection");
+                      } else {
+                        setCurrentModule(sectionKey as "anova" | "genetics" | "advanced");
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <section>
         {/* Module Selection Screen */}
         {currentModule === "selection" && (
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h1 className="text-3xl font-bold text-green-900 mb-2">VivaSense Analysis Suite</h1>
-              <p className="text-gray-600 mb-8">Select an analysis module to begin</p>
+          <div className="max-w-6xl mx-auto">
+            <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm shadow-sm p-6 md:p-8 mb-8">
+              <div className="flex flex-col gap-2 mb-8">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground">VivaSense Workspace</h1>
+                <p className="text-muted-foreground">Choose a module to start an analysis workflow.</p>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* ANOVA Module */}
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleModuleSelect("anova")}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span className="text-2xl">📊</span> ANOVA & Descriptive
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li>✓ Descriptive Statistics</li>
-                      <li>✓ One-way ANOVA</li>
-                      <li>✓ Two-way ANOVA</li>
-                      <li>✓ RCBD Factorial</li>
-                      <li>✓ Split-plot</li>
-                      <li>✓ Multi-trait Analysis</li>
-                    </ul>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <ModuleCard
+                  title="ANOVA & Descriptive"
+                  icon={<FileText className="w-5 h-5 text-primary" />}
+                  items={["Descriptive statistics endpoint", "ANOVA analysis endpoint"]}
+                  onClick={() => handleModuleSelect("anova")}
+                  badgeLabel="Verified"
+                />
 
-                {/* Genetics Module */}
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleModuleSelect("genetics")}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span className="text-2xl">🧬</span> Genetics & Breeding
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li>✓ Variance Components</li>
-                      <li>✓ Stability Analysis</li>
-                      <li>✓ AMMI & GGE</li>
-                      <li>✓ Path Analysis</li>
-                      <li>✓ Multivariate</li>
-                      <li>✓ Molecular Markers</li>
-                    </ul>
-                  </CardContent>
-                </Card>
+                <ModuleCard
+                  title="Genetics & Breeding"
+                  icon={<Dna className="w-5 h-5 text-primary" />}
+                  items={["Correlation analysis endpoint"]}
+                  onClick={() => handleModuleSelect("genetics")}
+                  badgeLabel="Verified"
+                />
 
-                {/* Advanced Module */}
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleModuleSelect("advanced")}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span className="text-2xl">🔬</span> Advanced Analytics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li>✓ BLUP Predictions</li>
-                      <li>✓ PCA & Clustering</li>
-                      <li>✓ Non-parametric Tests</li>
-                      <li>✓ MANOVA</li>
-                      <li>✓ Path Analysis</li>
-                      <li>✓ Selection Index</li>
-                    </ul>
-                  </CardContent>
-                </Card>
+                <ModuleCard
+                  title="Advanced Analytics"
+                  icon={<BarChart3 className="w-5 h-5 text-primary" />}
+                  items={[
+                    "PCA analysis endpoint",
+                    "Cluster analysis endpoint",
+                    "Stability analysis endpoint",
+                    "BLUP analysis endpoint",
+                    "Non-parametric analysis endpoint",
+                    "MANOVA analysis endpoint",
+                    "Path analysis endpoint",
+                    "Selection-index endpoint",
+                  ]}
+                  onClick={() => handleModuleSelect("advanced")}
+                  badgeLabel="Endpoint Mapped"
+                />
               </div>
 
               {/* Pro Feature Notice */}
               {!isProMode() && (
-                <Alert className="mt-8 bg-purple-50 border-purple-200">
-                  <AlertCircle className="h-4 w-4 text-purple-600" />
-                  <AlertDescription className="text-purple-800">
+                <Alert className="mt-8 bg-primary/5 border-primary/20">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="text-foreground/80">
                     Some features are Pro-only (multi-environment ANOVA, genetics parameters, advanced analytics).
                     Upgrade to Pro for full access.
                   </AlertDescription>
@@ -244,8 +271,8 @@ export default function VivaSenseWorkspace() {
                 Back to Modules
               </Button>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-green-900 mb-6">ANOVA & Descriptive Analysis</h2>
+            <div className="rounded-2xl border border-border/70 bg-card/80 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">ANOVA & Descriptive Analysis</h2>
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
@@ -273,8 +300,8 @@ export default function VivaSenseWorkspace() {
                 Back to Modules
               </Button>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-green-900 mb-6">Genetics & Breeding Analysis</h2>
+            <div className="rounded-2xl border border-border/70 bg-card/80 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Genetics & Breeding Analysis</h2>
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
@@ -302,8 +329,8 @@ export default function VivaSenseWorkspace() {
                 Back to Modules
               </Button>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-green-900 mb-6">Advanced Analytics</h2>
+            <div className="rounded-2xl border border-border/70 bg-card/80 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Advanced Analytics</h2>
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
@@ -330,7 +357,7 @@ export default function VivaSenseWorkspace() {
                 New Analysis
               </Button>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="rounded-2xl border border-border/70 bg-card/80 shadow-sm p-8">
               {analysisState.isDescriptive ? (
                 <VivaSenseResultsDisplay result={analysisState.results} />
               ) : (
@@ -339,6 +366,8 @@ export default function VivaSenseWorkspace() {
             </div>
           </div>
         )}
+          </section>
+        </div>
         </div>
       </div>
     </Layout>

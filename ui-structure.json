@@ -1,0 +1,10 @@
+{
+  "title": "vivasense-standalone",
+  "hasHeader": false,
+  "hasSidebar": false,
+  "hasFooter": false,
+  "headerContent": "none",
+  "bodyClasses": "",
+  "mainContent": "no main tag",
+  "gridLayout": "block"
+}

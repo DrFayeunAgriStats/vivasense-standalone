@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-07-12T16:45:40.017Z",
+  "tests": {
+    "workspaceLoad": {
+      "status": "warning"
+    },
+    "advancedNavigation": {
+      "status": "warning",
+      "reason": "card not found"
+    },
+    "runButtons": {
+      "count": 0,
+      "status": "warning"
+    },
+    "componentIntegration": {
+      "pcaPanel": false,
+      "clusterPanel": false,
+      "pathAnalysisPanel": false,
+      "blupPanel": false,
+      "stabilityPanel": false
+    }
+  },
+  "panelDetection": {
+    "pca": false,
+    "cluster": false,
+    "pathAnalysis": false,
+    "blup": false,
+    "stability": false
+  },
+  "networkLog": [],
+  "summary": {
+    "appRunning": true,
+    "panelsDetected": 0,
+    "totalPanels": 3,
+    "runButtonsAvailable": false,
+    "recommendation": "⚠️ 3 panel(s) missing or not properly integrated"
+  }
+}

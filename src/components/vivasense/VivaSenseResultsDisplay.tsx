@@ -6,6 +6,7 @@ import { HtmlTablesSection } from "./HtmlTablesSection";
 import { generatePublishableHtmlTables } from "./utils/generatePublishableTables";
 import { TableDownloadMenu } from "./results/TableDownloadMenu";
 import { FigureDownloadMenu } from "./results/FigureDownloadMenu";
+import { DataTable, ChartCard } from "@/components/vivasense/shared";
 
 
 /* ── Formatting helpers ────────────────────────────────────────────── */
@@ -96,42 +97,13 @@ function PubTable({
   );
 
   return (
-    <div className="overflow-x-auto my-3">
+    <div className="my-3">
       {downloadTitle && (
         <div className="flex justify-end mb-1">
           <TableDownloadMenu title={downloadTitle} headers={headers} rows={dlRows} />
         </div>
       )}
-      <table className="w-full text-sm border-collapse border border-border">
-        <thead>
-          <tr className="bg-muted">
-            {headers.map((h, i) => (
-              <th
-                key={i}
-                className="border border-border px-3 py-2 text-left font-semibold text-foreground"
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/40"}>
-              {row.map((cell, j) => (
-                <td
-                  key={j}
-                  className={`border border-border/60 px-3 py-1.5 text-foreground ${
-                    j > 0 ? "text-right font-mono text-xs" : ""
-                  }`}
-                >
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DataTable headers={headers} rows={rows} rightAlignFrom={1} />
       {caption && (
         <p className="text-xs text-muted-foreground mt-1 italic">{caption}</p>
       )}
@@ -152,10 +124,10 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="bg-card rounded-lg border border-border shadow-sm mb-4 overflow-hidden">
+    <div className="rounded-2xl border border-border/70 bg-card/90 shadow-sm mb-4 overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full bg-muted border-b border-border px-4 py-2.5 flex items-center gap-2 hover:bg-muted/80 transition-colors text-left"
+        className="w-full bg-muted/50 border-b border-border/70 px-4 py-3 flex items-center gap-2 hover:bg-muted/70 transition-colors text-left"
       >
         {open ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -165,7 +137,7 @@ function CollapsibleSection({
         {icon}
         <h3 className="font-semibold text-foreground text-sm">{title}</h3>
       </button>
-      {open && <div className="px-4 py-3">{children}</div>}
+      {open && <div className="px-4 py-4">{children}</div>}
     </div>
   );
 }
@@ -590,7 +562,7 @@ export default function VivaSenseResultsDisplay({
   const interactions = adapted.interactions as unknown;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-4 md:p-5">
 
       {/* Experiment Summary */}
       <CollapsibleSection title="Experiment Summary" defaultOpen={true}>
@@ -702,27 +674,31 @@ export default function VivaSenseResultsDisplay({
       {/* Publication plots */}
       {(plots?.publication_bar && (
         <CollapsibleSection title="Publication Bar Chart" defaultOpen={true}>
-          <div className="flex justify-end mb-2">
-            <FigureDownloadMenu title="Publication_Bar_Chart" base64={plots.publication_bar} />
-          </div>
-          <img
-            src={`data:image/png;base64,${plots.publication_bar}`}
-            alt="Publication bar chart"
-            className="max-w-full rounded"
-          />
+          <ChartCard
+            title="Publication Bar Chart"
+            actions={<FigureDownloadMenu title="Publication_Bar_Chart" base64={plots.publication_bar} />}
+          >
+            <img
+              src={`data:image/png;base64,${plots.publication_bar}`}
+              alt="Publication bar chart"
+              className="max-w-full rounded"
+            />
+          </ChartCard>
         </CollapsibleSection>
       )) as ReactNode}
 
       {(plots?.bar && !plots?.publication_bar && (
         <CollapsibleSection title="Bar Chart" defaultOpen={true}>
-          <div className="flex justify-end mb-2">
-            <FigureDownloadMenu title="Bar_Chart" base64={plots.bar} />
-          </div>
-          <img
-            src={`data:image/png;base64,${plots.bar}`}
-            alt="Bar chart"
-            className="max-w-full rounded"
-          />
+          <ChartCard
+            title="Bar Chart"
+            actions={<FigureDownloadMenu title="Bar_Chart" base64={plots.bar} />}
+          >
+            <img
+              src={`data:image/png;base64,${plots.bar}`}
+              alt="Bar chart"
+              className="max-w-full rounded"
+            />
+          </ChartCard>
         </CollapsibleSection>
       )) as ReactNode}
 

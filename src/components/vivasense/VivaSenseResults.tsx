@@ -21,7 +21,6 @@ import {
   FlaskConical,
   Users
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useCallback } from "react";
@@ -29,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useToast } from "@/hooks/use-toast";
 import { VsResultSection } from "@/components/vivasense/results/VsResultSection";
 import { VS_TYPOGRAPHY } from "@/lib/vivasenseDesignSystem";
+import { Card, CardContent, StatusBadge } from "@/components/vivasense/shared";
 
 export interface VivaSenseResultsData {
   datasetQuality?: {
@@ -357,7 +357,7 @@ export function VivaSenseResults({ results, userLevel, onClearResults }: VivaSen
   return (
     <section className="py-20 bg-muted/30" id="results">
       <div className="container-wide">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-8 rounded-2xl border border-border/70 bg-card/70 p-5 md:p-6 backdrop-blur-sm">
           <div className="text-center mb-12">
             <p className={`${VS_TYPOGRAPHY.figureLabel} mb-2`}>VivaSense Statistical Analysis</p>
             <h2 className={`${VS_TYPOGRAPHY.pageTitle} mb-3`}>
@@ -408,11 +408,12 @@ export function VivaSenseResults({ results, userLevel, onClearResults }: VivaSen
 
           {/* Cautionary Note for Undergraduates or Bronze Quality */}
           {showCautionaryNote && (
-            <Card className="border-yellow-300 bg-yellow-50">
+            <Card className="rounded-2xl border-yellow-300 bg-yellow-50">
               <CardContent className="p-6">
                 <div className="flex gap-4">
                   <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
                   <div>
+                    <StatusBadge label="Caution" tone="warning" className="mb-2" />
                     <h3 className="font-semibold text-yellow-800 mb-2">Important Notice</h3>
                     <p className="text-yellow-700 text-sm leading-relaxed">
                       {isUndergraduate 

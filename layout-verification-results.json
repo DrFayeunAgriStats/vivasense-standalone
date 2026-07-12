@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-12T21:12:17.189Z",
+  "semanticHTML": {
+    "header": false,
+    "main": false,
+    "footer": false
+  },
+  "headerElements": {
+    "logo": false,
+    "userMenu": true
+  },
+  "footerElements": {
+    "branding": false,
+    "links": false
+  },
+  "consoleErrors": 0,
+  "modulesDetected": {
+    "anova": false,
+    "genetics": false,
+    "advanced": false
+  }
+}

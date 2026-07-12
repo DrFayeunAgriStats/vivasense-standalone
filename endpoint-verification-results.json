@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-07-12T16:43:19.738Z",
+  "endpoints": {},
+  "errors": [],
+  "panelDetection": {
+    "pca": false,
+    "cluster": false,
+    "pathAnalysis": false
+  },
+  "componentDetection": {
+    "pcaPanel": false,
+    "clusterPanel": false,
+    "pathAnalysisPanel": false
+  },
+  "runButtons": 0,
+  "networkActivity": {
+    "requests": 0,
+    "responses": 0,
+    "log": []
+  }
+}

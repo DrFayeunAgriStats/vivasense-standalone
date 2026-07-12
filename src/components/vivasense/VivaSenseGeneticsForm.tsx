@@ -1,12 +1,20 @@
 import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Loader2, FileSpreadsheet, X, Dna } from "lucide-react";
+import { Upload, Loader2, FileSpreadsheet, X, Dna, AlertCircle } from "lucide-react";
 import * as XLSX from "xlsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  MetricCard,
+  StatusBadge,
+} from "@/components/vivasense/shared";
 
 export type GeneticsAnalysisType =
   | "variance_components"
@@ -306,7 +314,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
     <section className="py-20" id="genetics-form">
       <div className="container-wide">
         <div className="max-w-3xl mx-auto">
-          <Card className="border-2 border-primary/20 shadow-lg">
+          <Card className="rounded-2xl border border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
             <CardHeader className="text-center pb-2">
               <CardTitle className="font-serif text-2xl lg:text-3xl flex items-center justify-center gap-3">
                 <Dna className="w-7 h-7 text-primary" />
@@ -354,20 +362,23 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                     </Label>
                     {!file ? (
                       <div
-                        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                           isDragOver
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5"
                         }`}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                       >
-                        <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground mb-2">
+                        <Upload className="w-10 h-10 text-primary/70 mx-auto mb-4" />
+                        <p className="text-foreground font-medium mb-1">
                           Drag and drop your {isRegression ? "data file" : "multilocational trial data"}
                         </p>
-                        <p className="text-sm text-muted-foreground/70">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          or click anywhere in this card to browse files
+                        </p>
+                        <p className="text-xs text-muted-foreground/80">
                           Accepted formats: .xlsx, .csv
                         </p>
                         <Input
@@ -379,13 +390,17 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                         />
                       </div>
                     ) : (
-                      <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl border border-primary/25">
                         <FileSpreadsheet className="w-10 h-10 text-primary" />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground truncate">{file.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {columns.length} columns detected • {numericColumns.length} numeric
-                          </p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <StatusBadge label="Ready" tone="success" />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                            <MetricCard label="Columns" value={columns.length} className="border-border/50" />
+                            <MetricCard label="Numeric" value={numericColumns.length} className="border-border/50" />
+                          </div>
                         </div>
                         <Button type="button" variant="ghost" size="icon" onClick={removeFile} className="flex-shrink-0">
                           <X className="w-5 h-5" />
@@ -393,7 +408,10 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                       </div>
                     )}
                     {parseError && (
-                      <p className="text-sm text-destructive" role="alert">{parseError}</p>
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 flex items-start gap-2" role="alert">
+                        <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                        <p className="text-sm text-destructive">{parseError}</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -591,8 +609,9 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                 )}
 
                 {retryMessage && (
-                  <div className="p-4 bg-accent border border-border rounded-lg text-center">
-                    <p className="text-accent-foreground font-medium">{retryMessage}</p>
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
+                    <StatusBadge label="Retrying Request" tone="warning" className="mb-2" />
+                    <p className="text-foreground font-medium">{retryMessage}</p>
                   </div>
                 )}
 
