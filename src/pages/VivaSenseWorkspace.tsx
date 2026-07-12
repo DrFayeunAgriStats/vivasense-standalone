@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyAnovaRequest, classifyGeneticsRequest } from "@/lib/vivasenseGating";
-import { Sprout, LogOut, ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Layout } from "@/components/layout/Layout";
 import { VivaSenseForm, type AnalysisType } from "@/components/vivasense/VivaSenseForm";
 import { VivaSenseGeneticsForm, type GeneticsAnalysisType } from "@/components/vivasense/VivaSenseGeneticsForm";
 import { VivaSenseResults } from "@/components/vivasense/VivaSenseResults";
@@ -23,7 +24,7 @@ interface AnalysisState {
 }
 
 export default function VivaSenseWorkspace() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [mode, setMode] = useState(getVivaSenseMode());
   const [currentModule, setCurrentModule] = useState<ModuleType>("selection");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,10 +37,6 @@ export default function VivaSenseWorkspace() {
     });
     return unsubscribe;
   }, []);
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
 
   const handleModuleSelect = (module: "anova" | "genetics" | "advanced") => {
     setError(null);
@@ -151,36 +148,9 @@ export default function VivaSenseWorkspace() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-800 to-green-700 text-white p-4 shadow-md">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
-              <Sprout className="w-5 h-5 text-green-800" />
-            </div>
-            <div>
-              <div className="font-bold">VivaSense</div>
-              <div className="text-xs text-green-200">Agricultural Statistics</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className={`text-xs px-3 py-1 rounded-full ${mode === "pro" ? "bg-purple-500/30" : "bg-gray-500/30"}`}>
-              {mode === "pro" ? "🎯 Pro Mode" : "🆓 Free Mode"}
-            </span>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 bg-green-700 hover:bg-green-600 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto py-8 px-4">
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-background">
+        <div className="container-wide py-8 px-4">
         {/* Module Selection Screen */}
         {currentModule === "selection" && (
           <div className="max-w-5xl mx-auto">
@@ -369,7 +339,8 @@ export default function VivaSenseWorkspace() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
