@@ -1,8 +1,9 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@source "./components/layout/**/*.{ts,tsx}";
+@source "./components/vivasense/**/*.{ts,tsx}";
+@source "./pages/**/*.{ts,tsx}";
 
 @layer base {
   :root {

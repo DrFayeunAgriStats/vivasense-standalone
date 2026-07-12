@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, FlaskConical } from "lucide-react";
 import { VivaSenseUserMenu } from "@/components/vivasense/VivaSenseUserMenu";
+import { VivaSensePlanBadge } from "@/components/vivasense/VivaSensePlanBadge";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,8 +39,9 @@ export function Header() {
         {/* Desktop: Spacer */}
         <div className="hidden lg:block flex-1" />
 
-        {/* Desktop: User Menu */}
-        <div className="hidden lg:flex items-center gap-2">
+        {/* Desktop: Plan Badge + User Menu */}
+        <div className="hidden lg:flex items-center gap-4">
+          <VivaSensePlanBadge />
           <VivaSenseUserMenu />
         </div>
 
@@ -57,7 +59,8 @@ export function Header() {
 
       {/* Mobile: User Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-background border-b border-border py-2 px-4">
+        <div className="lg:hidden bg-background border-b border-border py-2 px-4 flex items-center justify-between gap-3">
+          <VivaSensePlanBadge />
           <VivaSenseUserMenu />
         </div>
       )}
