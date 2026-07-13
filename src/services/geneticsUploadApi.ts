@@ -420,7 +420,7 @@ export interface ConfirmDatasetRequest {
   environment_column?: string | null;
   numeric_factor_columns?: string[];
   mode: "single" | "multi";
-  design_type?: "single" | "multi";
+  design_type?: "crd" | "rcbd" | "factorial" | "factorial_rcbd" | "split_plot_rcbd";
   random_environment?: boolean;
   selection_intensity?: number;
   research_domain?: "plant_breeding" | "agronomy" | "general";
@@ -593,6 +593,54 @@ export async function exportDescriptiveStats(currentData: DescriptiveStatsRespon
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANOVA ANALYSIS  (POST /analysis/anova)
+// Requires a valid dataset_token from POST /upload/dataset.
+// Supports multi-trait analysis in a single request.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AnovaAnalysisRequest {
+  dataset_token: string;
+  trait_columns: string[];
+}
+
+export async function runAnovaAnalysis(request: AnovaAnalysisRequest): Promise<UploadAnalysisResponse> {
+  const url = `${ENGINE_BASE}/analysis/anova`;
+  console.log("[geneticsUploadApi] POST", url, "| traits:", request.trait_columns.length);
+
+  let response: Response;
+  try {
+    response = await requestWithResilience(url, {
+      method: "POST",
+      headers: buildModeHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(request),
+      timeoutMs: 180000,
+      retries: 0,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Network error running ANOVA analysis: ${msg}`);
+  }
+
+  if (!response.ok) {
+    const detail = await extractErrorDetail(response);
+    throw new Error(`ANOVA analysis failed — ${detail}`);
+  }
+
+  const data = (await response.json()) as UploadAnalysisResponse;
+
+  // Debug: log results per trait
+  for (const [trait, tr] of Object.entries(data.trait_results ?? {})) {
+    const result = tr.analysis_result?.result;
+    console.log(`[runAnovaAnalysis] trait="${trait}" status=${tr.status}`, {
+      has_anova_table: result?.anova_table != null,
+      has_mean_separation: result?.mean_separation != null,
+    });
+  }
+
+  return data;
 }
 
 /** Infer file_type from File.name */

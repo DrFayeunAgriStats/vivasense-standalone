@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
-import { analyzeUpload, downloadReport } from "@/lib/geneticsUploadApi";
+import { downloadReport } from "@/lib/geneticsUploadApi";
+import {
+  confirmDataset, runAnovaAnalysis, inferFileType, type UploadAnalysisResponse,
+} from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import type {
-  DatasetContext, AnalyzeUploadResponse, AnovaDesignType,
+  DatasetContext, AnovaDesignType,
 } from "@/types/geneticsUpload";
 
 const MODULE = "anova" as const;
@@ -55,7 +58,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<AnalyzeUploadResponse | null>(null);
+  const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
@@ -145,29 +148,30 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
       console.log("[MODULE]", MODULE, "[DESIGN]", effectiveDesign);
 
-      const res = await analyzeUpload({
+      // Step 1: Confirm dataset to get dataset_token
+      console.log("[handleAnalyze] Confirming dataset...");
+      const confirmRes = await confirmDataset({
         base64_content: datasetContext.base64Content,
         file_type: datasetContext.fileType,
-        // legacy fields kept for backend back-compat
-        genotype_column: treatmentCol || datasetContext.genotypeColumn,
-        rep_column: repColumn || datasetContext.repColumn,
-        environment_column: datasetContext.environmentColumn,
-        trait_columns: selectedTraits,
+        genotype_column: treatmentCol || datasetContext.genotypeColumn || null,
+        rep_column: repColumn || datasetContext.repColumn || null,
+        environment_column: datasetContext.environmentColumn || undefined,
         mode: datasetContext.mode,
-        random_environment: false,
-        selection_intensity: 1.4,
-        module: MODULE,
-        // design-aware fields
         design_type: effectiveDesign,
-        treatment_column: design === "crd" || design === "rcbd" ? treatmentCol : undefined,
-        factor_a_column: isFactorialFamily ? factorA : undefined,
-        factor_b_column: isFactorialFamily ? factorB : undefined,
-        factor_c_column: isFactorialFamily && factorC && factorC !== "None" ? factorC : undefined,
-        main_plot_column: isSplitPlot ? mainPlot : undefined,
-        sub_plot_column: isSplitPlot ? subPlot : undefined,
       });
+
+      console.log("[handleAnalyze] Dataset confirmed, token:", confirmRes.dataset_token.slice(0, 20) + "...");
+
+      // Step 2: Run ANOVA with the dataset_token and selected traits
+      console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
+      const res = await runAnovaAnalysis({
+        dataset_token: confirmRes.dataset_token,
+        trait_columns: selectedTraits,
+      });
+
       setResults(res);
-      toast({ title: "ANOVA complete", description: `${res.summary_table.length} response variable(s) analyzed.` });
+      const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
+      toast({ title: "ANOVA complete", description: `${successCount} response variable(s) analyzed.` });
     } catch (err: any) {
       toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
     } finally {
@@ -188,14 +192,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         trait_results: Object.fromEntries(
           Object.entries(results.trait_results)
             .filter(([, tr]) => tr.status === "success" && tr.analysis_result)
-            .map(([trait, tr]) => [trait, {
-              anova_table: tr.analysis_result.result.anova_table,
-              mean_separation: isSplitPlot ? undefined : tr.analysis_result.result.mean_separation,
-              grand_mean: tr.analysis_result.result.grand_mean,
-              n_genotypes: tr.analysis_result.result.n_genotypes,
-              n_reps: tr.analysis_result.result.n_reps,
-              interpretation: tr.analysis_result.interpretation,
-            }])
+            .map(([trait, tr]) => {
+              const ar = tr.analysis_result;
+              const result = ar?.result;
+              return [trait, {
+                anova_table: result?.anova_table,
+                mean_separation: isSplitPlot ? undefined : result?.mean_separation,
+                grand_mean: result?.grand_mean,
+                n_genotypes: result?.n_genotypes,
+                n_reps: result?.n_reps,
+                interpretation: ar?.interpretation || "",
+              }];
+            })
         ),
         failed_traits: results.failed_traits,
       };
@@ -402,6 +410,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {Object.entries(results.trait_results).map(([trait, tr]) => {
             if (tr.status !== "success" || !tr.analysis_result) return null;
             const r = tr.analysis_result.result;
+            if (!r) return null;
 
             return (
               <div key={trait} className="space-y-1">
@@ -410,14 +419,13 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   moduleLabel="ANOVA"
                   domainNeutral
                   insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${r.n_genotypes} treatment level(s) × ${r.n_reps} replication(s)`}
-                  interpretation={tr.analysis_result.interpretation}
+                  interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={
                     tr.data_warnings.length > 0
                       ? tr.data_warnings.map((w) => ({ text: w }))
                       : undefined
                   }
                   anovaTable={r.anova_table}
-                  // Split-plot: hide mean separation per spec
                   meanSeparation={isSplitPlot ? undefined : r.mean_separation}
                   descriptiveStats={[
                     { label: "Grand Mean", value: r.grand_mean?.toFixed(4) ?? "—" },
