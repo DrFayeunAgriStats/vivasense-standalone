@@ -20,16 +20,16 @@ function BrandHeader({ subtitle }: { subtitle: string }) {
   return (
     <div className="text-center mb-6">
       <div className="inline-flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 rounded-xl bg-green-700 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-sm">
           <Sprout className="w-7 h-7 text-white" />
         </div>
         <div className="text-left">
-          <div className="text-2xl font-bold text-green-900 leading-tight">VivaSense</div>
-          <div className="text-xs text-green-700/80">Agricultural Statistics Platform</div>
+          <div className="text-2xl font-bold text-foreground leading-tight">VivaSense</div>
+          <div className="text-xs text-muted-foreground">Agricultural Statistics Platform</div>
         </div>
       </div>
-      <p className="text-xs text-gray-500">Field-to-Insight Academy</p>
-      <p className="text-sm text-gray-700 mt-3">{subtitle}</p>
+      <p className="text-xs text-muted-foreground">Field-to-Insight Academy</p>
+      <p className="text-sm text-foreground/80 mt-3">{subtitle}</p>
     </div>
   );
 }
@@ -130,12 +130,12 @@ export default function VivaSenseAuth() {
 
   const allTerms = terms1 && terms2 && terms3;
   const passwordStrength = password.length >= 12 ? "Strong" : password.length >= 8 ? "Medium" : password.length > 0 ? "Weak" : "";
-  const strengthColor = passwordStrength === "Strong" ? "text-green-700" : passwordStrength === "Medium" ? "text-amber-600" : "text-red-600";
+  const strengthColor = passwordStrength === "Strong" ? "text-primary" : passwordStrength === "Medium" ? "text-amber-600" : "text-red-600";
 
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-card rounded-xl border border-border shadow-sm p-8">
           {screen === "login" && (
             <>
               <BrandHeader subtitle="Sign in to your workspace" />
@@ -153,10 +153,10 @@ export default function VivaSenseAuth() {
                   Sign In
                 </button>
                 <div className="flex items-center justify-between text-sm">
-                  <button type="button" onClick={handleForgotPassword} className="text-green-700 hover:underline">
+                  <button type="button" onClick={handleForgotPassword} className="text-primary hover:underline">
                     Forgot password?
                   </button>
-                  <button type="button" onClick={() => { setScreen("register"); setError(""); setMessage(""); }} className="text-green-700 hover:underline font-medium">
+                  <button type="button" onClick={() => { setScreen("register"); setError(""); setMessage(""); }} className="text-primary hover:underline font-medium">
                     Register free →
                   </button>
                 </div>
@@ -206,13 +206,13 @@ export default function VivaSenseAuth() {
                     text="I understand that VivaSense is an educational and research-support platform. Statistical outputs should be interpreted by a qualified researcher." />
                   <TermsBox checked={terms2} onChange={setTerms2}
                     text="Scientific conclusions remain the sole responsibility of the researcher. VivaSense supports but does not replace expert judgment." />
-                  <label className="flex items-start gap-2 text-xs text-gray-700">
-                    <input type="checkbox" checked={terms3} onChange={(e) => setTerms3(e.target.checked)} className="mt-1 accent-green-700" />
+                  <label className="flex items-start gap-2 text-xs text-foreground/80">
+                    <input type="checkbox" checked={terms3} onChange={(e) => setTerms3(e.target.checked)} className="mt-1 accent-primary" />
                     <span>
                       I agree to the{" "}
-                      <a href="#" className="text-green-700 underline">Terms of Use</a>
+                      <a href="#" className="text-primary underline">Terms of Use</a>
                       {" "}and{" "}
-                      <a href="#" className="text-green-700 underline">Privacy Policy</a>
+                      <a href="#" className="text-primary underline">Privacy Policy</a>
                       {" "}of Field-to-Insight Academy.
                     </span>
                   </label>
@@ -226,7 +226,7 @@ export default function VivaSenseAuth() {
                 </button>
 
                 <button type="button" onClick={() => { setScreen("login"); setError(""); setMessage(""); }}
-                  className="w-full text-sm text-gray-600 hover:text-gray-800">
+                  className="w-full text-sm text-muted-foreground hover:text-foreground">
                   Already have an account? Sign in
                 </button>
               </form>
@@ -235,34 +235,34 @@ export default function VivaSenseAuth() {
 
           {screen === "check-email" && (
             <div className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <Mail className="w-8 h-8 text-green-700" />
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Mail className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-2xl font-bold text-green-900 mb-2">Check Your Email!</h2>
-              <p className="text-sm text-gray-600 mb-2">We sent a verification link to:</p>
-              <p className="font-medium text-gray-900 mb-6">{email}</p>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left mb-4">
-                <p className="text-sm font-semibold text-green-900 mb-2">Next steps:</p>
-                <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Check Your Email!</h2>
+              <p className="text-sm text-muted-foreground mb-2">We sent a verification link to:</p>
+              <p className="font-medium text-foreground mb-6">{email}</p>
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-left mb-4">
+                <p className="text-sm font-semibold text-foreground mb-2">Next steps:</p>
+                <ol className="text-sm text-foreground/80 space-y-1 list-decimal list-inside">
                   <li>Open your email inbox</li>
                   <li>Find email from VivaSense</li>
                   <li>Click the "Verify Email" link</li>
                   <li>You'll be redirected to VivaSense</li>
                 </ol>
               </div>
-              <p className="text-xs text-gray-500 mb-4">Didn't receive it? Check your spam folder.</p>
+              <p className="text-xs text-muted-foreground mb-4">Didn't receive it? Check your spam folder.</p>
               {error && <Alert kind="error">{error}</Alert>}
               {message && <Alert kind="success">{message}</Alert>}
-              <button onClick={handleResend} className="text-sm text-green-700 hover:underline">Resend verification email</button>
+              <button onClick={handleResend} className="text-sm text-primary hover:underline">Resend verification email</button>
               <div className="mt-4">
-                <button onClick={() => setScreen("login")} className="text-sm text-gray-500 hover:text-gray-700 inline-flex items-center gap-1">
+                <button onClick={() => setScreen("login")} className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
                   <ArrowLeft className="w-3 h-3" /> Back to login
                 </button>
               </div>
             </div>
           )}
         </div>
-        <p className="text-center text-xs text-gray-500 mt-4">
+        <p className="text-center text-xs text-muted-foreground mt-4">
           © 2026 Field-to-Insight Academy · vivasensestat.com
         </p>
       </div>
@@ -270,13 +270,13 @@ export default function VivaSenseAuth() {
   );
 }
 
-const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600 text-sm";
-const primaryBtn = "w-full bg-green-700 hover:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors";
+const inputCls = "w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm";
+const primaryBtn = "w-full bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium py-2.5 rounded-md transition-colors";
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
       {children}
     </div>
   );
@@ -285,14 +285,14 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
 function Alert({ kind, children }: { kind: "error" | "success"; children: React.ReactNode }) {
   const cls = kind === "error"
     ? "bg-red-50 border border-red-200 text-red-700"
-    : "bg-green-50 border border-green-200 text-green-700";
+    : "bg-primary/5 border border-primary/20 text-primary";
   return <div className={`${cls} text-sm px-3 py-2 rounded-lg`}>{children}</div>;
 }
 
 function TermsBox({ checked, onChange, text }: { checked: boolean; onChange: (v: boolean) => void; text: string }) {
   return (
-    <label className="flex items-start gap-2 text-xs text-gray-700">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 accent-green-700" />
+    <label className="flex items-start gap-2 text-xs text-foreground/80">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 accent-primary" />
       <span>{text}</span>
     </label>
   );
@@ -312,7 +312,7 @@ function PasswordInput({ value, onChange, visible, onToggle }: { value: string; 
         type="button"
         onClick={onToggle}
         aria-label={visible ? "Hide password" : "Show password"}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground rounded-md focus:outline-none focus:ring-1 focus:ring-ring"
       >
         {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </button>

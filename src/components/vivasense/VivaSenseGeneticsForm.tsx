@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Loader2, FileSpreadsheet, X, Dna, AlertCircle } from "lucide-react";
+import { UploadCloud, Loader2, FileSpreadsheet, X, Dna, AlertCircle, Settings2, Play } from "lucide-react";
 import * as XLSX from "xlsx";
 import {
   Card,
@@ -311,12 +311,12 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   );
 
   return (
-    <section className="py-20" id="genetics-form">
+    <section className="py-1" id="genetics-form">
       <div className="container-wide">
         <div className="max-w-3xl mx-auto">
-          <Card className="rounded-2xl border border-border/70 bg-card/80 shadow-sm backdrop-blur-sm">
+          <Card className="rounded-xl border border-border bg-card p-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="font-serif text-2xl lg:text-3xl flex items-center justify-center gap-3">
+              <CardTitle className="text-2xl lg:text-3xl flex items-center justify-center gap-3">
                 <Dna className="w-7 h-7 text-primary" />
                 Plant Breeding Genetics Analysis
               </CardTitle>
@@ -326,6 +326,10 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
             </CardHeader>
             <CardContent className="p-6 lg:p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-0.5">
+                  <h2 className="text-base font-semibold">1. Upload dataset</h2>
+                  <p className="text-sm text-muted-foreground">Drop a CSV or Excel file with your trial data.</p>
+                </div>
                 {/* Analysis Type */}
                 <div className="space-y-2">
                   <Label htmlFor="genetics_type" className="text-base font-medium">
@@ -362,16 +366,16 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                     </Label>
                     {!file ? (
                       <div
-                        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                        className={`relative rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors ${
                           isDragOver
-                            ? "border-primary bg-primary/10 shadow-sm"
-                            : "border-border bg-muted/20 hover:border-primary/50 hover:bg-primary/5"
+                            ? "border-primary bg-primary-soft/40"
+                            : "border-border bg-secondary/40 hover:border-primary/40 hover:bg-primary-soft/40"
                         }`}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                       >
-                        <Upload className="w-10 h-10 text-primary/70 mx-auto mb-4" />
+                        <UploadCloud className="w-10 h-10 text-primary mx-auto mb-4" />
                         <p className="text-foreground font-medium mb-1">
                           Drag and drop your {isRegression ? "data file" : "multilocational trial data"}
                         </p>
@@ -390,7 +394,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                         />
                       </div>
                     ) : (
-                      <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl border border-primary/25">
+                      <div className="flex items-center gap-4 p-4 bg-background rounded-lg border border-border">
                         <FileSpreadsheet className="w-10 h-10 text-primary" />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground truncate">{file.name}</p>
@@ -419,6 +423,14 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                 {/* Column Mapping */}
                 {columns.length > 0 && (
                   <>
+                    <div className="space-y-0.5 pt-2">
+                      <h2 className="flex items-center gap-2 text-base font-semibold">
+                        <Settings2 className="h-4 w-4" />
+                        2. Configuration
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Choose model and variable roles.</p>
+                    </div>
+
                     {/* Standard genetics fields */}
                     {needsGenotype && renderColumnSelect("Genotype column", genotype, setGenotype, "gen_col")}
                     {needsEnvironment && renderColumnSelect("Environment / Location column", environment, setEnvironment, "env_col")}
@@ -609,31 +621,31 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                 )}
 
                 {retryMessage && (
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-center">
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-md text-center">
                     <StatusBadge label="Retrying Request" tone="warning" className="mb-2" />
                     <p className="text-foreground font-medium">{retryMessage}</p>
                   </div>
                 )}
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full text-white hover:opacity-90"
-                  style={{ backgroundColor: "#1B5E20" }}
-                  disabled={!isFormValid || isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      {retryMessage ? "Retrying..." : "Running Genetics Analysis..."}
-                    </>
-                  ) : (
-                    <>
-                      <Dna className="w-5 h-5" />
-                      Run {isRegression ? "Multiple Regression" : "Genetics Analysis"}
-                    </>
-                  )}
-                </Button>
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    className="w-full rounded-md sm:w-auto"
+                    disabled={!isFormValid || isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        {retryMessage ? "Retrying..." : "Running Genetics Analysis..."}
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Run Analysis
+                      </>
+                    )}
+                  </Button>
+                </div>
                 {!isFormValid && !isLoading && (
                   <p className="text-xs text-muted-foreground text-center mt-2">
                     {!file

@@ -8,6 +8,7 @@ interface LayoutProps {
   children: ReactNode;
   footerVariant?: "default" | "minimal-vivasense";
   hideSidebar?: boolean;
+  showFooter?: boolean;
 }
 
 const nav = [
@@ -20,7 +21,7 @@ const modules = [
   { to: "/modules/advanced-analytics", label: "Advanced Analytics", icon: Sparkles },
 ] as const;
 
-export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false }: LayoutProps) {
+export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
   const pathname = useLocation().pathname;
 
   return (
@@ -83,11 +84,11 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
 
         <main className="min-w-0 flex-1 flex flex-col">
           {children}
-          {!hideSidebar && <Footer variant={footerVariant} />}
+          {!hideSidebar && showFooter && <Footer variant={footerVariant} />}
         </main>
       </div>
 
-      {hideSidebar && <Footer variant={footerVariant} />}
+      {hideSidebar && showFooter && <Footer variant={footerVariant} />}
     </div>
   );
 }

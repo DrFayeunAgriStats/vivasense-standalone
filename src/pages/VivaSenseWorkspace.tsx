@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyAnovaRequest, classifyGeneticsRequest } from "@/lib/vivasenseGating";
-import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, FileText, BarChart3, ArrowRight } from "lucide-react";
+import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, Plus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
@@ -10,7 +10,6 @@ import { VivaSenseGeneticsForm, type GeneticsAnalysisType } from "@/components/v
 import { VivaSenseResults } from "@/components/vivasense/VivaSenseResults";
 import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisplay";
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
-import { ModuleCard } from "@/components/vivasense/shared";
 import { computeAnova, computeCorrelation } from "@/lib/geneticsUploadApi";
 import { computeDescriptiveStats } from "@/lib/descriptiveStatsApi";
 import { FlaskConical } from "lucide-react";
@@ -45,39 +44,34 @@ function AnalysisModuleCard({
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg md:p-7"
+      className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_8px_24px_-12px_rgba(20,80,40,0.15)]"
     >
-      {/* Icon Badge */}
-      <span className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${tone} transition-transform group-hover:scale-110`}>
-        <Icon className="h-6 w-6" />
+      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${tone}`}>
+        <Icon className="h-5 w-5" />
       </span>
 
-      {/* Title */}
-      <h3 className="mt-5 text-lg font-semibold leading-tight text-foreground">
+      <h3 className="mt-4 text-[15px] font-semibold text-foreground">
         {title}
       </h3>
 
-      {/* Description */}
-      <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground flex-1">
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground flex-1">
         {description}
       </p>
 
-      {/* Tags */}
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {analyses.map((a) => (
           <span
             key={a}
-            className="rounded-md border border-border/50 bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground"
+            className="rounded-md border border-border bg-secondary/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
           >
             {a}
           </span>
         ))}
       </div>
 
-      {/* Link */}
-      <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-70 transition-all group-hover:opacity-100">
-        Launch Module
-        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      <div className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
+        Start Analysis
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </div>
     </button>
   );
@@ -220,75 +214,42 @@ export default function VivaSenseWorkspace() {
   return (
     <Layout>
       <div className="bg-background flex-1">
-        {/* Module Selection Screen */}
         {currentModule === "selection" && (
-          <div className="flex-1">
-            {/* Hero Section */}
-            <div className="bg-gradient-to-br from-primary/5 via-background to-background px-6 py-16 md:px-10 md:py-24">
-              <div className="mx-auto max-w-5xl">
+          <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
+            <section>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  v2.4 · Agricultural Analytics Suite
+                  Research Workspace
                 </p>
-                <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground md:text-5xl md:leading-[1.2]">
-                  Welcome to VivaSense — Professional Statistical Analysis for Agricultural Research
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground md:text-[38px] md:leading-[1.15]">
+                  Welcome to VivaSense
                 </h1>
-                <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                  Design experiments, analyze breeding data, and interpret results with a modern workflow built for research teams.
+                <p className="mt-2 text-lg text-muted-foreground">
+                  Professional statistical analysis for agricultural research.
                 </p>
-                <div className="mt-8 flex gap-4">
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  Choose an analysis module below to begin. Each workflow guides you from dataset upload through model configuration to publication-ready results.
+                </p>
+                <div className="mt-6">
                   <button
                     onClick={() => handleModuleSelect("anova")}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:brightness-110"
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:brightness-110"
                   >
-                    <FlaskConical className="h-5 w-5" />
+                    <Plus className="h-4 w-4" />
                     Start New Analysis
                   </button>
-                  <button
-                    onClick={() => handleModuleSelect("anova")}
-                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted"
-                  >
-                    View documentation →
-                  </button>
                 </div>
-              </div>
-            </div>
+            </section>
 
-            {/* Stats Cards Section */}
-            <div className="mx-auto max-w-5xl px-6 py-12 md:px-10">
-              <div className="grid gap-4 md:grid-cols-4">
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Active projects</p>
-                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Analyses this month</p>
-                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Datasets</p>
-                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Team members</p>
-                  <p className="mt-2 text-3xl font-bold text-foreground">—</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modules Section */}
-            <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
-              <div className="mb-8">
+            <section className="mt-14">
+              <div className="mb-5 flex items-baseline justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Analysis Modules
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Choose an analysis workflow to launch.
-                </p>
               </div>
-              <div className="grid gap-5 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-3">
                 <AnalysisModuleCard
                   title="Experimental Design"
-                  description="Plan RCBD, split-plot and factorial trials with power analysis and randomization plans."
+                  description="Plan randomized trials with power analysis, replication, and layout generation."
                   analyses={["RCBD", "Split-plot", "Factorial", "Latin square"]}
                   tone="text-primary bg-primary-soft"
                   icon={FlaskConical}
@@ -297,7 +258,7 @@ export default function VivaSenseWorkspace() {
 
                 <AnalysisModuleCard
                   title="Genetics & Breeding"
-                  description="Compute BLUPs, heritability, and marker–trait associations from your genotype data."
+                  description="Estimate breeding values, heritability, and marker–trait associations."
                   analyses={["BLUP", "Heritability", "GWAS", "Selection index"]}
                   tone="text-sky-700 bg-sky-50"
                   icon={Dna}
@@ -306,45 +267,39 @@ export default function VivaSenseWorkspace() {
 
                 <AnalysisModuleCard
                   title="Advanced Analytics"
-                  description="Mixed models, multivariate methods and ML-assisted interpretation with AI narratives."
+                  description="Fit mixed models and multivariate methods with AI-assisted interpretation."
                   analyses={["Mixed models", "PCA", "AMMI", "GGE biplot"]}
                   tone="text-violet-700 bg-violet-50"
                   icon={Sparkles}
                   onClick={() => handleModuleSelect("advanced")}
                 />
               </div>
-            </div>
-
-            {/* Pro Feature Notice */}
-            {!isProMode() && (
-              <div className="mx-auto max-w-5xl px-6 py-4 md:px-10">
-                <Alert className="bg-primary/5 border-primary/20">
-                  <AlertCircle className="h-4 w-4 text-primary" />
-                  <AlertDescription className="text-foreground/80">
-                    Some features are Pro-only (multi-environment ANOVA, genetics parameters, advanced analytics).
-                    Upgrade to Pro for full access.
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
+            </section>
           </div>
         )}
 
         {/* ANOVA Form Screen */}
         {currentModule === "anova" && (
-          <div className="mx-auto max-w-4xl px-6 py-12 md:px-10">
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={handleBackToModules}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Modules
-              </Button>
+          <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+              <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>Modules</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground">Experimental Design</span>
+            </nav>
+            <div className="mt-4 flex items-start justify-between gap-6">
+              <div>
+                <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                  Design
+                </span>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Experimental Design</h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
+                  Configure a randomized trial layout, compute required sample size, and export the plan.
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 md:p-8">
-              <h2 className="text-2xl font-semibold text-foreground mb-6">ANOVA & Descriptive Analysis</h2>
+            <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
@@ -361,19 +316,26 @@ export default function VivaSenseWorkspace() {
 
         {/* Genetics Form Screen */}
         {currentModule === "genetics" && (
-          <div className="mx-auto max-w-4xl px-6 py-12 md:px-10">
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={handleBackToModules}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Modules
-              </Button>
+          <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+              <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>Modules</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground">Genetics & Breeding</span>
+            </nav>
+            <div className="mt-4 flex items-start justify-between gap-6">
+              <div>
+                <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                  Genetics
+                </span>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Genetics & Breeding</h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
+                  Estimate BLUPs, heritability, and genetic correlations from phenotype and marker data.
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 md:p-8">
-              <h2 className="text-2xl font-semibold text-foreground mb-6">Genetics & Breeding Analysis</h2>
+            <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
@@ -390,19 +352,26 @@ export default function VivaSenseWorkspace() {
 
         {/* Advanced Modules Screen */}
         {currentModule === "advanced" && (
-          <div className="mx-auto max-w-5xl px-6 py-12 md:px-10">
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={handleBackToModules}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Modules
-              </Button>
+          <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+              <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>Modules</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground">Advanced Analytics</span>
+            </nav>
+            <div className="mt-4 flex items-start justify-between gap-6">
+              <div>
+                <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                  Analytics
+                </span>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Advanced Analytics</h1>
+                <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
+                  Fit mixed models, run multivariate analyses, and generate AI-assisted interpretations.
+                </p>
+              </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-6 md:p-8">
-              <h2 className="text-2xl font-semibold text-foreground mb-6">Advanced Analytics</h2>
+            <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               {error && (
                 <Alert className="mb-6 bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />

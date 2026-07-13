@@ -20,7 +20,16 @@ export function Header() {
       .then(({ data }) => setProfile(data as ExtProfile | null));
   }, [user]);
 
-  const initial = (profile?.full_name?.[0] || user?.email?.[0] || "?").toUpperCase();
+  const initial =
+    profile?.full_name
+      ?.split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ||
+    user?.email?.slice(0, 2).toUpperCase() ||
+    "EM";
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur">
