@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { downloadReport } from "@/lib/geneticsUploadApi";
 import {
-  confirmDataset, runAnovaAnalysis, inferFileType, type UploadAnalysisResponse,
+  analyzeUpload, inferFileType, type UploadAnalysisResponse, type UploadAnalysisRequest,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import type {
@@ -147,27 +147,23 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         design === "factorial" && includeRepFactorial ? "factorial_rcbd" : design;
 
       console.log("[MODULE]", MODULE, "[DESIGN]", effectiveDesign);
+      console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
 
-      // Step 1: Confirm dataset to get dataset_token
-      console.log("[handleAnalyze] Confirming dataset...");
-      const confirmRes = await confirmDataset({
+      // Direct call to /genetics/analyze-upload?module=anova — no two-step token workflow
+      const request: UploadAnalysisRequest = {
         base64_content: datasetContext.base64Content,
         file_type: datasetContext.fileType,
-        genotype_column: treatmentCol || datasetContext.genotypeColumn || null,
-        rep_column: repColumn || datasetContext.repColumn || null,
-        environment_column: datasetContext.environmentColumn || undefined,
-        mode: datasetContext.mode,
-        design_type: effectiveDesign,
-      });
-
-      console.log("[handleAnalyze] Dataset confirmed, token:", confirmRes.dataset_token.slice(0, 20) + "...");
-
-      // Step 2: Run ANOVA with the dataset_token and selected traits
-      console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
-      const res = await runAnovaAnalysis({
-        dataset_token: confirmRes.dataset_token,
+        genotype_column: treatmentCol || datasetContext.genotypeColumn,
+        rep_column: repColumn || datasetContext.repColumn,
+        environment_column: datasetContext.environmentColumn ?? null,
         trait_columns: selectedTraits,
-      });
+        mode: datasetContext.mode,
+        module: "anova",
+        design_type: effectiveDesign,
+        selection_intensity: 2.04,
+      };
+
+      const res = await analyzeUpload(request);
 
       setResults(res);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
