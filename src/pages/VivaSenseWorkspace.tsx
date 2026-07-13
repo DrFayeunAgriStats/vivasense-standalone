@@ -10,8 +10,9 @@ import { VivaSenseGeneticsForm, type GeneticsAnalysisType } from "@/components/v
 import { VivaSenseResults } from "@/components/vivasense/VivaSenseResults";
 import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisplay";
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
-import { computeAnova, computeCorrelation } from "@/lib/geneticsUploadApi";
+import { computeAnova, computeCorrelation, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { computeDescriptiveStats } from "@/lib/descriptiveStatsApi";
+import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
 type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results";
@@ -85,6 +86,14 @@ export default function VivaSenseWorkspace() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
+  const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+
+  const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".csv")) return "csv";
+    if (name.endsWith(".xls")) return "xls";
+    return "xlsx";
+  };
 
   const sectionMeta: Record<WorkspaceSection, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
     overview: { label: "Overview", icon: LayoutGrid },
@@ -118,12 +127,17 @@ export default function VivaSenseWorkspace() {
         return;
       }
 
+      const file = formData.get("file") as File | null;
+      const datasetToken = (formData.get("dataset_token") as string | null) || null;
+      const base64Content = file ? await fileToBase64(file) : "";
+      const fileType = file ? resolveFileType(file) : "xlsx";
+
       if (analysisType === "descriptive") {
         const columns = formData.getAll("columns") as string[];
-        const byColumn = formData.get("by") as string | null;
         const result = await computeDescriptiveStats({
-          base64_content: "",
-          file_type: "xlsx",
+          dataset_token: datasetToken,
+          base64_content: base64Content,
+          file_type: fileType,
           trait_columns: columns,
           genotype_column: null,
           rep_column: null,
@@ -135,11 +149,25 @@ export default function VivaSenseWorkspace() {
           results: result,
           isDescriptive: true,
         });
+
+        if (file) {
+          setDatasetContext({
+            file,
+            base64Content,
+            fileType,
+            genotypeColumn: "",
+            repColumn: "",
+            environmentColumn: null,
+            availableTraitColumns: columns,
+            mode: "single",
+            datasetToken,
+          });
+        }
       } else {
         const traits = formData.getAll("trait") as string[];
         const traitColumns = traits.length > 0 ? traits : [formData.get("trait") as string];
         const result = await computeAnova({
-          dataset_token: formData.get("dataset_token") as string,
+          dataset_token: datasetToken,
           trait_columns: traitColumns,
         });
         setAnalysisState({
@@ -147,6 +175,31 @@ export default function VivaSenseWorkspace() {
           analysisType,
           results: result,
         });
+
+        if (file) {
+          const factorA = (formData.get("factor_a") as string | null) || "";
+          const factorB = (formData.get("factor_b") as string | null) || "";
+          const factor = (formData.get("factor") as string | null) || "";
+          const environmentColumn = factorA.toLowerCase().includes("env")
+            ? factorA
+            : factorB.toLowerCase().includes("env")
+            ? factorB
+            : factor.toLowerCase().includes("env")
+            ? factor
+            : null;
+
+          setDatasetContext({
+            file,
+            base64Content,
+            fileType,
+            genotypeColumn: "",
+            repColumn: (formData.get("block") as string | null) || "",
+            environmentColumn,
+            availableTraitColumns: traitColumns.filter(Boolean),
+            mode: environmentColumn ? "multi" : "single",
+            datasetToken,
+          });
+        }
       }
 
       setCurrentModule("results");
@@ -170,25 +223,58 @@ export default function VivaSenseWorkspace() {
         return;
       }
 
-      const genotypeValue = formData.get("genotype") as string;
-      const repValue = formData.get("block") as string | null;
+      const file = formData.get("file") as File | null;
+      const genotypeValue = (formData.get("genotype") as string | null) || "";
+      const repValue = (formData.get("rep") as string | null) || "";
+      const environmentValue = ((formData.get("location") as string | null) || "").trim() || null;
+      const traitValues = ((formData.get("traits") as string | null) || "")
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
 
-      if (!genotypeValue) {
-        throw new Error("Genotype column is required");
+      if (!file) {
+        throw new Error("Please upload a dataset file.");
+      }
+
+      const base64Content = await fileToBase64(file);
+      const fileType = resolveFileType(file);
+
+      if (analysisType === "regression") {
+        throw new Error("Regression endpoint is not wired in this build yet.");
+      }
+
+      if (analysisType !== "correlations") {
+        throw new Error(`${analysisType} endpoint is not wired in this build yet.`);
+      }
+
+      if (!genotypeValue || traitValues.length < 2) {
+        throw new Error("Please provide genotype and at least two traits.");
       }
 
       const result = await computeCorrelation({
-        base64_content: "",
-        file_type: "xlsx",
+        base64_content: base64Content,
+        file_type: fileType,
         genotype_column: genotypeValue,
-        environment_column: (formData.get("environment") as string) || null,
-        rep_column: repValue || "",
-        trait_columns: (formData.getAll("selectedTraits") as string[]) || [],
+        environment_column: environmentValue,
+        rep_column: repValue,
+        trait_columns: traitValues,
       });
       setAnalysisState({
         type: "genetics",
         analysisType,
         results: result,
+      });
+
+      setDatasetContext({
+        file,
+        base64Content,
+        fileType,
+        genotypeColumn: genotypeValue,
+        repColumn: repValue,
+        environmentColumn: environmentValue,
+        availableTraitColumns: traitValues,
+        mode: environmentValue ? "multi" : "single",
+        datasetToken: null,
       });
 
       setCurrentModule("results");
@@ -379,7 +465,7 @@ export default function VivaSenseWorkspace() {
                 </Alert>
               )}
               <AdvancedAnalysisDashboard
-                datasetContext={null}
+                datasetContext={datasetContext}
               />
             </div>
           </div>

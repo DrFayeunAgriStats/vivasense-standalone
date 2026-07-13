@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UploadCloud, Loader2, FileSpreadsheet, X, Dna, AlertCircle, Settings2, Play } from "lucide-react";
 import * as XLSX from "xlsx";
+import { uploadPreview } from "@/lib/geneticsUploadApi";
 import {
   Card,
   CardContent,
@@ -60,6 +61,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   const [analysisType, setAnalysisType] = useState<GeneticsAnalysisType | "">("");
   const [file, setFile] = useState<File | null>(null);
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
+  const [datasetToken, setDatasetToken] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
@@ -104,6 +106,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
 
   const parseFile = useCallback(async (nextFile: File) => {
     setParseError(null);
+    setDatasetToken(null);
     try {
       const lowerName = nextFile.name.toLowerCase();
       let workbook: XLSX.WorkBook;
@@ -144,9 +147,16 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
 
       setColumns(columnInfo);
       resetFieldSelections();
+
+      const preview = await uploadPreview(nextFile);
+      if (!preview.dataset_token) {
+        throw new Error("Upload preview did not return a dataset token. Please try uploading the file again.");
+      }
+      setDatasetToken(preview.dataset_token);
     } catch (error) {
       console.error("Error parsing file:", error);
       setColumns([]);
+      setDatasetToken(null);
       resetFieldSelections();
       setParseError(error instanceof Error ? error.message : "Could not read that file.");
     }
@@ -220,6 +230,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   const removeFile = useCallback(() => {
     setFile(null);
     setColumns([]);
+    setDatasetToken(null);
     resetFieldSelections();
     setParseError(null);
     setFileInputKey((k) => k + 1);
@@ -234,7 +245,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   const needsGenotype = analysisType !== "" && !isRegression;
 
   const isFormValid = useMemo(() => {
-    if (!file || !analysisType) return false;
+    if (!file || !datasetToken || !analysisType) return false;
     if (isRegression) {
       return responseVar !== "" && selectedPredictors.length >= 1;
     }
@@ -246,14 +257,15 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
     if (analysisType === "multivariate" && selectedTraits.length < 2) return false;
     if (analysisType === "molecular" && !genotype) return false;
     return true;
-  }, [file, analysisType, genotype, environment, block, selectedTraits, needsGenotype, needsEnvironment, needsTraits, isRegression, responseVar, selectedPredictors]);
+  }, [file, datasetToken, analysisType, genotype, environment, block, selectedTraits, needsGenotype, needsEnvironment, needsTraits, isRegression, responseVar, selectedPredictors]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !analysisType || !isFormValid) return;
+    if (!file || !datasetToken || !analysisType || !isFormValid) return;
 
     const fd = new FormData();
     fd.append("file", file);
+    fd.append("dataset_token", datasetToken);
     fd.append("alpha", alpha);
 
     if (isRegression) {
