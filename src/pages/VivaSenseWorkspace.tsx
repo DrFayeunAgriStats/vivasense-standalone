@@ -16,6 +16,7 @@ import { computeCorrelation, computeGeneticParameters, computeRegression, fileTo
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { recordAnalysis } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
+import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
@@ -359,6 +360,10 @@ export default function VivaSenseWorkspace() {
                   onClick={() => handleModuleSelect("advanced")}
                 />
               </div>
+            </section>
+
+            <section className="mt-2">
+              <StudyGrid />
             </section>
 
             <section className="mt-2">
