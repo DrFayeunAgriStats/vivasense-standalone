@@ -18,6 +18,7 @@ import {
 import { Loader2, Play, AlertTriangle, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runSelectionIndex, buildSelectionIndexPayload } from "@/lib/advancedAnalysisApi";
+import { recordAnalysis } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { SelectionIndexResponse } from "@/types/advancedAnalysis";
 import {
@@ -107,6 +108,7 @@ export function SelectionIndexPanel({ datasetContext }: Props) {
 
     setIsRunning(true); setError(null); setResult(null);
     try {
+      const startedAt = performance.now();
       const res = await runSelectionIndex(buildSelectionIndexPayload({
         datasetToken,
         traitColumns: traitCols,
@@ -118,6 +120,16 @@ export function SelectionIndexPanel({ datasetContext }: Props) {
       console.log("[selection-index response]", res);
       if (res.status !== "success") throw new Error("Selection index failed on the server.");
       setResult(res);
+      void recordAnalysis({
+        analysisType: "selection_index",
+        backendEndpoint: "/analysis/selection-index",
+        datasetName: datasetContext?.file?.name ?? null,
+        datasetToken,
+        traits: traitCols,
+        startedAt,
+        parameters: { selection_intensity: intensity },
+        response: res,
+      });
       toast({ title: "Selection index complete" });
     } catch (e) {
       const raw = (e as Error).message ?? "Unexpected error";

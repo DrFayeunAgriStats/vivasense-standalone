@@ -14,6 +14,7 @@ import {
 import { Loader2, Play, AlertTriangle, GitBranch } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPathAnalysis, buildPathAnalysisPayload } from "@/lib/advancedAnalysisApi";
+import { recordAnalysis } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PathAnalysisResponse, PathAnalysisMethod, PathDiagramEdge, PathDecompositionRow, PathCoefficientRow } from "@/types/advancedAnalysis";
 import {
@@ -70,6 +71,7 @@ export function PathAnalysisPanel({ datasetContext }: Props) {
     }
     setIsRunning(true); setError(null); setResult(null);
     try {
+      const startedAt = performance.now();
       const res = await runPathAnalysis(buildPathAnalysisPayload({
         datasetToken,
         outcomeTrait: outcome,
@@ -80,6 +82,16 @@ export function PathAnalysisPanel({ datasetContext }: Props) {
       console.log("[PATH RESPONSE]", res);
       if (res.status !== "success") throw new Error("Path analysis failed on the server.");
       setResult(res);
+      void recordAnalysis({
+        analysisType: "path_analysis",
+        backendEndpoint: "/analysis/path-analysis",
+        datasetName: datasetContext?.file?.name ?? null,
+        datasetToken,
+        traits: [outcome, ...predictors],
+        startedAt,
+        parameters: { outcome_trait: outcome, method, standardize },
+        response: res,
+      });
       toast({ title: "Path analysis complete" });
     } catch (e) {
       const raw = (e as Error).message ?? "Unexpected error";

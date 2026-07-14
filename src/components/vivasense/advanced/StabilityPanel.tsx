@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Play, AlertTriangle, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runStability, buildStabilityPayload } from "@/lib/advancedAnalysisApi";
+import { recordAnalysis } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type {
   StabilityResponse, StabilityMethod, GgeBiplotType,
@@ -70,6 +71,7 @@ export function StabilityPanel({ datasetContext }: Props) {
     setError(null);
     setResult(null);
     try {
+      const startedAt = performance.now();
       const res = await runStability(
         buildStabilityPayload({
           datasetToken,
@@ -95,6 +97,16 @@ export function StabilityPanel({ datasetContext }: Props) {
       );
 
       setResult(res);
+      void recordAnalysis({
+        analysisType: "stability",
+        backendEndpoint: "/analysis/stability",
+        datasetName: datasetContext?.file?.name ?? null,
+        datasetToken,
+        traits: trait ? [trait] : null,
+        startedAt,
+        parameters: { methods, gge: ggeEnabled, ammi: ammiEnabled },
+        response: res,
+      });
       // Auto-pick the most informative tab available
       const hasAmmi = !!res.ammi_results && Array.isArray(res.ammi_results.anova_table?.source);
       const hasGge = !!res.gge_results && !!res.gge_results.biplot_data;

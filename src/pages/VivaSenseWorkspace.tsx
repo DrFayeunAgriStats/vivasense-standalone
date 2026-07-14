@@ -14,6 +14,8 @@ import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaMo
 import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
+import { recordAnalysis } from "@/services/history/historyService";
+import { RecentAnalyses } from "@/components/vivasense/history/RecentAnalyses";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
@@ -150,7 +152,9 @@ export default function VivaSenseWorkspace() {
       const base64Content = await fileToBase64(file);
       const fileType = resolveFileType(file);
 
+      const startedAt = performance.now();
       let result: unknown;
+      let historyTraits: string[] = traitValues;
 
       if (analysisType === "anova") {
         if (traitValues.length < 1) {
@@ -204,6 +208,7 @@ export default function VivaSenseWorkspace() {
           y_variable: responseVar,
           model_type: "linear",
         });
+        historyTraits = [responseVar, ...predictors];
         result = {
           ...regression,
           interpretation:
@@ -234,6 +239,29 @@ export default function VivaSenseWorkspace() {
         type: analysisType === "anova" ? "anova" : "genetics",
         analysisType,
         results: result,
+      });
+
+      // Persist to Research Analysis History (best-effort; success path only).
+      const historyType =
+        analysisType === "variance_components" ? "genetic_parameters"
+        : analysisType === "correlations" ? "correlation"
+        : analysisType === "regression" ? "regression"
+        : "anova";
+      const historyEndpoint =
+        historyType === "anova" ? "/genetics/analyze-upload?module=anova"
+        : historyType === "genetic_parameters" ? "/analysis/genetic-parameters"
+        : historyType === "correlation" ? "/genetics/correlation"
+        : "/analysis/regression";
+      void recordAnalysis({
+        analysisType: historyType,
+        backendEndpoint: historyEndpoint,
+        datasetName: file.name,
+        datasetToken: (formData.get("dataset_token") as string | null) || null,
+        designType: analysisType === "anova" ? (repValue ? "rcbd" : "crd") : null,
+        traits: historyTraits,
+        startedAt,
+        parameters: { module: "genetics", mode: environmentValue ? "multi" : "single" },
+        response: result,
       });
 
       setDatasetContext({
@@ -331,6 +359,10 @@ export default function VivaSenseWorkspace() {
                   onClick={() => handleModuleSelect("advanced")}
                 />
               </div>
+            </section>
+
+            <section className="mt-2">
+              <RecentAnalyses limit={10} />
             </section>
           </div>
         )}

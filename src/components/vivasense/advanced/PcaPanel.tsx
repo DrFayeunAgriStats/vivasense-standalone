@@ -18,6 +18,7 @@ import {
 import { Loader2, Play, AlertTriangle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPca } from "@/lib/advancedAnalysisApi";
+import { recordAnalysis } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PcaResponse } from "@/types/advancedAnalysis";
 import {
@@ -49,6 +50,7 @@ export function PcaPanel({ datasetContext }: Props) {
     setError(null);
     setResult(null);
     try {
+      const startedAt = performance.now();
       const res = await runPca({
         dataset_token: datasetToken,
         trait_columns: traits,
@@ -57,6 +59,16 @@ export function PcaPanel({ datasetContext }: Props) {
       });
       if (res.status !== "success") throw new Error("PCA failed on the server.");
       setResult(res);
+      void recordAnalysis({
+        analysisType: "pca",
+        backendEndpoint: "/analysis/pca",
+        datasetName: datasetContext?.file?.name ?? null,
+        datasetToken,
+        traits,
+        startedAt,
+        parameters: { scale: standardize, n_components: nComponents > 0 ? nComponents : null },
+        response: res,
+      });
       setPcA(0);
       setPcB(Math.min(1, res.variance_explained.length - 1));
       toast({ title: "PCA complete", description: `${res.n_traits} traits × ${res.n_genotypes} genotypes` });

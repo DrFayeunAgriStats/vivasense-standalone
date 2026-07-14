@@ -19,6 +19,7 @@ import {
   analyzeUpload, inferFileType, type UploadAnalysisResponse, type UploadAnalysisRequest,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
+import { recordAnalysis } from "@/services/history/historyService";
 import type {
   DatasetContext, AnovaDesignType,
 } from "@/types/geneticsUpload";
@@ -176,11 +177,25 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         sub_plot_column: isSplitPlot ? subPlot : undefined,
       };
 
+      const startedAt = performance.now();
       const res = await analyzeUpload(request);
 
       setResults(res);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
       toast({ title: "ANOVA complete", description: `${successCount} response variable(s) analyzed.` });
+
+      // Persist to Research Analysis History (best-effort; never blocks the flow).
+      void recordAnalysis({
+        analysisType: "anova",
+        backendEndpoint: "/genetics/analyze-upload?module=anova",
+        datasetName: datasetContext.file.name,
+        datasetToken: datasetContext.datasetToken ?? null,
+        designType: effectiveDesign,
+        traits: selectedTraits,
+        startedAt,
+        parameters: { design_type: effectiveDesign, mode: datasetContext.mode },
+        response: res,
+      });
     } catch (err: any) {
       toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
     } finally {
