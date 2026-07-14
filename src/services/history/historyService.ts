@@ -107,6 +107,36 @@ export async function listRecentAnalyses(limit = 25): Promise<AnalysisHistoryRec
   }
 }
 
+/** Distinguishes an empty history from a failed load so the UI can show an error state. */
+export interface DashboardFetchResult {
+  rows: AnalysisHistoryRecord[];
+  /** null on success (including a legitimately empty result); a message on failure. */
+  error: string | null;
+  /** true only when there is no authenticated session. */
+  signedOut: boolean;
+}
+
+/**
+ * Fetch the current user's analyses for the Research Dashboard. Reuses the same
+ * single Supabase query as listRecentAnalyses (via listHistoryByUser) but surfaces
+ * errors instead of swallowing them, so the dashboard can render an error state.
+ * All filtering/searching/grouping/pagination is done client-side on this result —
+ * no additional Supabase queries.
+ */
+export async function fetchAnalysesForDashboard(limit = 200): Promise<DashboardFetchResult> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return { rows: [], error: null, signedOut: true };
+    const rows = await listHistoryByUser(user.id, limit);
+    return { rows, error: null, signedOut: false };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load analyses.";
+    console.warn("[history] fetchAnalysesForDashboard failed:", err);
+    return { rows: [], error: message, signedOut: false };
+  }
+}
+
 /** Clear the cached profile snapshot (call on sign-out). */
 export function clearHistoryProfileCache(): void {
   profileCache = null;

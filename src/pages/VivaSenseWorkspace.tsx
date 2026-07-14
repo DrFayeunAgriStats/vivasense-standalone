@@ -15,7 +15,7 @@ import { AnovaUploadResults } from "@/components/vivasense/genetics-params/Anova
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { recordAnalysis } from "@/services/history/historyService";
-import { RecentAnalyses } from "@/components/vivasense/history/RecentAnalyses";
+import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
@@ -362,7 +362,7 @@ export default function VivaSenseWorkspace() {
             </section>
 
             <section className="mt-2">
-              <RecentAnalyses limit={10} />
+              <AnalysisHistoryList />
             </section>
           </div>
         )}
