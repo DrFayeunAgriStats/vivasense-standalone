@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local debugging / test scaffolding (not part of the app)
+test-*.mjs
+test_*.csv
+artifacts/
+ANOVA_ENDPOINT_VERIFICATION.md
+COMPONENT_AUDIT.md
+DEPLOYMENT_NOTES.txt
+TASK_COMPLETION_SUMMARY.md
