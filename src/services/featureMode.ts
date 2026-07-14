@@ -12,7 +12,7 @@ export type VivaSenseMode = "free" | "pro";
 
 export const VIVASENSE_MODE_KEY = "vivasense_mode";
 export const VIVASENSE_EXPIRES_KEY = "vivasense_pro_expires_at";
-export const VIVASENSE_DEFAULT_MODE: VivaSenseMode = "free";
+export const VIVASENSE_DEFAULT_MODE: VivaSenseMode = TEMP_ALL_FEATURES_PERMITTED ? "pro" : "free";
 export const BOOK_DATA_CLINIC_URL =
   "https://wa.me/2349022158026?text=Hello%20VivaSense%2C%20I%20want%20to%20book%20a%20Data%20Clinic%20session.";
 export const VIVASENSE_MODE_CHANGED_EVENT = "vivasense-mode-changed";

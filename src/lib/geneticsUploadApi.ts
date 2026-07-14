@@ -11,97 +11,95 @@ import type {
   AnalysisModule,
 } from "@/types/geneticsUpload";
 
-import { GENETICS_API_BASE } from "@/config/vivasense";
-
-const BASE = GENETICS_API_BASE;
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 
 export async function uploadPreview(file: File): Promise<UploadPreviewResponse> {
-  const url = `${BASE}/genetics/upload-preview`;
+  const url = "/genetics/upload-preview";
   console.log("[MODULE] upload-preview");
   console.log("[REQUEST] upload-preview", url);
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(url, { method: "POST", body: fd });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Upload preview failed (${res.status})`);
-  }
-  return res.json();
+  return vivaSenseRequest<UploadPreviewResponse>(url, {
+    method: "POST",
+    body: fd,
+    timeoutMs: 60000,
+  });
 }
 
 export async function analyzeUpload(body: AnalyzeUploadRequest): Promise<AnalyzeUploadResponse> {
-  const url = `${BASE}/genetics/analyze-upload?module=${body.module}`;
+  const url = `/genetics/analyze-upload?module=${body.module}`;
   console.log("[MODULE]", body.module);
   console.log("[REQUEST] analyze-upload", url);
-  const res = await fetch(url, {
+  return vivaSenseRequest<AnalyzeUploadResponse>(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    jsonBody: body,
+    timeoutMs: 180000,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Analysis failed (${res.status})`);
-  }
-  return res.json();
 }
 
 export async function computeAnova(body: {
   dataset_token?: string | null;
   trait_columns: string[];
 }): Promise<Record<string, unknown>> {
-  const url = `${BASE}/analysis/anova`;
+  const url = "/analysis/anova";
   console.log("[MODULE] anova");
   console.log("[REQUEST] anova", url, body);
-  const res = await fetch(url, {
+  return vivaSenseRequest<Record<string, unknown>>(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    jsonBody: body,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || err.error || `ANOVA failed (${res.status})`);
-  }
-  return res.json();
 }
 
 export async function computeCorrelation(body: CorrelationRequest): Promise<CorrelationResponse> {
-  const url = `${BASE}/genetics/correlation`;
+  const url = "/genetics/correlation";
   console.log("[MODULE] correlation");
   console.log("[REQUEST] correlation", url);
-  const res = await fetch(url, {
+  return vivaSenseRequest<CorrelationResponse>(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    jsonBody: body,
   });
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("[CORRELATION ERROR] Status:", res.status, "Body:", errorText);
-    let detail = `Correlation failed (${res.status})`;
-    try {
-      const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
-    } catch {}
-    throw new Error(detail);
-  }
-  return res.json();
+}
+
+export async function computeGeneticParameters(body: {
+  dataset_token?: string | null;
+  trait_columns: string[];
+}): Promise<Record<string, unknown>> {
+  const url = "/analysis/genetic-parameters";
+  console.log("[MODULE] genetic-parameters");
+  console.log("[REQUEST] genetic-parameters", url, body);
+  return vivaSenseRequest<Record<string, unknown>>(url, {
+    method: "POST",
+    jsonBody: body,
+  });
+}
+
+export async function computeRegression(body: {
+  dataset_token: string;
+  x_variable: string;
+  y_variable: string;
+  model_type?: string;
+}): Promise<Record<string, unknown>> {
+  const url = "/analysis/regression";
+  console.log("[MODULE] regression");
+  console.log("[REQUEST] regression", url, body);
+  return vivaSenseRequest<Record<string, unknown>>(url, {
+    method: "POST",
+    jsonBody: { ...body, model_type: body.model_type ?? "linear" },
+  });
 }
 
 export async function downloadReport(
   module: AnalysisModule,
   payload: Record<string, unknown>
 ): Promise<Blob> {
-  const url = `${BASE}/genetics/download-results?module=${module}`;
+  const url = `/genetics/download-results?module=${module}`;
   console.log("[MODULE]", module);
   console.log("[REQUEST] download-results", url);
-  const res = await fetch(url, {
+  return vivaSenseRequest<Blob>(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...payload, module }),
+    jsonBody: { ...payload, module },
+    responseType: "blob",
   });
-  if (!res.ok) {
-    throw new Error(`Download failed (${res.status})`);
-  }
-  return res.blob();
 }
 
 export function fileToBase64(file: File): Promise<string> {

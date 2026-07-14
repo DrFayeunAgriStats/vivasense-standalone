@@ -1,17 +1,19 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyAnovaRequest, classifyGeneticsRequest } from "@/lib/vivasenseGating";
+import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, Plus, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
-import { VivaSenseForm, type AnalysisType } from "@/components/vivasense/VivaSenseForm";
+import { type AnalysisType } from "@/components/vivasense/VivaSenseForm";
 import { VivaSenseGeneticsForm, type GeneticsAnalysisType } from "@/components/vivasense/VivaSenseGeneticsForm";
-import { VivaSenseResults } from "@/components/vivasense/VivaSenseResults";
 import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisplay";
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
-import { computeAnova, computeCorrelation, fileToBase64 } from "@/lib/geneticsUploadApi";
-import { computeDescriptiveStats } from "@/lib/descriptiveStatsApi";
+import { DatasetUpload } from "@/components/vivasense/genetics-params/DatasetUpload";
+import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaModulePanel";
+import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
+import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
+import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
@@ -115,101 +117,10 @@ export default function VivaSenseWorkspace() {
     setCurrentModule(module);
   };
 
-  const handleAnovaSubmit = async (analysisType: AnalysisType, formData: FormData) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Check Pro gating
-      const guard = classifyAnovaRequest(analysisType, formData);
-      if (guard && !isProMode()) {
-        setError(`${guard.title}: ${guard.description}`);
-        setIsLoading(false);
-        return;
-      }
-
-      const file = formData.get("file") as File | null;
-      const datasetToken = (formData.get("dataset_token") as string | null) || null;
-      const base64Content = file ? await fileToBase64(file) : "";
-      const fileType = file ? resolveFileType(file) : "xlsx";
-
-      if (analysisType === "descriptive") {
-        const columns = formData.getAll("columns") as string[];
-        const result = await computeDescriptiveStats({
-          dataset_token: datasetToken,
-          base64_content: base64Content,
-          file_type: fileType,
-          trait_columns: columns,
-          genotype_column: null,
-          rep_column: null,
-          expected_replication: 1,
-        });
-        setAnalysisState({
-          type: "descriptive",
-          analysisType,
-          results: result,
-          isDescriptive: true,
-        });
-
-        if (file) {
-          setDatasetContext({
-            file,
-            base64Content,
-            fileType,
-            genotypeColumn: "",
-            repColumn: "",
-            environmentColumn: null,
-            availableTraitColumns: columns,
-            mode: "single",
-            datasetToken,
-          });
-        }
-      } else {
-        const traits = formData.getAll("trait") as string[];
-        const traitColumns = traits.length > 0 ? traits : [formData.get("trait") as string];
-        const result = await computeAnova({
-          dataset_token: datasetToken,
-          trait_columns: traitColumns,
-        });
-        setAnalysisState({
-          type: "anova",
-          analysisType,
-          results: result,
-        });
-
-        if (file) {
-          const factorA = (formData.get("factor_a") as string | null) || "";
-          const factorB = (formData.get("factor_b") as string | null) || "";
-          const factor = (formData.get("factor") as string | null) || "";
-          const environmentColumn = factorA.toLowerCase().includes("env")
-            ? factorA
-            : factorB.toLowerCase().includes("env")
-            ? factorB
-            : factor.toLowerCase().includes("env")
-            ? factor
-            : null;
-
-          setDatasetContext({
-            file,
-            base64Content,
-            fileType,
-            genotypeColumn: "",
-            repColumn: (formData.get("block") as string | null) || "",
-            environmentColumn,
-            availableTraitColumns: traitColumns.filter(Boolean),
-            mode: environmentColumn ? "multi" : "single",
-            datasetToken,
-          });
-        }
-      }
-
-      setCurrentModule("results");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Analysis failed";
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ANOVA now runs through the proven /genetics/analyze-upload flow rendered by
+  // AnovaModulePanel (design-aware) + AcademicResultsPanel, wired directly into
+  // the ANOVA module screen below. The old computeAnova() → /analysis/anova path,
+  // which VivaSenseResultsDisplay could not render, has been removed.
 
   const handleGeneticsSubmit = async (analysisType: GeneticsAnalysisType, formData: FormData) => {
     setIsLoading(true);
@@ -239,28 +150,88 @@ export default function VivaSenseWorkspace() {
       const base64Content = await fileToBase64(file);
       const fileType = resolveFileType(file);
 
-      if (analysisType === "regression") {
-        throw new Error("Regression endpoint is not wired in this build yet.");
+      let result: unknown;
+
+      if (analysisType === "anova") {
+        if (traitValues.length < 1) {
+          throw new Error("Please select at least one trait.");
+        }
+        if (!genotypeValue) {
+          throw new Error("Please provide the treatment / genotype column.");
+        }
+        // Proven path: /genetics/analyze-upload?module=anova (design-aware),
+        // rendered by AcademicResultsPanel — same workflow as the ANOVA module.
+        result = await analyzeUpload({
+          base64_content: base64Content,
+          file_type: fileType,
+          genotype_column: genotypeValue,
+          rep_column: repValue,
+          environment_column: environmentValue,
+          trait_columns: traitValues,
+          mode: environmentValue ? "multi" : "single",
+          random_environment: false,
+          selection_intensity: 2.04,
+          module: "anova",
+          design_type: repValue ? "rcbd" : "crd",
+          treatment_column: genotypeValue,
+        });
+      } else if (analysisType === "variance_components") {
+        if (traitValues.length < 1) {
+          throw new Error("Please select at least one trait.");
+        }
+        result = await computeGeneticParameters({
+          dataset_token: (formData.get("dataset_token") as string | null) || null,
+          trait_columns: traitValues,
+        });
+      } else if (analysisType === "regression") {
+        const responseVar = ((formData.get("response_col") as string | null) || "").trim();
+        const predictors = ((formData.get("predictor_cols") as string | null) || "")
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean);
+        const datasetToken = ((formData.get("dataset_token") as string | null) || "").trim();
+
+        if (!datasetToken) {
+          throw new Error("Dataset token missing. Please re-upload the dataset.");
+        }
+        if (!responseVar || predictors.length < 1) {
+          throw new Error("Please provide one response variable and at least one predictor.");
+        }
+
+        const regression = await computeRegression({
+          dataset_token: datasetToken,
+          x_variable: predictors[0],
+          y_variable: responseVar,
+          model_type: "linear",
+        });
+        result = {
+          ...regression,
+          interpretation:
+            (regression.summary_interpretation as string | undefined) ||
+            (regression.plain_language_effect as string | undefined) ||
+            "Regression completed.",
+          requested_predictors: predictors,
+          executed_predictor: predictors[0],
+        };
+      } else if (analysisType === "correlations") {
+        if (!genotypeValue || traitValues.length < 2) {
+          throw new Error("Please provide genotype and at least two traits.");
+        }
+
+        result = await computeCorrelation({
+          base64_content: base64Content,
+          file_type: fileType,
+          genotype_column: genotypeValue,
+          environment_column: environmentValue,
+          rep_column: repValue,
+          trait_columns: traitValues,
+        });
+      } else {
+        throw new Error(`${analysisType} is not available in the current Railway backend.`);
       }
 
-      if (analysisType !== "correlations") {
-        throw new Error(`${analysisType} endpoint is not wired in this build yet.`);
-      }
-
-      if (!genotypeValue || traitValues.length < 2) {
-        throw new Error("Please provide genotype and at least two traits.");
-      }
-
-      const result = await computeCorrelation({
-        base64_content: base64Content,
-        file_type: fileType,
-        genotype_column: genotypeValue,
-        environment_column: environmentValue,
-        rep_column: repValue,
-        trait_columns: traitValues,
-      });
       setAnalysisState({
-        type: "genetics",
+        type: analysisType === "anova" ? "anova" : "genetics",
         analysisType,
         results: result,
       });
@@ -372,30 +343,33 @@ export default function VivaSenseWorkspace() {
               <ChevronRight className="h-3.5 w-3.5" />
               <span>Modules</span>
               <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-foreground">Experimental Design</span>
+              <span className="text-foreground">ANOVA</span>
             </nav>
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                  Design
+                  Analysis of Variance
                 </span>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Experimental Design</h1>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">ANOVA</h1>
                 <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                  Configure a randomized trial layout, compute required sample size, and export the plan.
+                  Upload a dataset, choose your experimental design, and analyse one or more
+                  response variables — ANOVA table, ranked means with Tukey groups, diagnostics,
+                  and interpretation per trait.
                 </p>
               </div>
             </div>
-            <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+            <div className="mt-8 space-y-6">
               {error && (
-                <Alert className="mb-6 bg-red-50 border-red-200">
+                <Alert className="bg-red-50 border-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600" />
                   <AlertDescription className="text-red-800">{error}</AlertDescription>
                 </Alert>
               )}
-              <VivaSenseForm
-                onSubmit={handleAnovaSubmit}
-                isLoading={isLoading}
+              <DatasetUpload
+                onDatasetReady={setDatasetContext}
+                datasetContext={datasetContext}
               />
+              <AnovaModulePanel datasetContext={datasetContext} />
             </div>
           </div>
         )}
@@ -485,10 +459,10 @@ export default function VivaSenseWorkspace() {
               </Button>
             </div>
             <div className="rounded-xl border border-border bg-card p-6 md:p-8">
-              {analysisState.isDescriptive ? (
-                <VivaSenseResultsDisplay result={analysisState.results} />
+              {analysisState.type === "anova" ? (
+                <AnovaUploadResults results={analysisState.results as UploadAnalysisResponse} />
               ) : (
-                <VivaSenseResults results={analysisState.results} userLevel="advanced" />
+                <VivaSenseResultsDisplay result={analysisState.results} />
               )}
             </div>
           </div>

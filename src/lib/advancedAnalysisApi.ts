@@ -3,8 +3,7 @@
  * Backend: unified Docker engine (GENETICS_API_BASE).
  */
 
-import { GENETICS_API_BASE } from "@/config/vivasense";
-import { getVivaSenseMode } from "@/lib/vivasenseGating";
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import type {
   StabilityRequest,
   StabilityResponse,
@@ -29,37 +28,16 @@ import type {
   SelectionIndexResponse,
 } from "@/types/advancedAnalysis";
 
-const BASE = GENETICS_API_BASE;
-
 async function postJson<TReq, TRes>(path: string, body: TReq, label: string): Promise<TRes> {
-  const url = `${BASE}${path}`;
+  const url = path;
   console.log(`[MODULE] ${label}`);
   console.log(`[REQUEST] ${label}`, url, body);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 120_000);
   try {
-    const res = await fetch(url, {
+    const parsed = await vivaSenseRequest<TRes>(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-VivaSense-Mode": getVivaSenseMode(),
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
+      jsonBody: body,
+      timeoutMs: 120000,
     });
-    if (!res.ok) {
-      const text = await res.text();
-      console.error(`[${label} ERROR]`, res.status, text);
-      let detail = `${label} failed (${res.status})`;
-      try {
-        const parsed = JSON.parse(text);
-        detail = parsed.detail || parsed.message || detail;
-      } catch {
-        /* ignore */
-      }
-      throw new Error(detail);
-    }
-    const parsed = (await res.json()) as TRes;
     if (label === "stability") {
       const response = { data: parsed };
       console.log("FULL STABILITY RESPONSE", response);
@@ -68,12 +46,10 @@ async function postJson<TReq, TRes>(path: string, body: TReq, label: string): Pr
     }
     return parsed;
   } catch (e) {
-    if ((e as Error).name === "AbortError") {
+    if ((e as Error).message?.includes("timed out")) {
       throw new Error(`${label} timed out. The backend may be cold-starting — please retry.`);
     }
     throw e;
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

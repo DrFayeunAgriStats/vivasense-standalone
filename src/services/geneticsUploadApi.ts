@@ -39,8 +39,7 @@ export interface UploadPreviewResponse {
   column_names: string[];
   warnings: string[];
   /** Dataset token registered at preview time using auto-detected columns.
-   *  Pass directly to /analysis/* endpoints. Superseded by a confirmed token
-   *  from POST /upload/dataset once the user confirms column mapping. */
+   *  Issued by POST /genetics/upload-preview; pass to stateful /analysis/* endpoints. */
   dataset_token?: string | null;
 }
 
@@ -394,8 +393,8 @@ export interface UploadDatasetContext {
   availableTraitColumns: string[];
   mode: "single" | "multi";
   /**
-   * Token from POST /upload/dataset. Required by all /analysis/* module endpoints.
-   * Null if dataset confirmation failed (module-based endpoints unavailable).
+   * Token issued by POST /genetics/upload-preview. Required by stateful
+   * /analysis/* module endpoints. Null if none was issued.
    */
   datasetToken: string | null;
   /** User-selected research domain — drives terminology throughout the UI and backend interpretation. */
@@ -407,63 +406,7 @@ export interface UploadDatasetContext {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATASET CONFIRMATION  (POST /upload/dataset)
-// Step B in the module-based pipeline: register the confirmed dataset in the
-// backend cache and receive a dataset_token for all /analysis/* endpoints.
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface ConfirmDatasetRequest {
-  base64_content: string;
-  file_type: "csv" | "xlsx" | "xls";
-  genotype_column: string | null;
-  rep_column: string | null;
-  environment_column?: string | null;
-  numeric_factor_columns?: string[];
-  mode: "single" | "multi";
-  design_type?: "crd" | "rcbd" | "factorial" | "factorial_rcbd" | "split_plot_rcbd";
-  random_environment?: boolean;
-  selection_intensity?: number;
-  research_domain?: "plant_breeding" | "agronomy" | "general";
-}
-
-export interface ConfirmDatasetResponse {
-  dataset_token: string;
-  n_genotypes: number | null;
-  n_reps: number;
-  n_environments: number | null;
-  n_rows: number;
-  column_names: string[];
-  mode: string;
-  design_type: string;
-}
-
-export async function confirmDataset(
-  request: ConfirmDatasetRequest
-): Promise<ConfirmDatasetResponse> {
-  const url = `${ENGINE_BASE}/upload/dataset`;
-  let response: Response;
-  try {
-    response = await requestWithResilience(url, {
-      method: "POST",
-      headers: buildModeHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(request),
-      timeoutMs: 60000,
-      retries: 0,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Network error confirming dataset: ${msg}`);
-  }
-  if (!response.ok) {
-    const detail = await extractErrorDetail(response);
-    throw new Error(`Dataset confirmation failed — ${detail}`);
-  }
-  return response.json() as Promise<ConfirmDatasetResponse>;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // DESCRIPTIVE STATISTICS  (POST /analysis/descriptive-stats)
-// Requires a valid dataset_token from POST /upload/dataset.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface TraitDescriptiveResult {
@@ -492,31 +435,6 @@ export interface DescriptiveStatsResponse {
   caution_traits: string[];
   global_flags: string[];
   recommendation: string;
-}
-
-export async function runDescriptiveStats(request: {
-  dataset_token: string;
-  trait_columns: string[];
-}): Promise<DescriptiveStatsResponse> {
-  const url = `${ENGINE_BASE}/analysis/descriptive-stats`;
-  let response: Response;
-  try {
-    response = await requestWithResilience(url, {
-      method: "POST",
-      headers: buildModeHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(request),
-      timeoutMs: 90000,
-      retries: 0,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Network error running descriptive stats: ${msg}`);
-  }
-  if (!response.ok) {
-    const detail = await extractErrorDetail(response);
-    throw new Error(`Descriptive statistics failed — ${detail}`);
-  }
-  return response.json() as Promise<DescriptiveStatsResponse>;
 }
 
 /**
@@ -593,54 +511,6 @@ export async function exportDescriptiveStats(currentData: DescriptiveStatsRespon
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ANOVA ANALYSIS  (POST /analysis/anova)
-// Requires a valid dataset_token from POST /upload/dataset.
-// Supports multi-trait analysis in a single request.
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface AnovaAnalysisRequest {
-  dataset_token: string;
-  trait_columns: string[];
-}
-
-export async function runAnovaAnalysis(request: AnovaAnalysisRequest): Promise<UploadAnalysisResponse> {
-  const url = `${ENGINE_BASE}/analysis/anova`;
-  console.log("[geneticsUploadApi] POST", url, "| traits:", request.trait_columns.length);
-
-  let response: Response;
-  try {
-    response = await requestWithResilience(url, {
-      method: "POST",
-      headers: buildModeHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(request),
-      timeoutMs: 180000,
-      retries: 0,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Network error running ANOVA analysis: ${msg}`);
-  }
-
-  if (!response.ok) {
-    const detail = await extractErrorDetail(response);
-    throw new Error(`ANOVA analysis failed — ${detail}`);
-  }
-
-  const data = (await response.json()) as UploadAnalysisResponse;
-
-  // Debug: log results per trait
-  for (const [trait, tr] of Object.entries(data.trait_results ?? {})) {
-    const result = tr.analysis_result?.result;
-    console.log(`[runAnovaAnalysis] trait="${trait}" status=${tr.status}`, {
-      has_anova_table: result?.anova_table != null,
-      has_mean_separation: result?.mean_separation != null,
-    });
-  }
-
-  return data;
 }
 
 /** Infer file_type from File.name */

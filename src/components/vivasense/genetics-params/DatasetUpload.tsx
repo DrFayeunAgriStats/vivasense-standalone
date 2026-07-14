@@ -69,6 +69,10 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         availableTraitColumns: preview.detected_columns.traits,
         mode,
         datasetToken: preview.dataset_token ?? null,
+        // All column names — lets design selectors (factorial / split-plot) offer
+        // every non-trait column as a candidate factor/plot role.
+        columns: preview.column_names,
+        availableColumns: preview.column_names,
       };
       onDatasetReady(ctx);
       toast({ title: "Dataset ready", description: "You can now run analysis in any module." });

@@ -2,20 +2,18 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, TrendingUp, Sigma, Compass, Network, GitBranch, Award, BarChart3 } from "lucide-react";
+import { ArrowLeft, TrendingUp, Sigma, Compass, Network, GitBranch, Award } from "lucide-react";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { StabilityPanel } from "./StabilityPanel";
 import { BlupPanel } from "./BlupPanel";
 import { PcaPanel } from "./PcaPanel";
 import { ClusterPanel } from "./ClusterPanel";
-import { NonparametricPanel } from "./NonparametricPanel";
-import { ManovaPanel } from "./ManovaPanel";
 import { PathAnalysisPanel } from "./PathAnalysisPanel";
 import { SelectionIndexPanel } from "./SelectionIndexPanel";
 
 export type AdvancedModuleId =
   | "stability" | "blup" | "pca" | "cluster"
-  | "nonparametric" | "manova" | "path-analysis" | "selection-index";
+  | "path-analysis" | "selection-index";
 
 interface Props {
   datasetContext: DatasetContext | null;
@@ -60,20 +58,6 @@ const MODULES: {
     badge: "Grouping",
   },
   {
-    id: "nonparametric",
-    title: "Non-Parametric Tests",
-    description: "Robust statistics (Kruskal–Wallis, Friedman, Dunn) for non-normal or ordinal data.",
-    icon: BarChart3,
-    badge: "Robust",
-  },
-  {
-    id: "manova",
-    title: "MANOVA",
-    description: "Multivariate testing across correlated traits with univariate follow-up and effect sizes.",
-    icon: Network,
-    badge: "Multivariate",
-  },
-  {
     id: "path-analysis",
     title: "Path Analysis",
     description: "Decompose trait correlations into direct and indirect effects with a clear path diagram.",
@@ -97,8 +81,6 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
       : active === "blup" ? BlupPanel
       : active === "pca" ? PcaPanel
       : active === "cluster" ? ClusterPanel
-      : active === "nonparametric" ? NonparametricPanel
-      : active === "manova" ? ManovaPanel
       : active === "path-analysis" ? PathAnalysisPanel
       : SelectionIndexPanel;
     return (

@@ -6,19 +6,16 @@
  *   POST /export/descriptive-stats-word   (optional)
  */
 
-import { GENETICS_API_BASE } from "@/config/vivasense";
-import { getVivaSenseMode } from "@/lib/vivasenseGating";
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import type {
   DescriptiveStatsRequest,
   DescriptiveStatsResponse,
 } from "@/types/descriptiveStats";
 
-const BASE = GENETICS_API_BASE;
-
 export async function computeDescriptiveStats(
   body: DescriptiveStatsRequest
 ): Promise<DescriptiveStatsResponse> {
-  const url = `${BASE}/analysis/descriptive-stats`;
+  const url = "/analysis/descriptive-stats";
   console.log("[MODULE] descriptive-stats");
   console.log("[REQUEST] descriptive-stats", url, {
     traits: body.trait_columns,
@@ -26,51 +23,21 @@ export async function computeDescriptiveStats(
     rep: body.rep_column,
     expected_rep: body.expected_replication,
   });
-  const res = await fetch(url, {
+  return vivaSenseRequest<DescriptiveStatsResponse>(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    jsonBody: body,
   });
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("[DESCRIPTIVE-STATS ERROR]", res.status, errorText);
-    let detail = `Descriptive stats failed (${res.status})`;
-    try {
-      const parsed = JSON.parse(errorText);
-      detail = parsed.detail || parsed.error || detail;
-    } catch {
-      /* keep default */
-    }
-    throw new Error(detail);
-  }
-  return res.json();
 }
 
 export async function exportDescriptiveStatsWord(
   payload: DescriptiveStatsRequest | { response: DescriptiveStatsResponse } | Record<string, unknown>
 ): Promise<Blob> {
-  const url = `${BASE}/export/descriptive-stats-word`;
+  const url = "/export/descriptive-stats-word";
   console.log("[MODULE] descriptive-stats");
   console.log("[REQUEST] export-descriptive-stats-word", url, payload);
-  const res = await fetch(url, {
+  return vivaSenseRequest<Blob>(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-VivaSense-Mode": getVivaSenseMode(),
-    },
-    body: JSON.stringify(payload),
+    jsonBody: payload,
+    responseType: "blob",
   });
-  if (!res.ok) {
-    const errorText = await res.text().catch(() => "");
-    console.error("[DESCRIPTIVE-STATS EXPORT ERROR]", res.status, errorText);
-    let detail = `Export failed (${res.status})`;
-    try {
-      const parsed = JSON.parse(errorText);
-      detail = parsed.detail || parsed.error || detail;
-    } catch {
-      /* keep default */
-    }
-    throw new Error(detail);
-  }
-  return res.blob();
 }

@@ -15,6 +15,10 @@ export interface DatasetContext {
   mode: "single" | "multi";
   /** Server-issued token from /genetics/upload-preview — required for stateful endpoints like /analysis/descriptive-stats */
   datasetToken?: string | null;
+  /** All column names from the uploaded file — used by design selectors (e.g. factorial / split-plot factor columns). */
+  columns?: string[];
+  /** Alias of `columns` for components that prefer this name. */
+  availableColumns?: string[];
 }
 
 // ── Upload preview ──────────────────────────────────────────────────────────

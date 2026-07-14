@@ -18,6 +18,7 @@ import {
 } from "@/components/vivasense/shared";
 
 export type GeneticsAnalysisType =
+  | "anova"
   | "variance_components"
   | "stability"
   | "ammi"
@@ -39,14 +40,10 @@ interface ColumnInfo {
 }
 
 const GENETICS_ANALYSIS_OPTIONS: { value: GeneticsAnalysisType; label: string; description: string }[] = [
+  { value: "anova", label: "ANOVA", description: "Fixed effects ANOVA table and significance tests" },
   { value: "variance_components", label: "Variance Components & Heritability", description: "σ²g, H², GA, GCV, PCV" },
-  { value: "stability", label: "Stability Analysis", description: "Eberhart-Russell, bi, S²di, ASV" },
-  { value: "ammi", label: "AMMI Analysis", description: "AMMI model + biplot" },
-  { value: "gge", label: "GGE Biplot", description: "Which-won-where analysis" },
   { value: "correlations", label: "Trait Correlations & Path Analysis", description: "Correlations, path coefficients, selection index" },
-  { value: "multivariate", label: "Multivariate Analysis", description: "PCA, clustering, dendrogram" },
-  { value: "molecular", label: "Molecular Marker Analysis", description: "Jaccard, Dice, diversity indices" },
-  { value: "regression", label: "Multiple Regression", description: "Stepwise regression, VIF, R²" },
+  { value: "regression", label: "Linear Regression", description: "Y on X with R², p-value, and interpretation" },
 ];
 
 const isNumericLike = (value: unknown) => {
@@ -239,9 +236,11 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   const isRegression = analysisType === "regression";
 
   // Which fields are needed per analysis type
-  const needsEnvironment = ["variance_components", "stability", "ammi", "gge"].includes(analysisType as string);
-  const needsBlock = ["variance_components", "stability", "ammi", "gge"].includes(analysisType as string);
-  const needsTraits = !isRegression && ["variance_components", "stability", "ammi", "gge", "correlations", "multivariate"].includes(analysisType as string);
+  const needsEnvironment = ["variance_components"].includes(analysisType as string);
+  const needsBlock = ["variance_components"].includes(analysisType as string);
+  const needsTraits = !isRegression && ["anova", "variance_components", "correlations"].includes(analysisType as string);
+  // ANOVA needs a treatment column (labelled "genotype" here) for the design-aware
+  // /genetics/analyze-upload path; the block/rep column is optional (RCBD vs CRD).
   const needsGenotype = analysisType !== "" && !isRegression;
 
   const isFormValid = useMemo(() => {
@@ -254,8 +253,6 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
     if (needsBlock && !block) return false;
     if (needsTraits && selectedTraits.length < 1) return false;
     if (analysisType === "correlations" && selectedTraits.length < 2) return false;
-    if (analysisType === "multivariate" && selectedTraits.length < 2) return false;
-    if (analysisType === "molecular" && !genotype) return false;
     return true;
   }, [file, datasetToken, analysisType, genotype, environment, block, selectedTraits, needsGenotype, needsEnvironment, needsTraits, isRegression, responseVar, selectedPredictors]);
 
@@ -447,6 +444,7 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                     {needsGenotype && renderColumnSelect("Genotype column", genotype, setGenotype, "gen_col")}
                     {needsEnvironment && renderColumnSelect("Environment / Location column", environment, setEnvironment, "env_col")}
                     {needsBlock && renderColumnSelect("Block / Rep column", block, setBlock, "block_col", true)}
+                    {analysisType === "anova" && renderColumnSelect("Block / Rep column (optional — RCBD)", block, setBlock, "block_col", false)}
 
                     {/* Regression: Response Variable + Predictor Variables */}
                     {isRegression && (
@@ -600,16 +598,6 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                             ))}
                           </div>
                         )}
-                      </div>
-                    )}
-
-                    {/* Molecular: just needs genotype column, markers are auto-detected */}
-                    {analysisType === "molecular" && (
-                      <div className="p-4 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Note:</strong> Marker columns (binary 0/1) will be auto-detected from your data.
-                          Ensure your file has a genotype column and marker loci as separate columns.
-                        </p>
                       </div>
                     )}
 

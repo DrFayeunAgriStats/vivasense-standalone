@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Download, Shuffle, MapPin, Info } from "lucide-react";
-import { API_BASE } from "@/services/apiConfig";
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import { getVivaSenseMode, subscribeVivaSenseMode, type VivaSenseMode } from "@/lib/vivasenseGating";
 
 type Design =
@@ -346,46 +346,11 @@ export function FieldLayoutGenerator() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/field-layout/generate`, {
+      const data = await vivaSenseRequest<Partial<FieldLayoutResult>>("/field-layout/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-VivaSense-Mode": isPro ? "pro" : "free",
-        },
-        body: JSON.stringify(buildPayload()),
+        jsonBody: buildPayload(),
+        headers: { "X-VivaSense-Mode": isPro ? "pro" : "free" },
       });
-
-      const raw = await response.text();
-      if (!raw.trim()) {
-        throw new Error("Server returned an empty response.");
-      }
-
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        throw new Error("Server returned malformed JSON.");
-      }
-
-      if (!response.ok) {
-        let detail = `Request failed (${response.status})`;
-        const data = parsed as { detail?: unknown };
-        if (typeof data?.detail === "string") {
-          detail = data.detail;
-        } else if (data?.detail && typeof data.detail === "object") {
-          const maybeMessage = (data.detail as { message?: unknown }).message;
-          const maybeIssues = (data.detail as { issues?: unknown }).issues;
-          if (typeof maybeMessage === "string") {
-            detail = maybeMessage;
-          }
-          if (Array.isArray(maybeIssues) && maybeIssues.length > 0) {
-            detail = `${detail}: ${maybeIssues.join("; ")}`;
-          }
-        }
-        throw new Error(detail);
-      }
-
-      const data = parsed as Partial<FieldLayoutResult>;
       if (!data || typeof data !== "object") {
         throw new Error("Unexpected response format from server.");
       }

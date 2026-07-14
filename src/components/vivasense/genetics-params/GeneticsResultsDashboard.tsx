@@ -32,6 +32,7 @@ import {
   Target,
 } from "lucide-react";
 import { toast } from "sonner";
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import type { GeneticsAnalysisResult } from "@/types/genetics";
 
 interface Props {
@@ -135,26 +136,11 @@ export function GeneticsResultsDashboard({ result }: Props) {
         mean_separation: result.mean_separation,
       };
 
-      const res = await fetch(
-        "https://vivasense-genetics-docker.onrender.com/genetics/download-results",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        let msg = text;
-        try {
-          const parsed = JSON.parse(text);
-          msg = parsed.detail || parsed.error || parsed.message || text;
-        } catch {}
-        throw new Error(msg);
-      }
-
-      const blob = await res.blob();
+      const blob = await vivaSenseRequest<Blob>("/genetics/download-results", {
+        method: "POST",
+        jsonBody: payload,
+        responseType: "blob",
+      });
       const date = new Date().toISOString().slice(0, 10);
       const safeTrait = traitName.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
       const filename = `VivaSense_Genetics_${safeTrait}_${date}.docx`;

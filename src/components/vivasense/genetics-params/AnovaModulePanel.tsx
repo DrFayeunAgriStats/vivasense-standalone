@@ -149,18 +149,31 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       console.log("[MODULE]", MODULE, "[DESIGN]", effectiveDesign);
       console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
 
-      // Direct call to /genetics/analyze-upload?module=anova — no two-step token workflow
+      // Direct call to /genetics/analyze-upload?module=anova — no two-step token workflow.
+      // Request structure mirrors the proven FIA AnovaModulePanel: design-specific
+      // column roles are sent so factorial and split-plot designs analyse correctly,
+      // not just RCBD/CRD.
       const request: UploadAnalysisRequest = {
         base64_content: datasetContext.base64Content,
         file_type: datasetContext.fileType,
+        // Legacy fields kept for backend back-compat.
         genotype_column: treatmentCol || datasetContext.genotypeColumn,
         rep_column: repColumn || datasetContext.repColumn,
         environment_column: datasetContext.environmentColumn ?? null,
         trait_columns: selectedTraits,
         mode: datasetContext.mode,
-        module: "anova",
-        design_type: effectiveDesign,
+        random_environment: false,
         selection_intensity: 2.04,
+        module: "anova",
+        // Design-aware fields — populated per design so the backend receives the
+        // correct treatment/factor/plot roles it validates and uses.
+        design_type: effectiveDesign,
+        treatment_column: design === "crd" || design === "rcbd" ? treatmentCol : undefined,
+        factor_a_column: isFactorialFamily ? factorA : undefined,
+        factor_b_column: isFactorialFamily ? factorB : undefined,
+        factor_c_column: isFactorialFamily && factorC && factorC !== "None" ? factorC : undefined,
+        main_plot_column: isSplitPlot ? mainPlot : undefined,
+        sub_plot_column: isSplitPlot ? subPlot : undefined,
       };
 
       const res = await analyzeUpload(request);

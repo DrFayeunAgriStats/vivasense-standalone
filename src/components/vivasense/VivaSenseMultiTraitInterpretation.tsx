@@ -8,7 +8,8 @@ import { downloadResultsAsText } from "@/lib/downloadResults";
 import ReactMarkdown from "react-markdown";
 import type { MultiTraitResultsData } from "./VivaSenseMultiTraitResults";
 
-import { GENETICS_API_BASE as BACKEND_BASE } from "@/config/vivasense";
+import { API_BASE } from "@/services/apiConfig";
+import { buildModeHeaders } from "@/services/featureMode";
 
 interface Props {
   designLabel: string;
@@ -50,9 +51,9 @@ async function fetchInterpretation(
   resultsPayload: Record<string, unknown>,
   signal?: AbortSignal
 ): Promise<InterpretationResult> {
-  const resp = await fetch(`${BACKEND_BASE}/api/interpret`, {
+  const resp = await fetch(`${API_BASE}/api/interpret`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildModeHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ analysis_type: analysisType, results: resultsPayload }),
     signal,
   });

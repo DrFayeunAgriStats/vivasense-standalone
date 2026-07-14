@@ -68,7 +68,7 @@ export function getVivaSenseMode(): VivaSenseMode {
     // localStorage may be unavailable (SSR, privacy mode) — fall through.
   }
 
-  return "free";
+  return TEMP_ALL_FEATURES_PERMITTED ? "pro" : "free";
 }
 
 /** Manually set the mode (e.g. from a debug toggle). */
