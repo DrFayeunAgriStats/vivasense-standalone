@@ -4,10 +4,11 @@
  * Supabase tables; no mock data. Owns navigation + data loading for its children.
  */
 import { useEffect, useMemo, useState } from "react";
-import { ClipboardList, AlertTriangle, RotateCw, ChevronRight, ArrowLeft } from "lucide-react";
+import { ClipboardList, AlertTriangle, RotateCw, ChevronRight, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
+import { StudySetupModal } from "./StudySetupModal";
 import {
   listStudiesWithProgress, listPlots, listTraitDefinitions,
 } from "@/services/dataCapture/dataCaptureService";
@@ -35,6 +36,7 @@ export function DataCapturePage() {
   const [traits, setTraits] = useState<TraitDefinition[]>([]);
   const [plotIndex, setPlotIndex] = useState(0);
   const [studyLoading, setStudyLoading] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -75,13 +77,21 @@ export function DataCapturePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 md:px-8">
-      <header className="mb-6 flex items-center gap-2">
-        <ClipboardList className="h-6 w-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Data Capture</h1>
-          <p className="text-sm text-muted-foreground">Collect experimental data in the field, ready for analysis.</p>
+      <header className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <ClipboardList className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Data Capture</h1>
+            <p className="text-sm text-muted-foreground">Collect experimental data in the field, ready for analysis.</p>
+          </div>
         </div>
+        {view === "studies" && status === "ready" && (
+          <Button size="sm" onClick={() => setSetupOpen(true)}><Plus className="mr-1.5 h-4 w-4" /> New study</Button>
+        )}
       </header>
+
+      <StudySetupModal isOpen={setupOpen} onClose={() => setSetupOpen(false)} onCreated={() => setReloadKey((k) => k + 1)} />
+
 
       {/* Breadcrumb */}
       {view !== "studies" && (
@@ -114,7 +124,8 @@ export function DataCapturePage() {
               <div className="py-12 text-center">
                 <ClipboardList className="mx-auto h-9 w-9 text-muted-foreground/40" />
                 <p className="mt-2 text-sm text-muted-foreground">No studies yet.</p>
-                <p className="text-xs text-muted-foreground/70">Create a study to start collecting field data.</p>
+                <p className="text-xs text-muted-foreground/70">Set up a study to start collecting field data.</p>
+                <Button size="sm" className="mt-4" onClick={() => setSetupOpen(true)}><Plus className="mr-1.5 h-4 w-4" /> Set up study</Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

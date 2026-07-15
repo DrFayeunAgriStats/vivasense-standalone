@@ -6,9 +6,10 @@
  * to the real tables defined in sql/data_capture.sql.
  */
 import { supabase } from "@/integrations/supabase/client";
+import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import type {
   TraitDefinition, Plot, Observation, PlotNote, PlotPhoto,
-  StudyWithProgress, PlotStatus, TraitValue,
+  StudyWithProgress, PlotStatus, TraitValue, TraitType,
 } from "@/types/dataCapture";
 
 const PHOTO_BUCKET = "plot-photos";
@@ -198,4 +199,105 @@ export async function getPhotoUrl(storagePath: string): Promise<string | null> {
   const { data, error } = await supabase.storage.from(PHOTO_BUCKET).createSignedUrl(storagePath, 3600);
   if (error) return null;
   return data?.signedUrl ?? null;
+}
+
+// ── Study setup / seeding (closes the loop: layout → plots → traits) ─────────
+
+export interface NewStudyInput {
+  title: string;
+  researcher: string | null;
+  location: string | null;
+  crop: string | null;
+  experimental_design: string; // 'crd' | 'rcbd'
+}
+
+export interface NewTraitInput {
+  name: string;
+  label: string;
+  trait_type: TraitType;
+  unit: string | null;
+  min_value: number | null;
+  max_value: number | null;
+  allow_negative: boolean;
+  required: boolean;
+  options: string[] | null;
+  position: number;
+}
+
+/** Create a study for data capture; returns its id. */
+export async function createStudyForCapture(input: NewStudyInput): Promise<string> {
+  const userId = await currentUserId();
+  if (!userId) throw new Error("Not authenticated.");
+  const row = {
+    user_id: userId,
+    title: input.title,
+    researcher: input.researcher,
+    location: input.location,
+    crop: input.crop,
+    experimental_design: input.experimental_design,
+    status: "active",
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await supabase.from("studies").insert(row as any).select("id").single();
+  if (error) throw error;
+  return (data as { id: string }).id;
+}
+
+/** Insert trait definitions for a study. */
+export async function insertTraitDefinitions(studyId: string, defs: NewTraitInput[]): Promise<void> {
+  if (defs.length === 0) return;
+  const rows = defs.map((d) => ({ ...d, study_id: studyId }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await supabase.from("trait_definitions").insert(rows as any);
+  if (error) throw error;
+}
+
+/**
+ * Generate a randomized layout via the EXISTING field-layout backend and persist
+ * its fieldbook as plot rows for the study. No new backend — reuses
+ * POST /field-layout/generate. Returns the number of plots created.
+ */
+export async function generateAndInsertPlots(
+  studyId: string,
+  design: string,
+  treatments: string[],
+  replications: number,
+): Promise<number> {
+  const payload = {
+    design_type: design,
+    treatments,
+    replications,
+    plot_width_m: 2,
+    plot_length_m: 3,
+    aisle_width_m: 0.5,
+    seed: Math.floor(Math.random() * 1_000_000),
+  };
+  const res = await vivaSenseRequest<{ fieldbook?: Record<string, unknown>[] }>("/field-layout/generate", {
+    method: "POST",
+    jsonBody: payload,
+    headers: { "X-VivaSense-Mode": "free" },
+  });
+  const fieldbook = Array.isArray(res.fieldbook) ? res.fieldbook : [];
+  if (fieldbook.length === 0) throw new Error("Field layout returned no plots.");
+
+  const num = (v: unknown): number | null => (v == null || v === "" ? null : Number(v));
+  const rows = fieldbook.map((fb) => {
+    const treatment = (fb.treatment ?? fb.treatment_combination ?? null) as string | null;
+    return {
+      study_id: studyId,
+      plot_number: num(fb.plot_id) ?? 0,
+      replication: num(fb.rep),
+      block: num(fb.block),
+      row_index: num(fb.row),
+      col_index: num(fb.column),
+      treatment,
+      genotype: treatment, // treatment == genotype in genotype trials (CRD/RCBD)
+      factors: fb.factor_a_level != null ? { factor_a: fb.factor_a_level, factor_b: fb.factor_b_level } : null,
+      status: "not_started",
+    };
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await supabase.from("plots").insert(rows as any);
+  if (error) throw error;
+  return rows.length;
 }
