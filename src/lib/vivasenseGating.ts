@@ -43,9 +43,12 @@ const isValidMode = (v: unknown): v is VivaSenseMode => v === "free" || v === "p
  * Resolve the current VivaSense mode.
  *
  * Precedence:
- *   1. ?mode=pro|free in the URL — persists to localStorage and wins.
- *   2. Existing localStorage value (preserved across refreshes).
- *   3. Default: "free".
+ *   1. ?mode=pro|free in the URL — persists to localStorage and wins (lets you
+ *      force "free" for testing even while the dev override is on).
+ *   2. Dev override: when TEMP_ALL_FEATURES_PERMITTED is on, "pro" — so a stale
+ *      cached "free" cannot defeat "all features permitted during development".
+ *   3. Existing localStorage value.
+ *   4. Default: "free".
  */
 export function getVivaSenseMode(): VivaSenseMode {
   if (typeof window === "undefined") return "free";
@@ -61,6 +64,10 @@ export function getVivaSenseMode(): VivaSenseMode {
       }
       return urlMode;
     }
+
+    // Development override wins over any stale localStorage value: the flag is
+    // documented as permitting all Pro features regardless of stored state.
+    if (TEMP_ALL_FEATURES_PERMITTED) return "pro";
 
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (isValidMode(stored)) return stored;
