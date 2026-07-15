@@ -17,10 +17,11 @@ import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsU
 import { recordAnalysis } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
+import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
-type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results";
+type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results" | "field-layout";
 type WorkspaceSection = "overview" | "anova" | "genetics" | "advanced";
 
 interface AnalysisState {
@@ -359,6 +360,15 @@ export default function VivaSenseWorkspace() {
                   icon={Sparkles}
                   onClick={() => handleModuleSelect("advanced")}
                 />
+
+                <AnalysisModuleCard
+                  title="Field Layout"
+                  description="Generate randomized field plans with plot maps and data-collection sheets."
+                  analyses={["CRD", "RCBD", "Latin square", "Alpha lattice"]}
+                  tone="text-amber-700 bg-amber-50"
+                  icon={LayoutGrid}
+                  onClick={() => { setError(null); setCurrentModule("field-layout"); }}
+                />
               </div>
             </section>
 
@@ -478,6 +488,31 @@ export default function VivaSenseWorkspace() {
               <AdvancedAnalysisDashboard
                 datasetContext={datasetContext}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Field Layout Screen */}
+        {currentModule === "field-layout" && (
+          <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+              <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>Modules</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground">Field Layout</span>
+            </nav>
+            <div className="mt-4">
+              <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                Experimental Design
+              </span>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Field Layout Generator</h1>
+              <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
+                Produce randomized plot maps, fieldbooks, and data-collection sheets for classic and Pro designs.
+              </p>
+            </div>
+            <div className="mt-8">
+              <FieldLayoutGenerator />
             </div>
           </div>
         )}
