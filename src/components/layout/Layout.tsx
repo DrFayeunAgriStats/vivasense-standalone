@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, Dna, Sparkles, Leaf } from "lucide-react";
+import { FlaskConical, Dna, Sparkles, Leaf, ClipboardList } from "lucide-react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -13,6 +13,7 @@ interface LayoutProps {
 
 const nav = [
   { to: "/workspace", label: "Research Workspace", icon: Leaf },
+  { to: "/data-capture", label: "Data Capture", icon: ClipboardList },
 ] as const;
 
 const modules = [
