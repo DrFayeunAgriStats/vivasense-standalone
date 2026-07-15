@@ -34,6 +34,20 @@ alter table public.studies add column if not exists experimental_design text; --
 
 create index if not exists studies_user_id_idx on public.studies (user_id);
 
+-- ── link analysis_history → studies (used by Study Management to count analyses
+--    per study; the deployed StudyService selects analysis_history.study_id) ──
+alter table public.analysis_history add column if not exists study_id uuid;
+do $link$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'analysis_history_study_id_fkey'
+  ) then
+    alter table public.analysis_history
+      add constraint analysis_history_study_id_fkey
+      foreign key (study_id) references public.studies(id) on delete set null;
+  end if;
+end $link$;
+
 -- ── trait_definitions (dynamic form metadata per study) ──────────────────────
 create table if not exists public.trait_definitions (
   id             uuid primary key default gen_random_uuid(),
