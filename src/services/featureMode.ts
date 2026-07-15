@@ -50,6 +50,12 @@ export function initializeVivaSenseMode(): VivaSenseMode {
 }
 
 export function getVivaSenseMode(): VivaSenseMode {
+  // Development override: while all features are permitted, always report "pro".
+  // guardProModule already bypasses gating under this flag, so the mode header
+  // sent to the backend (X-VivaSense-Mode) must match — otherwise a stored "free"
+  // (e.g. written by syncProAccessFromServer for users without a Pro record)
+  // sends free headers and Pro-gated endpoints return 403. One-line revert above.
+  if (TEMP_ALL_FEATURES_PERMITTED) return "pro";
   return initializeVivaSenseMode();
 }
 
