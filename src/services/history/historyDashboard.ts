@@ -24,6 +24,7 @@ export const ANALYSIS_TYPE_OPTIONS: { id: AnalysisTypeId; label: string }[] = [
   { id: "path_analysis", label: "Path Analysis" },
   { id: "selection_index", label: "Selection Index" },
   { id: "stability", label: "Stability" },
+  { id: "trait_association", label: "Trait Association" },
 ];
 
 export type DateRangeId = "all" | "today" | "7d" | "30d";

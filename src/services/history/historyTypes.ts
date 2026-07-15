@@ -17,7 +17,8 @@ export type AnalysisTypeId =
   | "blup"
   | "stability"
   | "path_analysis"
-  | "selection_index";
+  | "selection_index"
+  | "trait_association";
 
 /** A row as stored in / read from public.analysis_history. */
 export interface AnalysisHistoryRecord {

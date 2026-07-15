@@ -23,6 +23,7 @@ const TYPE_LABEL: Record<AnalysisTypeId, string> = {
   stability: "Stability",
   path_analysis: "Path Analysis",
   selection_index: "Selection Index",
+  trait_association: "Trait Association",
 };
 
 /** Human-readable label for an analysis type (falls back to the raw id). */

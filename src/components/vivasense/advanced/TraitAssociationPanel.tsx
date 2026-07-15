@@ -13,6 +13,7 @@ import {
 import { Loader2, Play, AlertTriangle, Link2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runTraitAssociation } from "@/lib/advancedAnalysisApi";
+import { recordAnalysis } from "@/services/history/historyService";
 import { CorrelationHeatmap } from "@/components/vivasense/genetics-params/CorrelationHeatmap";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { TraitAssociationResponse, TraitAnalysisUnit } from "@/types/traitAssociation";
@@ -51,6 +52,7 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
     setError(null);
     setResult(null);
     try {
+      const startedAt = performance.now();
       const res = await runTraitAssociation({
         dataset_token: datasetToken,
         trait_columns: traits,
@@ -61,6 +63,16 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
       });
       if (!res || !Array.isArray(res.trait_names)) throw new Error("Unexpected response from server.");
       setResult(res);
+      void recordAnalysis({
+        analysisType: "trait_association",
+        backendEndpoint: "/genetics/trait-association/analyze",
+        datasetName: datasetContext?.file?.name ?? null,
+        datasetToken,
+        traits,
+        startedAt,
+        parameters: { analysis_unit: analysisUnit, alpha: 0.05 },
+        response: res,
+      });
       toast({ title: "Trait association complete", description: `${res.trait_names.length} traits · ${res.n_observations} observations` });
     } catch (e) {
       const msg = (e as Error).message ?? "Unexpected error";
