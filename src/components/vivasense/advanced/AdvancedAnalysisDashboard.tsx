@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, TrendingUp, Sigma, Compass, Network, GitBranch, Award } from "lucide-react";
+import { ArrowLeft, TrendingUp, Sigma, Compass, Network, GitBranch, Award, Link2 } from "lucide-react";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { StabilityPanel } from "./StabilityPanel";
 import { BlupPanel } from "./BlupPanel";
@@ -10,10 +10,11 @@ import { PcaPanel } from "./PcaPanel";
 import { ClusterPanel } from "./ClusterPanel";
 import { PathAnalysisPanel } from "./PathAnalysisPanel";
 import { SelectionIndexPanel } from "./SelectionIndexPanel";
+import { TraitAssociationPanel } from "./TraitAssociationPanel";
 
 export type AdvancedModuleId =
   | "stability" | "blup" | "pca" | "cluster"
-  | "path-analysis" | "selection-index";
+  | "path-analysis" | "selection-index" | "trait-association";
 
 interface Props {
   datasetContext: DatasetContext | null;
@@ -71,6 +72,13 @@ const MODULES: {
     icon: Award,
     badge: "Breeding",
   },
+  {
+    id: "trait-association",
+    title: "Trait Association",
+    description: "Correlation and significance matrix across traits with strongest-pair and data-quality flags.",
+    icon: Link2,
+    badge: "Association",
+  },
 ];
 
 export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null, embedded = false }: Props) {
@@ -82,6 +90,7 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
       : active === "pca" ? PcaPanel
       : active === "cluster" ? ClusterPanel
       : active === "path-analysis" ? PathAnalysisPanel
+      : active === "trait-association" ? TraitAssociationPanel
       : SelectionIndexPanel;
     return (
       <div className="space-y-4">

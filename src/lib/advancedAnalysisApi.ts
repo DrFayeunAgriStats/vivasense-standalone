@@ -27,6 +27,10 @@ import type {
   SelectionIndexRequest,
   SelectionIndexResponse,
 } from "@/types/advancedAnalysis";
+import type {
+  TraitAssociationRequest,
+  TraitAssociationResponse,
+} from "@/types/traitAssociation";
 
 async function postJson<TReq, TRes>(path: string, body: TReq, label: string): Promise<TRes> {
   const url = path;
@@ -214,3 +218,8 @@ export const runPathAnalysis = (req: PathAnalysisRequest) =>
 
 export const runSelectionIndex = (req: SelectionIndexRequest) =>
   postJson<SelectionIndexRequest, SelectionIndexResponse>("/analysis/selection-index", req, "selection-index");
+
+export const runTraitAssociation = (req: TraitAssociationRequest) =>
+  postJson<TraitAssociationRequest, TraitAssociationResponse>(
+    "/genetics/trait-association/analyze", req, "trait-association",
+  );
