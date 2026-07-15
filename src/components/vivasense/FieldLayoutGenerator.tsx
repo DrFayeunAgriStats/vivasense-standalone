@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Download, Shuffle, MapPin, Info } from "lucide-react";
+import { Download, Shuffle, MapPin, Info, FileSpreadsheet } from "lucide-react";
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import { getVivaSenseMode, subscribeVivaSenseMode, type VivaSenseMode } from "@/lib/vivasenseGating";
+import { downloadFieldBook } from "@/lib/fieldBookExport";
 
 type Design =
   | "crd"
@@ -105,6 +106,7 @@ export function FieldLayoutGenerator() {
   const [plotLength, setPlotLength] = useState(3);
   const [aisleWidth, setAisleWidth] = useState(0.5);
   const [seed, setSeed] = useState(42);
+  const [fieldBookTraits, setFieldBookTraits] = useState("Trait 1, Trait 2, Trait 3");
 
   const [nTreatments, setNTreatments] = useState(4);
   const [mainTreatments, setMainTreatments] = useState("M1, M2, M3");
@@ -419,6 +421,18 @@ export function FieldLayoutGenerator() {
     img.src = `data:image/svg+xml;base64,${svg64}`;
   };
 
+  const downloadFieldBookXlsx = () => {
+    if (!result) return;
+    const traitColumns = fieldBookTraits.split(",").map((t) => t.trim()).filter(Boolean);
+    const stamp = new Date().toISOString().slice(0, 10);
+    const safeSeed = String(seed).replace(/[^a-zA-Z0-9]/g, "");
+    downloadFieldBook(
+      result.fieldbook,
+      { design, factorAName, factorBName, traitColumns },
+      `VivaSense_FieldBook_${design}_Seed${safeSeed}_${stamp}.xlsx`,
+    );
+  };
+
   const downloadCsv = () => {
     if (!result || !layout) return;
 
@@ -719,6 +733,22 @@ export function FieldLayoutGenerator() {
             </Alert>
           )}
 
+          {layout && (
+            <div className="max-w-md">
+              <Label htmlFor="fbTraits">Field Book trait columns</Label>
+              <Input
+                id="fbTraits"
+                value={fieldBookTraits}
+                onChange={(e) => setFieldBookTraits(e.target.value)}
+                placeholder="Trait 1, Trait 2, Trait 3"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Comma-separated. Added as empty columns in the Excel field book for data entry.
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={generate}
@@ -732,6 +762,13 @@ export function FieldLayoutGenerator() {
               <>
                 <Button variant="outline" onClick={downloadPng}>
                   <Download className="h-4 w-4 mr-1.5" /> Export PNG
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={downloadFieldBookXlsx}
+                  className="border-primary text-primary hover:bg-primary/5"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Download Field Book (Excel)
                 </Button>
                 <Button
                   variant="outline"
