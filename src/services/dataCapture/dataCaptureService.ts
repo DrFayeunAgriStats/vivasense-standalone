@@ -257,6 +257,74 @@ export async function insertTraitDefinitions(studyId: string, defs: NewTraitInpu
  * its fieldbook as plot rows for the study. No new backend — reuses
  * POST /field-layout/generate. Returns the number of plots created.
  */
+// ── Validation + analysis handoff ─────────────────────────────────────────────
+
+export interface OutOfRangeFlag { plot: number; trait: string; value: number; }
+
+/** Collected data pivoted for analysis, plus validation summary. */
+export interface CollectedDataset {
+  headers: string[];                    // Genotype, Replication, Block, ...trait labels
+  rows: (string | number | boolean | null)[][];
+  totalPlots: number;
+  completedPlots: number;
+  incompletePlots: number[];            // plot_numbers not marked completed
+  outOfRange: OutOfRangeFlag[];         // numeric values outside a trait's min/max
+}
+
+const VALUE_TRAIT_TYPES = new Set(["numeric", "integer", "decimal", "dropdown", "text", "boolean", "date"]);
+
+/** All observations across a study (for the analysis pivot). */
+async function listStudyObservations(studyId: string): Promise<Observation[]> {
+  const { data, error } = await supabase.from("observations").select("*").eq("study_id", studyId);
+  if (error) throw error;
+  return (data ?? []) as unknown as Observation[];
+}
+
+/**
+ * Fetch a study's plots, traits and observations and pivot them into an
+ * analysis-ready matrix (one row per plot: Genotype, Replication, Block, then a
+ * column per trait), while flagging incomplete plots and out-of-range values.
+ * Header layout matches what VivaSense's upload auto-detects, so the export
+ * feeds straight into the existing analysis engine.
+ */
+export async function buildCollectedDataset(studyId: string): Promise<CollectedDataset> {
+  const [plots, traits, observations] = await Promise.all([
+    listPlots(studyId), listTraitDefinitions(studyId), listStudyObservations(studyId),
+  ]);
+  const valueTraits = traits.filter((t) => VALUE_TRAIT_TYPES.has(t.trait_type));
+
+  const byPlot = new Map<string, Map<string, TraitValue>>();
+  for (const o of observations) {
+    const m = byPlot.get(o.plot_id) ?? new Map<string, TraitValue>();
+    m.set(o.trait_id, o.value);
+    byPlot.set(o.plot_id, m);
+  }
+
+  const headers = ["Genotype", "Replication", "Block", ...valueTraits.map((t) => t.label)];
+  const rows: (string | number | boolean | null)[][] = [];
+  const outOfRange: OutOfRangeFlag[] = [];
+  const incompletePlots: number[] = [];
+  let completed = 0;
+
+  for (const p of plots) {
+    if (p.status === "completed") completed += 1; else incompletePlots.push(p.plot_number);
+    const vals = byPlot.get(p.id);
+    const traitCells = valueTraits.map((t) => {
+      const v = vals?.get(t.id) ?? null;
+      const isNum = t.trait_type === "numeric" || t.trait_type === "integer" || t.trait_type === "decimal";
+      if (typeof v === "number" && isNum) {
+        if ((t.min_value != null && v < t.min_value) || (t.max_value != null && v > t.max_value)) {
+          outOfRange.push({ plot: p.plot_number, trait: t.label, value: v });
+        }
+      }
+      return v;
+    });
+    rows.push([p.genotype ?? p.treatment ?? `P${p.plot_number}`, p.replication, p.block, ...traitCells]);
+  }
+
+  return { headers, rows, totalPlots: plots.length, completedPlots: completed, incompletePlots, outOfRange };
+}
+
 export async function generateAndInsertPlots(
   studyId: string,
   design: string,

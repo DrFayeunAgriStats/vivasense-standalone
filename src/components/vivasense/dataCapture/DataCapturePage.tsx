@@ -16,8 +16,9 @@ import type { Plot, TraitDefinition, StudyWithProgress } from "@/types/dataCaptu
 import { StudyCaptureCard } from "./StudyCaptureCard";
 import { FieldbookView } from "./FieldbookView";
 import { PlotEntryPanel } from "./PlotEntryPanel";
+import { StudyReview } from "./StudyReview";
 
-type View = "studies" | "fieldbook" | "plot";
+type View = "studies" | "fieldbook" | "plot" | "review";
 type Status = "loading" | "error" | "ready" | "signedout";
 
 export function DataCapturePage() {
@@ -99,6 +100,7 @@ export function DataCapturePage() {
           <button onClick={() => { setView("studies"); setStudy(null); }} className="hover:text-foreground">Studies</button>
           {study && (<><ChevronRight className="h-3.5 w-3.5" /><button onClick={() => setView("fieldbook")} className="hover:text-foreground max-w-[40vw] truncate">{study.title}</button></>)}
           {view === "plot" && currentPlot && (<><ChevronRight className="h-3.5 w-3.5" /><span className="text-foreground">Plot #{currentPlot.plot_number}</span></>)}
+          {view === "review" && (<><ChevronRight className="h-3.5 w-3.5" /><span className="text-foreground">Review &amp; Analyze</span></>)}
         </nav>
       )}
 
@@ -144,8 +146,18 @@ export function DataCapturePage() {
             <Skeleton className="h-64 rounded-xl" />
           </div>
         ) : (
-          <FieldbookView plots={plots} currentUserId={currentUserId} onOpenPlot={openPlot} />
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setView("review")}>Validate &amp; Analyze</Button>
+            </div>
+            <FieldbookView plots={plots} currentUserId={currentUserId} onOpenPlot={openPlot} />
+          </div>
         )
+      )}
+
+      {/* Review / analysis view */}
+      {view === "review" && study && (
+        <StudyReview studyId={study.id} studyTitle={study.title} />
       )}
 
       {/* Plot entry view */}
