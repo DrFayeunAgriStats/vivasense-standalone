@@ -92,6 +92,10 @@ export function AnalysisHistoryList({ previewRecords }: Props = {}) {
   const isFiltered =
     filters.type !== "all" || filters.dateRange !== "all" || filters.search.trim() !== "";
 
+  const uniqueDatasetCount = useMemo(
+    () => new Set(records.map((r) => r.dataset_name).filter(Boolean)).size,
+    [records],
+  );
   const filtered = useMemo(() => filterRecords(records, filters), [records, filters]);
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const groups = useMemo(() => groupRecords(visible), [visible]);
@@ -105,9 +109,16 @@ export function AnalysisHistoryList({ previewRecords }: Props = {}) {
   return (
     <section className="rounded-xl border border-border bg-card/40 p-5 sm:p-6">
       <header className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <HistoryIcon className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-semibold text-foreground">Research Dashboard</h2>
+        <div className="flex items-start gap-2">
+          <HistoryIcon className="mt-0.5 h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-base font-semibold text-foreground">Research Dashboard</h2>
+            {status === "ready" && records.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Showing {records.length} {records.length === 1 ? "analysis" : "analyses"} across {uniqueDatasetCount} {uniqueDatasetCount === 1 ? "dataset" : "datasets"}
+              </p>
+            )}
+          </div>
         </div>
         {status === "ready" && records.length > 0 && (
           <Button

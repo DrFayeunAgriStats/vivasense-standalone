@@ -21,6 +21,21 @@ interface Props {
   onViewDetails: (record: AnalysisHistoryRecord) => void;
 }
 
+/** Small colour accent per analysis type for quick visual scanning. */
+const TYPE_COLORS: Record<string, string> = {
+  anova: "bg-primary/10 text-primary",
+  correlation: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  genetic_parameters: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  regression: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  pca: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  cluster: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  blup: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+  stability: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  path_analysis: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  selection_index: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+  trait_association: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
+};
+
 function Meta({ icon: Icon, children }: { icon: typeof Clock; children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -41,7 +56,7 @@ export function AnalysisHistoryCard({ record: r, onViewDetails }: Props) {
             {r.analysis_title || analysisLabel(r.analysis_type)}
           </h3>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            <Badge variant="secondary" className="text-[11px]">
+            <Badge className={`border-transparent text-[11px] ${TYPE_COLORS[r.analysis_type] ?? "bg-secondary text-secondary-foreground"}`}>
               {analysisLabel(r.analysis_type)}
             </Badge>
             {r.design_type && (

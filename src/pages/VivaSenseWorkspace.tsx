@@ -1,7 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
-import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, Plus, ChevronRight } from "lucide-react";
+import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
@@ -18,6 +19,8 @@ import { recordAnalysis } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
+import { WorkspaceOverviewHeader } from "@/components/vivasense/workspace/WorkspaceOverviewHeader";
+import type { WorkspaceAction } from "@/lib/workspace/workflowState";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
 
@@ -38,6 +41,7 @@ interface AnalysisModuleCardProps {
   tone: string;
   icon: React.ComponentType<{ className?: string }>;
   onClick: () => void;
+  footer?: string;
 }
 
 function AnalysisModuleCard({
@@ -47,6 +51,7 @@ function AnalysisModuleCard({
   tone,
   icon: Icon,
   onClick,
+  footer,
 }: AnalysisModuleCardProps) {
   return (
     <button
@@ -76,8 +81,12 @@ function AnalysisModuleCard({
         ))}
       </div>
 
-      <div className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
-        Start Analysis
+      {footer && (
+        <p className="mt-3 border-t border-border/60 pt-2.5 text-[11px] text-muted-foreground/80">{footer}</p>
+      )}
+
+      <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
+        Open
         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </div>
     </button>
@@ -86,6 +95,7 @@ function AnalysisModuleCard({
 
 export default function VivaSenseWorkspace() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState(getVivaSenseMode());
   const [currentModule, setCurrentModule] = useState<ModuleType>("selection");
   const [activeSection, setActiveSection] = useState<WorkspaceSection>("overview");
@@ -119,6 +129,28 @@ export default function VivaSenseWorkspace() {
     setError(null);
     setActiveSection(module);
     setCurrentModule(module);
+  };
+
+  const handleWorkspaceAction = (action: WorkspaceAction) => {
+    switch (action) {
+      case "create-study":
+      case "data-capture":
+        navigate("/data-capture");
+        break;
+      case "start-analysis":
+        handleModuleSelect("anova");
+        break;
+      case "advanced":
+        handleModuleSelect("advanced");
+        break;
+      case "field-layout":
+        setError(null);
+        setCurrentModule("field-layout");
+        break;
+      case "dashboard":
+        document.getElementById("research-dashboard")?.scrollIntoView({ behavior: "smooth" });
+        break;
+    }
   };
 
   // ANOVA now runs through the proven /genetics/analyze-upload flow rendered by
@@ -303,29 +335,7 @@ export default function VivaSenseWorkspace() {
       <div className="bg-background flex-1">
         {currentModule === "selection" && (
           <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
-            <section>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                  Research Workspace
-                </p>
-                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground md:text-[38px] md:leading-[1.15]">
-                  Welcome to VivaSense
-                </h1>
-                <p className="mt-2 text-lg text-muted-foreground">
-                  Professional statistical analysis for agricultural research.
-                </p>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  Choose an analysis module below to begin. Each workflow guides you from dataset upload through model configuration to publication-ready results.
-                </p>
-                <div className="mt-6">
-                  <button
-                    onClick={() => handleModuleSelect("anova")}
-                    className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:brightness-110"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Start New Analysis
-                  </button>
-                </div>
-            </section>
+            <WorkspaceOverviewHeader onAction={handleWorkspaceAction} />
 
             <section className="mt-14">
               <div className="mb-5 flex items-baseline justify-between">
@@ -336,38 +346,42 @@ export default function VivaSenseWorkspace() {
               <div className="grid gap-4 md:grid-cols-3">
                 <AnalysisModuleCard
                   title="Experimental Design"
-                  description="Plan randomized trials with power analysis, replication, and layout generation."
-                  analyses={["RCBD", "Split-plot", "Factorial", "Latin square"]}
+                  description="Analyse randomized trials with treatment effects and mean separation."
+                  analyses={["ANOVA", "RCBD", "Factorial", "Split-plot"]}
                   tone="text-primary bg-primary-soft"
                   icon={FlaskConical}
                   onClick={() => handleModuleSelect("anova")}
+                  footer="Includes descriptive statistics."
                 />
 
                 <AnalysisModuleCard
                   title="Genetics & Breeding"
-                  description="Estimate breeding values, heritability, and marker–trait associations."
-                  analyses={["BLUP", "Heritability", "GWAS", "Selection index"]}
+                  description="Estimate genetic parameters and quantify trait correlations."
+                  analyses={["Correlation", "Regression", "Genetic parameters"]}
                   tone="text-sky-700 bg-sky-50"
                   icon={Dna}
                   onClick={() => handleModuleSelect("genetics")}
+                  footer="Heritability and trait relationships."
                 />
 
                 <AnalysisModuleCard
                   title="Advanced Analytics"
-                  description="Fit mixed models and multivariate methods with AI-assisted interpretation."
-                  analyses={["Mixed models", "PCA", "AMMI", "GGE biplot"]}
+                  description="Multivariate and mixed-model methods for breeding decisions."
+                  analyses={["PCA", "Cluster", "BLUP", "Stability", "Trait association"]}
                   tone="text-violet-700 bg-violet-50"
                   icon={Sparkles}
                   onClick={() => handleModuleSelect("advanced")}
+                  footer="Best used after ANOVA."
                 />
 
                 <AnalysisModuleCard
                   title="Field Layout"
-                  description="Generate randomized field plans with plot maps and data-collection sheets."
-                  analyses={["CRD", "RCBD", "Latin square", "Alpha lattice"]}
+                  description="Generate randomized field plans with plot maps and field books."
+                  analyses={["CRD", "RCBD", "Split-plot", "Alpha lattice"]}
                   tone="text-amber-700 bg-amber-50"
                   icon={LayoutGrid}
                   onClick={() => { setError(null); setCurrentModule("field-layout"); }}
+                  footer="Exports Excel field books for data collection."
                 />
               </div>
             </section>
@@ -376,7 +390,7 @@ export default function VivaSenseWorkspace() {
               <StudyGrid />
             </section>
 
-            <section className="mt-2">
+            <section className="mt-2" id="research-dashboard">
               <AnalysisHistoryList />
             </section>
           </div>
