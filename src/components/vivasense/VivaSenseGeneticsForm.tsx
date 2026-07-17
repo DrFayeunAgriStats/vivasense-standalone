@@ -237,7 +237,10 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
 
   // Which fields are needed per analysis type
   const needsEnvironment = ["variance_components"].includes(analysisType as string);
-  const needsBlock = ["variance_components"].includes(analysisType as string);
+  // Correlation requires a replication column: the backend's /genetics/correlation
+  // returns 500 (surfacing as a CORS error, since error responses omit CORS headers)
+  // when rep_column is empty, so collect and require it here.
+  const needsBlock = ["variance_components", "correlations"].includes(analysisType as string);
   const needsTraits = !isRegression && ["anova", "variance_components", "correlations"].includes(analysisType as string);
   // ANOVA needs a treatment column (labelled "genotype" here) for the design-aware
   // /genetics/analyze-upload path; the block/rep column is optional (RCBD vs CRD).

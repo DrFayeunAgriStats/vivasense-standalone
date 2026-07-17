@@ -561,7 +561,7 @@ export function FieldLayoutGenerator() {
               >
                 <span role="img" aria-label="locked">🔒</span> <strong>Pro feature.</strong> Upgrade to VivaSense Pro to access
                 Latin square, split plot, factorial, lattice and alpha lattice designs.{" "}
-                <a href="/pricing" style={{ color: "#854F0B", fontWeight: 600 }}>
+                <a href="https://fieldtoinsightacademy.com.ng" target="_blank" rel="noopener noreferrer" style={{ color: "#854F0B", fontWeight: 600 }}>
                   Upgrade -&gt;
                 </a>
               </div>

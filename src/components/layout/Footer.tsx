@@ -36,7 +36,7 @@ export function Footer({ variant = "minimal-vivasense" }: FooterProps) {
                 Built and maintained as long-term academic research infrastructure.
               </p>
               <p className="text-xs text-primary-foreground/70 mt-3">
-                For institutional licensing inquiries, please <Link to="/contact" className="underline hover:text-primary-foreground">contact us</Link>.
+                For institutional licensing inquiries, please <a href="https://fieldtoinsightacademy.com.ng" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary-foreground">contact us</a>.
               </p>
             </div>
 

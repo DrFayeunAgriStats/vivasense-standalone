@@ -17,13 +17,15 @@ const nav = [
 ] as const;
 
 const modules = [
-  { to: "/modules/experimental-design", label: "Experimental Design", icon: FlaskConical },
-  { to: "/modules/genetics-breeding", label: "Genetics & Breeding", icon: Dna },
-  { to: "/modules/advanced-analytics", label: "Advanced Analytics", icon: Sparkles },
+  { module: "anova", label: "Experimental Design", icon: FlaskConical },
+  { module: "genetics", label: "Genetics & Breeding", icon: Dna },
+  { module: "advanced", label: "Advanced Analytics", icon: Sparkles },
 ] as const;
 
 export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
-  const pathname = useLocation().pathname;
+  const location = useLocation();
+  const pathname = location.pathname;
+  const activeModule = new URLSearchParams(location.search).get("module");
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -62,12 +64,12 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
             </p>
             <nav className="flex flex-col gap-0.5">
               {modules.map((item) => {
-                const active = pathname.startsWith(item.to.split("/").slice(0, 3).join("/"));
+                const active = pathname === "/workspace" && activeModule === item.module;
                 const Icon = item.icon;
                 return (
                   <Link
-                    key={item.to}
-                    to={item.to}
+                    key={item.module}
+                    to={`/workspace?module=${item.module}`}
                     className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"

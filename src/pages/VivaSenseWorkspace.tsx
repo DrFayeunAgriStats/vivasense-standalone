@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,18 @@ function AnalysisModuleCard({
 export default function VivaSenseWorkspace() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Open a module directly when linked from the sidebar (e.g. /workspace?module=genetics).
+  useEffect(() => {
+    const m = new URLSearchParams(location.search).get("module");
+    if (m === "anova" || m === "genetics" || m === "advanced") {
+      setError(null);
+      setActiveSection(m);
+      setCurrentModule(m);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
   const [mode, setMode] = useState(getVivaSenseMode());
   const [currentModule, setCurrentModule] = useState<ModuleType>("selection");
   const [activeSection, setActiveSection] = useState<WorkspaceSection>("overview");
