@@ -60,6 +60,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  // Assumption-driven transformation: which branch feeds the report. Defaults to
+  // "transformed" so a flagged violation is not silently ignored; "raw" keeps the
+  // untransformed results (report then prints the caution disclosure).
+  const [transformChoice, setTransformChoice] = useState<"transformed" | "raw">("transformed");
+  const [showTransformWhy, setShowTransformWhy] = useState(false);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
   const allColumns = useMemo(() => {
@@ -233,6 +238,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             })
         ),
         failed_traits: results.failed_traits,
+        transformation_choice: transformChoice,
       };
 
       const blob = await downloadReport(MODULE, payload);
@@ -404,6 +410,74 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {(() => {
+            type TA = {
+              triggered?: boolean; recommended_transform?: string; formula_used?: string;
+              rationale?: string; disclosure_text?: string;
+            };
+            const triggered = Object.entries(results.trait_results)
+              .map(([trait, tr]) => ({
+                trait,
+                ta: (tr.analysis_result?.result as { transformation_analysis?: TA } | undefined)
+                  ?.transformation_analysis,
+              }))
+              .filter((x): x is { trait: string; ta: TA } => !!x.ta && !!x.ta.triggered);
+            if (triggered.length === 0) return null;
+            const first = triggered[0].ta;
+            const tName = String(first.recommended_transform ?? "").replace(/_/g, " ");
+            return (
+              <Card className="border-blue-300 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/20">
+                <CardContent className="py-4 px-5 space-y-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="font-semibold text-blue-900 dark:text-blue-200">
+                        Your data may benefit from a {tName} transformation
+                      </p>
+                      <p className="text-sm text-blue-800 dark:text-blue-300">
+                        Residual assumptions were violated for{" "}
+                        {triggered.length === 1 ? triggered[0].trait : `${triggered.length} response variables`}.
+                        {" "}A {tName} transform ({first.formula_used}) restored them.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant={transformChoice === "transformed" ? "default" : "outline"}
+                      onClick={() => setTransformChoice("transformed")}>
+                      Use transformed results
+                    </Button>
+                    <Button size="sm" variant={transformChoice === "raw" ? "default" : "outline"}
+                      onClick={() => setTransformChoice("raw")}>
+                      Keep raw results
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowTransformWhy((v) => !v)}>
+                      {showTransformWhy ? "Hide details" : "Why?"}
+                    </Button>
+                  </div>
+                  {showTransformWhy && (
+                    <div className="text-xs text-blue-900/90 dark:text-blue-200/90 space-y-2 border-t border-blue-200 dark:border-blue-800 pt-2">
+                      {triggered.map(({ trait, ta }) => (
+                        <div key={trait}>
+                          <span className="font-medium">{trait}:</span> {ta.rationale} {ta.disclosure_text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-blue-700/80 dark:text-blue-300/70">
+                    The report will use the{" "}
+                    <span className="font-medium">
+                      {transformChoice === "transformed" ? "transformed" : "raw (untransformed)"}
+                    </span>{" "}
+                    results.{" "}
+                    {transformChoice === "raw"
+                      ? "A caution note will be included because assumptions were flagged."
+                      : "Raw results remain available."}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {isSplitPlot && (
             <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/10">
