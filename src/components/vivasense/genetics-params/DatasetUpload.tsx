@@ -55,7 +55,9 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   };
 
   const handleConfirmMapping = async () => {
-    if (!file || !preview || !genotypeCol || !repCol) return;
+    // repCol is optional: CRD (completely randomized) datasets have no replication
+    // column. The backend infers CRD when rep_column is empty/null.
+    if (!file || !preview || !genotypeCol) return;
     try {
       const base64 = await fileToBase64(file);
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "csv";
@@ -169,9 +171,10 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Rep Column</Label>
-                <Select value={repCol} onValueChange={setRepCol}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                <Select value={repCol || "__none__"} onValueChange={(v) => setRepCol(v === "__none__" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="None (CRD)" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">None (CRD — no blocking)</SelectItem>
                     {preview.column_names.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -225,7 +228,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
 
             <Button
               onClick={handleConfirmMapping}
-              disabled={!genotypeCol || !repCol}
+              disabled={!genotypeCol}
               className="gap-2"
             >
               <CheckCircle2 className="h-4 w-4" />
