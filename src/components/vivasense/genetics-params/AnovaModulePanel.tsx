@@ -53,7 +53,6 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [factorA, setFactorA] = useState<string>("");
   const [factorB, setFactorB] = useState<string>("");
   const [factorC, setFactorC] = useState<string>("");
-  const [includeRepFactorial, setIncludeRepFactorial] = useState(false);
   const [mainPlot, setMainPlot] = useState<string>("");
   const [subPlot, setSubPlot] = useState<string>("");
 
@@ -123,7 +122,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       if (factorC && factorC !== "None" && (factorC === factorA || factorC === factorB)) {
         return "Factor C must be different from Factors A and B.";
       }
-      if (includeRepFactorial && !repColumn) return "Replication column required when blocking is enabled.";
+      // Factorial designs need replication to estimate the error term; without a
+      // rep column the model is over-parameterised (backend R error: aliased coefficients).
+      if (!repColumn) return "Select a Replication / Block column (required for the factorial error term).";
+      if (repColumn === factorA || repColumn === factorB) return "Replication must differ from the factor columns.";
     }
     if (design === "split_plot_rcbd") {
       if (!repColumn) return "Select a Replication / Block column.";
@@ -144,8 +146,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setIsAnalyzing(true);
     setResults(null);
     try {
-      const effectiveDesign: AnovaDesignType =
-        design === "factorial" && includeRepFactorial ? "factorial_rcbd" : design;
+      // "factorial" already includes replications as blocks (rep is a model source);
+      // the separate "factorial_rcbd" path is not used (it errors on the backend).
+      const effectiveDesign: AnovaDesignType = design;
 
       console.log("[MODULE]", MODULE, "[DESIGN]", effectiveDesign);
       console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
@@ -210,7 +213,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     try {
       const payload = {
         analysis_type: MODULE,
-        design_type: design === "factorial" && includeRepFactorial ? "factorial_rcbd" : design,
+        design_type: design,
         dataset_summary: results.dataset_summary,
         summary_table: results.summary_table,
         trait_results: Object.fromEntries(
@@ -330,17 +333,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   options={["None", ...factorCColumns]}
                   placeholder="None"
                 />
-                <div className="sm:col-span-2 flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={includeRepFactorial}
-                    onCheckedChange={(v) => setIncludeRepFactorial(Boolean(v))}
-                    id="include-rep"
-                  />
-                  <Label htmlFor="include-rep" className="cursor-pointer">Include Replication (Block Design)</Label>
-                </div>
-                {includeRepFactorial && (
-                  <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
-                )}
+                <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
+                <p className="sm:col-span-2 text-xs text-muted-foreground">
+                  Replications are included as blocks; the factorial model estimates Factor A, Factor B, their interaction, and the error term.
+                </p>
               </>
             )}
 
