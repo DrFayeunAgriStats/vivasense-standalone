@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import type { UploadAnalysisResponse } from "@/services/geneticsUploadApi";
+import { pl } from "@/lib/utils";
 
 interface Props {
   results: UploadAnalysisResponse;
@@ -26,8 +27,8 @@ export function AnovaUploadResults({ results }: Props) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2 text-sm">
-            <Badge variant="secondary">{results.dataset_summary.n_genotypes} treatment level(s)</Badge>
-            <Badge variant="secondary">{results.dataset_summary.n_reps} replication(s)</Badge>
+            <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
+            <Badge variant="secondary">{pl(results.dataset_summary.n_reps ?? 0, "replication")}</Badge>
             <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
           </div>
         </CardContent>
@@ -57,7 +58,7 @@ export function AnovaUploadResults({ results }: Props) {
             <AcademicResultsPanel
               moduleLabel="ANOVA"
               domainNeutral
-              insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${r.n_genotypes} treatment level(s) × ${r.n_reps} replication(s)`}
+              insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${pl(r.n_genotypes ?? 0, "treatment level")} × ${pl(r.n_reps ?? 0, "replication")}`}
               interpretation={tr.analysis_result.interpretation || ""}
               statisticalNotes={
                 tr.data_warnings.length > 0

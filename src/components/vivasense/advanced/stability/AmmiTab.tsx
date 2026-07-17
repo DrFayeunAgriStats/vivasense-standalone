@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { pl } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -387,7 +388,7 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
           </div>
           {(invalidGenoCount > 0 || invalidEnvCount > 0) && (
             <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              AMMI diagnostics: filtered {invalidGenoCount} invalid genotype point(s) and {invalidEnvCount} invalid environment point(s)
+              AMMI diagnostics: filtered {pl(invalidGenoCount, "invalid genotype point")} and {pl(invalidEnvCount, "invalid environment point")}
               due to missing/non-numeric IPCA1/IPCA2 values.
             </div>
           )}

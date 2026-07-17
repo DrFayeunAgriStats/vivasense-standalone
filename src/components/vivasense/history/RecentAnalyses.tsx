@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { pl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,7 +90,7 @@ export function RecentAnalyses({ limit = 10, records }: Props) {
                       </span>
                     )}
                     {r.traits && r.traits.length > 0 && (
-                      <span>{r.traits.length} trait(s)</span>
+                      <span>{pl(r.traits.length, "trait")}</span>
                     )}
                     <span>{when.date} · {when.time}</span>
                   </div>

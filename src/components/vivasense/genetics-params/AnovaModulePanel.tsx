@@ -19,6 +19,7 @@ import {
   analyzeUpload, inferFileType, type UploadAnalysisResponse, type UploadAnalysisRequest,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
+import { pl } from "@/lib/utils";
 import { recordAnalysis } from "@/services/history/historyService";
 import type {
   DatasetContext, AnovaDesignType,
@@ -190,7 +191,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
       setResults(res);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
-      toast({ title: "ANOVA complete", description: `${successCount} response variable(s) analyzed.` });
+      toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
       void recordAnalysis({
@@ -286,7 +287,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
         <span>Using: <span className="font-medium">{datasetContext.file.name}</span></span>
         <Badge variant="outline" className="ml-auto text-xs">
-          {datasetContext.availableTraitColumns.length} response variable(s) · {datasetContext.mode} mode
+          {pl(datasetContext.availableTraitColumns.length, "response variable")} · {datasetContext.mode} mode
         </Badge>
       </div>
 
@@ -404,8 +405,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="secondary">{results.dataset_summary.n_genotypes} treatment level(s)</Badge>
-                <Badge variant="secondary">{results.dataset_summary.n_reps} replication(s)</Badge>
+                <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
+                <Badge variant="secondary">{pl(results.dataset_summary.n_reps ?? 0, "replication")}</Badge>
                 <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
               </div>
             </CardContent>
@@ -512,7 +513,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 <AcademicResultsPanel
                   moduleLabel="ANOVA"
                   domainNeutral
-                  insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${r.n_genotypes} treatment level(s) × ${r.n_reps} replication(s)`}
+                  insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${pl(r.n_genotypes ?? 0, "treatment level")} × ${pl(r.n_reps ?? 0, "replication")}`}
                   interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={
                     tr.data_warnings.length > 0

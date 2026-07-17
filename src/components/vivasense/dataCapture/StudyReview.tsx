@@ -5,6 +5,7 @@
  * VivaSense analysis engine (upload → analyze). No new backend.
  */
 import { useEffect, useState } from "react";
+import { pl } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, Download, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -72,7 +73,7 @@ export function StudyReview({ studyId, studyTitle }: Props) {
             <>
               {dataset.incompletePlots.length > 0 && (
                 <div className="text-sm">
-                  <p className="inline-flex items-center gap-1.5 text-amber-600 font-medium"><AlertTriangle className="h-4 w-4" /> {dataset.incompletePlots.length} incomplete plot(s)</p>
+                  <p className="inline-flex items-center gap-1.5 text-amber-600 font-medium"><AlertTriangle className="h-4 w-4" /> {pl(dataset.incompletePlots.length, "incomplete plot")}</p>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {dataset.incompletePlots.slice(0, 40).map((n) => <Badge key={n} variant="outline" className="text-[11px]">#{n}</Badge>)}
                     {dataset.incompletePlots.length > 40 && <span className="text-xs text-muted-foreground">+{dataset.incompletePlots.length - 40} more</span>}
@@ -81,7 +82,7 @@ export function StudyReview({ studyId, studyTitle }: Props) {
               )}
               {dataset.outOfRange.length > 0 && (
                 <div className="text-sm">
-                  <p className="inline-flex items-center gap-1.5 text-destructive font-medium"><AlertTriangle className="h-4 w-4" /> {dataset.outOfRange.length} out-of-range value(s)</p>
+                  <p className="inline-flex items-center gap-1.5 text-destructive font-medium"><AlertTriangle className="h-4 w-4" /> {pl(dataset.outOfRange.length, "out-of-range value")}</p>
                   <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
                     {dataset.outOfRange.slice(0, 12).map((f, i) => <li key={i}>Plot #{f.plot} · {f.trait} = {f.value}</li>)}
                   </ul>
