@@ -1,36 +1,8 @@
 import { Link } from "react-router-dom";
 import { Sprout } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface ExtProfile {
-  full_name?: string | null;
-}
+import { VivaSenseUserMenu } from "@/components/vivasense/VivaSenseUserMenu";
 
 export function Header() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<ExtProfile | null>(null);
-
-  useEffect(() => {
-    if (!user) { setProfile(null); return; }
-    supabase.from("profiles")
-      .select("full_name")
-      .eq("id", user.id).maybeSingle()
-      .then(({ data }) => setProfile(data as ExtProfile | null));
-  }, [user]);
-
-  const initial =
-    profile?.full_name
-      ?.split(" ")
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ||
-    user?.email?.slice(0, 2).toUpperCase() ||
-    "EM";
-
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur">
       <Link to="/" className="flex items-center gap-2.5">
@@ -44,9 +16,9 @@ export function Header() {
           </span>
         </div>
       </Link>
-      <div className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-[11px] font-semibold text-primary">
-        {initial}
-      </div>
+      {/* Account menu with Sign Out — replaces the previously static avatar so
+          users can log out and return to /auth to sign in again. */}
+      <VivaSenseUserMenu />
     </header>
   );
 }
