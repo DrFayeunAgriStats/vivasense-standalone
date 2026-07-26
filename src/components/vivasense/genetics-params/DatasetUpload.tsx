@@ -10,6 +10,7 @@ import {
 import { Upload, Loader2, FileSpreadsheet, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadPreview, fileToBase64 } from "@/lib/geneticsUploadApi";
+import { resolveEnvironmentMode } from "@/lib/environmentValidation";
 import type { DatasetContext, UploadPreviewResponse } from "@/types/geneticsUpload";
 
 interface Props {
@@ -61,6 +62,24 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
     try {
       const base64 = await fileToBase64(file);
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "csv";
+
+      // Guard: a "multi" run is only valid when the environment column has ≥2
+      // distinct levels. Otherwise the backend would compute impossible
+      // Environment / GxE statistics. Downgrade to single-environment mode and
+      // tell the user before they interpret results that don't exist.
+      const { mode: effectiveMode, downgradeReason } = await resolveEnvironmentMode(
+        file,
+        envCol || null,
+        mode
+      );
+      if (downgradeReason) {
+        setMode("single");
+        toast({
+          title: "Single-environment analysis",
+          description: downgradeReason,
+        });
+      }
+
       const ctx: DatasetContext = {
         file,
         base64Content: base64,
@@ -69,7 +88,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         repColumn: repCol,
         environmentColumn: envCol || null,
         availableTraitColumns: preview.detected_columns.traits,
-        mode,
+        mode: effectiveMode,
         datasetToken: preview.dataset_token ?? null,
         // All column names — lets design selectors (factorial / split-plot) offer
         // every non-trait column as a candidate factor/plot role.

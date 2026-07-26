@@ -15,6 +15,8 @@ import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaMo
 import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
+import { useToast } from "@/hooks/use-toast";
+import { resolveEnvironmentMode } from "@/lib/environmentValidation";
 import { recordAnalysis } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
@@ -95,6 +97,7 @@ function AnalysisModuleCard({
 
 export default function VivaSenseWorkspace() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -198,6 +201,20 @@ export default function VivaSenseWorkspace() {
       const base64Content = await fileToBase64(file);
       const fileType = resolveFileType(file);
 
+      // Guard: only treat the run as multi-environment when the selected
+      // environment column actually has ≥2 distinct levels. A single-level
+      // column cannot support Environment / GxE estimation, and forcing "multi"
+      // makes the backend report impossible env/GxE statistics.
+      const { mode: effectiveMode, downgradeReason } = await resolveEnvironmentMode(
+        file,
+        environmentValue,
+        environmentValue ? "multi" : "single"
+      );
+      const effectiveEnvironment = effectiveMode === "multi" ? environmentValue : null;
+      if (downgradeReason) {
+        toast({ title: "Single-environment analysis", description: downgradeReason });
+      }
+
       const startedAt = performance.now();
       let result: unknown;
       let historyTraits: string[] = traitValues;
@@ -216,9 +233,9 @@ export default function VivaSenseWorkspace() {
           file_type: fileType,
           genotype_column: genotypeValue,
           rep_column: repValue,
-          environment_column: environmentValue,
+          environment_column: effectiveEnvironment,
           trait_columns: traitValues,
-          mode: environmentValue ? "multi" : "single",
+          mode: effectiveMode,
           random_environment: false,
           selection_intensity: 2.04,
           module: "anova",
@@ -273,7 +290,7 @@ export default function VivaSenseWorkspace() {
           base64_content: base64Content,
           file_type: fileType,
           genotype_column: genotypeValue,
-          environment_column: environmentValue,
+          environment_column: effectiveEnvironment,
           rep_column: repValue,
           trait_columns: traitValues,
         });
@@ -306,7 +323,7 @@ export default function VivaSenseWorkspace() {
         designType: analysisType === "anova" ? (repValue ? "rcbd" : "crd") : null,
         traits: historyTraits,
         startedAt,
-        parameters: { module: "genetics", mode: environmentValue ? "multi" : "single" },
+        parameters: { module: "genetics", mode: effectiveMode },
         response: result,
       });
 
@@ -316,9 +333,9 @@ export default function VivaSenseWorkspace() {
         fileType,
         genotypeColumn: genotypeValue,
         repColumn: repValue,
-        environmentColumn: environmentValue,
+        environmentColumn: effectiveEnvironment,
         availableTraitColumns: traitValues,
-        mode: environmentValue ? "multi" : "single",
+        mode: effectiveMode,
         datasetToken: null,
       });
 
