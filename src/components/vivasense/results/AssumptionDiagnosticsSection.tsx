@@ -357,7 +357,6 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
     !!(per_genotype_stats && per_genotype_stats.length) ||
     !!(standardized_residuals && standardized_residuals.length) ||
     !!(cooks_distance && cooks_distance.length);
-  if (!hasAnything) return null;
 
   const reviewer = assumption_tests?.reviewer_mode;
   const status = reviewer?.status?.toUpperCase();
@@ -464,6 +463,8 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
     : isWarn
     ? "⚠ Review recommended — click to view diagnostics"
     : "Assumption diagnostics — click to view details";
+
+  if (!hasAnything) return null;
 
   return (
     <VsResultSection

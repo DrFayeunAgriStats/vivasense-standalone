@@ -62,12 +62,12 @@ export const StudyGrid = () => {
           </Button>
         </div>
       ) : !studies || studies.length === 0 ? (
-        <div className="py-12 text-center">
-          <FolderKanban className="mx-auto h-9 w-9 text-muted-foreground/40" />
-          <p className="mt-2 text-sm text-muted-foreground">No studies yet.</p>
-          <p className="text-xs text-muted-foreground/70">Create your first study to group related analyses.</p>
+        <div className="flex flex-col items-center gap-2 py-12 text-center">
+          <FolderKanban className="h-10 w-10 text-muted-foreground/40" />
+          <p className="mt-2 text-base font-semibold text-foreground">No studies yet</p>
+          <p className="max-w-xs text-sm text-muted-foreground">Create your first study to organize your research before running analyses.</p>
           <Button size="sm" className="mt-4" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" /> New Study
+            <Plus className="mr-1.5 h-4 w-4" /> Create Study
           </Button>
         </div>
       ) : (
