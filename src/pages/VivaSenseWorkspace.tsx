@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
-import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
@@ -22,9 +22,7 @@ import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHist
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
 import { WorkspaceV3Dashboard } from "@/components/vivasense/workspace/v3/WorkspaceV3Dashboard";
-import type { WorkspaceAction } from "@/lib/workspace/workflowState";
 import type { DatasetContext } from "@/types/geneticsUpload";
-import { FlaskConical } from "lucide-react";
 
 type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results" | "field-layout";
 type WorkspaceSection = "overview" | "anova" | "genetics" | "advanced";
@@ -34,65 +32,6 @@ interface AnalysisState {
   analysisType: AnalysisType | GeneticsAnalysisType;
   results: any;
   isDescriptive?: boolean;
-}
-
-interface AnalysisModuleCardProps {
-  title: string;
-  description: string;
-  analyses: string[];
-  tone: string;
-  icon: React.ComponentType<{ className?: string }>;
-  onClick: () => void;
-  footer?: string;
-}
-
-function AnalysisModuleCard({
-  title,
-  description,
-  analyses,
-  tone,
-  icon: Icon,
-  onClick,
-  footer,
-}: AnalysisModuleCardProps) {
-  return (
-    <button
-      onClick={onClick}
-      className="group flex flex-col rounded-xl border border-border bg-card p-6 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_8px_24px_-12px_rgba(20,80,40,0.15)]"
-    >
-      <span className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${tone}`}>
-        <Icon className="h-5 w-5" />
-      </span>
-
-      <h3 className="mt-4 text-[15px] font-semibold text-foreground">
-        {title}
-      </h3>
-
-      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground flex-1">
-        {description}
-      </p>
-
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {analyses.map((a) => (
-          <span
-            key={a}
-            className="rounded-md border border-border bg-secondary/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
-          >
-            {a}
-          </span>
-        ))}
-      </div>
-
-      {footer && (
-        <p className="mt-3 border-t border-border/60 pt-2.5 text-[11px] text-muted-foreground/80">{footer}</p>
-      )}
-
-      <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-80 transition-opacity group-hover:opacity-100">
-        Open
-        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-      </div>
-    </button>
-  );
 }
 
 export default function VivaSenseWorkspace() {
@@ -143,33 +82,6 @@ export default function VivaSenseWorkspace() {
     return unsubscribe;
   }, []);
 
-  const handleModuleSelect = (module: "anova" | "genetics" | "advanced") => {
-    setError(null);
-    setActiveSection(module);
-    setCurrentModule(module);
-  };
-
-  const handleWorkspaceAction = (action: WorkspaceAction) => {
-    switch (action) {
-      case "create-study":
-      case "data-capture":
-        navigate("/data-capture");
-        break;
-      case "start-analysis":
-        handleModuleSelect("anova");
-        break;
-      case "advanced":
-        handleModuleSelect("advanced");
-        break;
-      case "field-layout":
-        setError(null);
-        setCurrentModule("field-layout");
-        break;
-      case "dashboard":
-        document.getElementById("research-dashboard")?.scrollIntoView({ behavior: "smooth" });
-        break;
-    }
-  };
 
   // ANOVA now runs through the proven /genetics/analyze-upload flow rendered by
   // AnovaModulePanel (design-aware) + AcademicResultsPanel, wired directly into

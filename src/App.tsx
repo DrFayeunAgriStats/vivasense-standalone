@@ -4,7 +4,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
-import VivaSenseWorkspaceV2 from "@/pages/VivaSenseWorkspaceV2";
 import DataCapture from "@/pages/DataCapture";
 
 const queryClient = new QueryClient();
@@ -24,14 +23,9 @@ function App() {
                 </VivaSenseAuthGuard>
               }
             />
-            <Route
-              path="/workspace-v2"
-              element={
-                <VivaSenseAuthGuard>
-                  <VivaSenseWorkspaceV2 />
-                </VivaSenseAuthGuard>
-              }
-            />
+            {/* V3 is now the default /workspace overview; keep this path as a
+                redirect so existing /workspace-v2 links/bookmarks still work. */}
+            <Route path="/workspace-v2" element={<Navigate to="/workspace" replace />} />
             <Route
               path="/data-capture"
               element={
