@@ -21,7 +21,7 @@ import { recordAnalysis } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
-import { WorkspaceOverviewHeader } from "@/components/vivasense/workspace/WorkspaceOverviewHeader";
+import { WorkspaceV3Dashboard } from "@/components/vivasense/workspace/v3/WorkspaceV3Dashboard";
 import type { WorkspaceAction } from "@/lib/workspace/workflowState";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import { FlaskConical } from "lucide-react";
@@ -366,66 +366,18 @@ export default function VivaSenseWorkspace() {
     <Layout>
       <div className="bg-background flex-1">
         {currentModule === "selection" && (
-          <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
-            <WorkspaceOverviewHeader onAction={handleWorkspaceAction} />
+          <>
+            {/* V3 research dashboard — the default overview (also at /workspace-v2) */}
+            <WorkspaceV3Dashboard />
 
-            <section className="mt-14">
-              <div className="mb-5 flex items-baseline justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Analysis Modules
-                </h2>
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                <AnalysisModuleCard
-                  title="Experimental Design"
-                  description="Analyse randomized trials with treatment effects and mean separation."
-                  analyses={["ANOVA", "RCBD", "Factorial", "Split-plot"]}
-                  tone="text-primary bg-primary-soft"
-                  icon={FlaskConical}
-                  onClick={() => handleModuleSelect("anova")}
-                  footer="Includes descriptive statistics."
-                />
-
-                <AnalysisModuleCard
-                  title="Genetics & Breeding"
-                  description="Estimate genetic parameters and quantify trait correlations."
-                  analyses={["Correlation", "Regression", "Genetic parameters"]}
-                  tone="text-sky-700 bg-sky-50"
-                  icon={Dna}
-                  onClick={() => handleModuleSelect("genetics")}
-                  footer="Heritability and trait relationships."
-                />
-
-                <AnalysisModuleCard
-                  title="Advanced Analytics"
-                  description="Multivariate and mixed-model methods for breeding decisions."
-                  analyses={["PCA", "Cluster", "BLUP", "Stability", "Trait association"]}
-                  tone="text-violet-700 bg-violet-50"
-                  icon={Sparkles}
-                  onClick={() => handleModuleSelect("advanced")}
-                  footer="Best used after ANOVA."
-                />
-
-                <AnalysisModuleCard
-                  title="Field Layout"
-                  description="Generate randomized field plans with plot maps and field books."
-                  analyses={["CRD", "RCBD", "Split-plot", "Alpha lattice"]}
-                  tone="text-amber-700 bg-amber-50"
-                  icon={LayoutGrid}
-                  onClick={() => { setError(null); setCurrentModule("field-layout"); }}
-                  footer="Exports Excel field books for data collection."
-                />
-              </div>
-            </section>
-
-            <section className="mt-2">
+            {/* Studies list + full analysis history (not covered by the V3 hero) */}
+            <div className="mx-auto w-full max-w-[820px] space-y-6 px-4 pb-12 sm:px-6">
               <StudyGrid />
-            </section>
-
-            <section className="mt-2" id="research-dashboard">
-              <AnalysisHistoryList />
-            </section>
-          </div>
+              <section id="research-dashboard">
+                <AnalysisHistoryList />
+              </section>
+            </div>
+          </>
         )}
 
         {/* ANOVA Form Screen */}
