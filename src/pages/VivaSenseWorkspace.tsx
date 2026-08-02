@@ -108,6 +108,9 @@ export default function VivaSenseWorkspace() {
       setError(null);
       setActiveSection(m);
       setCurrentModule(m);
+    } else if (m === "field-layout") {
+      setError(null);
+      setCurrentModule("field-layout");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);

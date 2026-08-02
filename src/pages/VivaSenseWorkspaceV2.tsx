@@ -97,10 +97,11 @@ export default function VivaSenseWorkspaceV2() {
 
   const onboardingDismissed = locallyDismissed || Boolean((profile as { onboarding_dismissed?: boolean } | null)?.onboarding_dismissed);
 
-  // WorkspaceActions that map onto /workspace's existing ?module= deep-link.
-  const ACTION_MODULE: Partial<Record<WorkspaceAction, "anova" | "advanced">> = {
+  // WorkspaceActions that map onto /workspace's ?module= deep-link.
+  const ACTION_MODULE: Partial<Record<WorkspaceAction, "anova" | "advanced" | "field-layout">> = {
     "start-analysis": "anova",
     advanced: "advanced",
+    "field-layout": "field-layout",
   };
 
   const handleAction = (action: WorkspaceAction) => {
