@@ -101,6 +101,13 @@ export async function redeemProCode(code: string): Promise<
 
 /** Reads the user's current Pro access row and syncs local mode. Safe to call when signed-out. */
 export async function syncProAccessFromServer(): Promise<{ mode: VivaSenseMode; expiresAt: string | null }> {
+  // Phase 1: Pro Access / licensing is deferred to Phase 2 and the standalone
+  // Supabase project has no `vivasense_pro_access` table. With all features
+  // permitted there is nothing to sync — skip the DB read entirely so the app
+  // never queries a non-existent table. One-line revert with the flag above.
+  if (TEMP_ALL_FEATURES_PERMITTED) {
+    return { mode: getVivaSenseMode(), expiresAt: getProExpiresAt() };
+  }
   try {
     const { data: userRes } = await supabase.auth.getUser();
     if (!userRes?.user) {

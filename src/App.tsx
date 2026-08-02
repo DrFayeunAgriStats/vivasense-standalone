@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
+import VivaSenseWorkspaceV2 from "@/pages/VivaSenseWorkspaceV2";
 import DataCapture from "@/pages/DataCapture";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,14 @@ function App() {
               element={
                 <VivaSenseAuthGuard>
                   <VivaSenseWorkspace />
+                </VivaSenseAuthGuard>
+              }
+            />
+            <Route
+              path="/workspace-v2"
+              element={
+                <VivaSenseAuthGuard>
+                  <VivaSenseWorkspaceV2 />
                 </VivaSenseAuthGuard>
               }
             />

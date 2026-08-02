@@ -19,7 +19,7 @@ export function VivaSenseAuthGuard({ children }: { children: ReactNode }) {
       try {
         const { error } = await supabase
           .from("profiles")
-          .select("platform_source")
+          .select("id")
           .eq("id", user.id)
           .maybeSingle();
 

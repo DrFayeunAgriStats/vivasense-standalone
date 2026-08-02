@@ -1,0 +1,9 @@
+# Supabase CLI config for the VivaSense standalone project.
+# Set project_id to the new project's ref after `supabase link`
+# (Project Settings → General → Reference ID). Placeholder until provisioned.
+project_id = "vivasense-standalone"
+
+# The interpretation function is a public streaming endpoint (no user row is
+# read/written); it is called without a Supabase JWT, matching the original.
+[functions.vivasense-interpret]
+verify_jwt = false
