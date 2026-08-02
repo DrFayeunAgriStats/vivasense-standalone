@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Sprout, Mail, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Mail, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 type Screen = "login" | "register" | "check-email";
 
@@ -19,14 +20,9 @@ const SOURCES = [
 function BrandHeader({ subtitle }: { subtitle: string }) {
   return (
     <div className="text-center mb-6">
-      <div className="inline-flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-          <Sprout className="w-7 h-7 text-white" />
-        </div>
-        <div className="text-left">
-          <div className="text-2xl font-bold text-foreground leading-tight">VivaSense</div>
-          <div className="text-xs text-muted-foreground">Agricultural Statistics Platform</div>
-        </div>
+      <div className="mb-3 flex flex-col items-center gap-1">
+        <Logo layout="horizontal" theme="standard" className="h-10 w-auto" />
+        <div className="text-xs text-muted-foreground">Agricultural Statistics Platform</div>
       </div>
       <p className="text-xs text-muted-foreground">Field-to-Insight Academy</p>
       <p className="text-sm text-foreground/80 mt-3">{subtitle}</p>
