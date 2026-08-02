@@ -74,13 +74,10 @@ export default function VivaSenseAuth() {
         : "Invalid email or password.");
       setLoading(false); return;
     }
+    // Standalone VivaSense profiles carry no FIA access_status/suspension state
+    // (deferred to Phase 2 licensing). Just bump the login counters.
     const { data: profile } = await supabase
-      .from("profiles").select("access_status, login_count").eq("id", data.user.id).maybeSingle();
-    if ((profile as any)?.access_status === "suspended") {
-      setError("Your account has been suspended. Contact support.");
-      await supabase.auth.signOut();
-      setLoading(false); return;
-    }
+      .from("profiles").select("login_count").eq("id", data.user.id).maybeSingle();
     await supabase.from("profiles").update({
       last_login: new Date().toISOString(),
       login_count: ((profile as any)?.login_count || 0) + 1,
@@ -104,14 +101,15 @@ export default function VivaSenseAuth() {
     if (password !== confirmPassword) { setError("Passwords do not match"); setLoading(false); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters"); setLoading(false); return; }
 
+    // Only VivaSense profile fields are persisted (handle_new_user trigger reads
+    // these from raw_user_meta_data). FIA-only fields — platform_source, cohort,
+    // registration_source — are intentionally not sent to the standalone project.
     const { error: signUpErr } = await supabase.auth.signUp({
       email, password,
       options: {
         data: {
           full_name: fullName, institution, position,
-          research_area: researchArea, registration_source: registrationSource,
-          cohort: "general", terms_accepted: true,
-          platform_source: "vivasense",
+          research_area: researchArea,
         },
         emailRedirectTo: `${window.location.origin}/workspace`,
       },

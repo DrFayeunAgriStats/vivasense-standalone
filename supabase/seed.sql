@@ -1,0 +1,18 @@
+-- ============================================================================
+-- VivaSense Standalone — seed.sql
+--
+-- The new project starts CLEAN: no users, studies, or history are seeded, and
+-- no data is migrated from the shared FIA project (per the implementation
+-- brief). `supabase db reset` runs the migrations, then this file.
+--
+-- Users are created through Supabase Auth (registration UI) — never seeded
+-- here, because a profiles row is auto-provisioned by the on_auth_user_created
+-- trigger (migration 001) and cannot exist without a matching auth.users row.
+--
+-- To grant admin after a real user has registered, run (service role / SQL
+-- editor — the privilege guard blocks this over the PostgREST API):
+--
+--   update public.profiles set is_admin = true where email = 'you@example.org';
+--
+-- Intentionally empty otherwise.
+-- ============================================================================

@@ -39,9 +39,11 @@ async function resolveIdentity(): Promise<{ userId: string; snapshot: ProfileSna
 
   let snapshot: ProfileSnapshot = { ...EMPTY_PROFILE };
   try {
+    // Standalone profiles have no FIA `academic_track`; use the researcher's
+    // `position` as the user_role analytics dimension instead.
     const { data: p } = await supabase
       .from("profiles")
-      .select("institution, country, academic_track")
+      .select("institution, country, position")
       .eq("id", user.id)
       .maybeSingle();
     if (p) {
@@ -49,7 +51,7 @@ async function resolveIdentity(): Promise<{ userId: string; snapshot: ProfileSna
       snapshot = {
         institution: (row.institution as string | null) ?? null,
         country: (row.country as string | null) ?? null,
-        user_role: (row.academic_track as string | null) ?? null,
+        user_role: (row.position as string | null) ?? null,
       };
     }
   } catch {

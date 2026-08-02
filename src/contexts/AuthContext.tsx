@@ -5,16 +5,17 @@ import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
   id: string;
-  full_name: string;
-  email: string;
-  academic_track: string | null;
-  discipline: string | null;
+  full_name: string | null;
+  email: string | null;
   institution: string | null;
+  position: string | null;
+  research_area: string | null;
   country: string | null;
-  current_research_stage: string | null;
-  diagnostic_level: string | null;
-  diagnostic_score: number | null;
-  onboarding_completed: boolean;
+  login_count: number | null;
+  last_login: string | null;
+  is_admin: boolean;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface AuthContextType {
