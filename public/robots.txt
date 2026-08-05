@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /$
+Allow: /auth
+Disallow: /workspace
+Disallow: /workspace-v2
+Disallow: /data-capture
+
+Sitemap: https://www.vivasensestat.com/sitemap.xml
