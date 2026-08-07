@@ -165,9 +165,37 @@ export function ensureProAccess(featureName: string): void {
   guardProModule(featureName);
 }
 
+// ─ Pilot-access identity ────────────────────────────────────────────
+// The backend pilot gate (VIVASENSE_PILOT_ALLOWLIST) matches this value
+// against a server-side allowlist. It is deliberately independent of
+// VIVASENSE_MODE_KEY and of TEMP_ALL_FEATURES_PERMITTED: that flag forces
+// X-VivaSense-Mode to "pro" for every visitor, so the mode header cannot
+// distinguish a pilot operator from an ordinary user. This one can.
+// ────────────────────────────────────────────────────────────────────
+
+export const VIVASENSE_USER_KEY = "vivasense_user";
+
+/** Record the signed-in identity (email preferred, else user id). Pass null on sign-out. */
+export function setVivaSenseUser(identity: string | null): void {
+  if (!canUseLocalStorage()) return;
+  const trimmed = identity?.trim();
+  if (trimmed) window.localStorage.setItem(VIVASENSE_USER_KEY, trimmed);
+  else window.localStorage.removeItem(VIVASENSE_USER_KEY);
+}
+
+export function getVivaSenseUser(): string | null {
+  if (!canUseLocalStorage()) return null;
+  const stored = window.localStorage.getItem(VIVASENSE_USER_KEY)?.trim();
+  return stored ? stored : null;
+}
+
 export function buildModeHeaders(baseHeaders?: HeadersInit): Headers {
   const headers = new Headers(baseHeaders);
   headers.set("X-VivaSense-Mode", getVivaSenseMode());
+  const identity = getVivaSenseUser();
+  if (identity) {
+    headers.set("X-VivaSense-User", identity);
+  }
   return headers;
 }
 
