@@ -97,6 +97,18 @@ interface FieldLayoutResult {
   alpha_value: number | null;
 }
 
+/** One balanced-lattice block size as classified by the backend engine. */
+type LatticeStatus = "supported" | "not_implemented" | "no_construction";
+
+interface LatticeBlockSize {
+  block_size: number;
+  treatments: number;
+  replications: number;
+  status: LatticeStatus;
+  /** Empty for supported sizes; explains the exclusion otherwise. */
+  message: string;
+}
+
 export function FieldLayoutGenerator() {
   const [mode, setMode] = useState<VivaSenseMode>(() => getVivaSenseMode());
   const [design, setDesign] = useState<Design>("rcbd");
@@ -118,6 +130,14 @@ export function FieldLayoutGenerator() {
   const [factorBName, setFactorBName] = useState("Variety");
   const [blockSize, setBlockSize] = useState(4);
 
+  // Balanced-lattice block sizes are classified by the engine
+  // (GET /field-layout/lattice-block-sizes) rather than hardcoded here, so the
+  // set of usable sizes and the reason any size is unusable have one source of
+  // truth. Availability is never expressed as a missing option.
+  const [latticeBlockSize, setLatticeBlockSize] = useState(7);
+  const [latticeOptions, setLatticeOptions] = useState<LatticeBlockSize[] | null>(null);
+  const [latticeOptionsError, setLatticeOptionsError] = useState<string | null>(null);
+
   const [result, setResult] = useState<FieldLayoutResult | null>(null);
   const [layout, setLayout] = useState<{ design: Design; cells: PlotCell[]; nRows: number; nCols: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -132,6 +152,42 @@ export function FieldLayoutGenerator() {
     setMode(getVivaSenseMode());
     return subscribeVivaSenseMode(setMode);
   }, []);
+
+  // Load the engine's block-size classification once the lattice design is chosen.
+  useEffect(() => {
+    if (design !== "lattice" || latticeOptions || latticeOptionsError) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await vivaSenseRequest<{ block_sizes: LatticeBlockSize[] }>(
+          "/field-layout/lattice-block-sizes",
+          { method: "GET", timeoutMs: 30000 }
+        );
+        if (cancelled) return;
+        const sizes = data?.block_sizes ?? [];
+        if (!sizes.length) throw new Error("No block sizes returned.");
+        setLatticeOptions(sizes);
+        // Default to the largest supported size at or below the current choice.
+        const supported = sizes.filter((s) => s.status === "supported");
+        if (supported.length && !supported.some((s) => s.block_size === latticeBlockSize)) {
+          const fallback = supported.filter((s) => s.block_size <= latticeBlockSize).pop() ?? supported[0];
+          setLatticeBlockSize(fallback.block_size);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLatticeOptionsError(
+            err instanceof Error ? err.message : "Could not load available block sizes."
+          );
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [design, latticeOptions, latticeOptionsError, latticeBlockSize]);
+
+  const selectedLattice = useMemo(
+    () => latticeOptions?.find((o) => o.block_size === latticeBlockSize) ?? null,
+    [latticeOptions, latticeBlockSize]
+  );
 
   const treatments = useMemo(() => parseCsv(treatmentsRaw), [treatmentsRaw]);
 
@@ -174,10 +230,10 @@ export function FieldLayoutGenerator() {
       };
     }
     if (design === "lattice") {
-      const k = Math.sqrt(nTreatments);
-      const reps = k + 1;
-      const labels = Array.from({ length: nTreatments }, (_, i) => `T${i + 1}`);
-      return { ...base, treatments: labels, replications: reps };
+      const k = latticeBlockSize;
+      const t = k * k;
+      const labels = Array.from({ length: t }, (_, i) => `T${i + 1}`);
+      return { ...base, treatments: labels, replications: k + 1 };
     }
     if (design === "alpha_lattice") {
       const labels = Array.from({ length: nTreatments }, (_, i) => `G${i + 1}`);
@@ -330,6 +386,17 @@ export function FieldLayoutGenerator() {
 
     if (design === "alpha_lattice" && (nTreatments < 4 || blockSize < 2)) {
       return "Alpha lattice requires at least 4 treatments and block size >= 2.";
+    }
+
+    if (design === "lattice") {
+      if (latticeOptionsError) {
+        return "Available block sizes could not be loaded, so a balanced lattice cannot be generated right now.";
+      }
+      if (!latticeOptions) return "Still loading available block sizes — please wait.";
+      // Surface the engine's own explanation rather than a second opinion.
+      if (selectedLattice && selectedLattice.status !== "supported") {
+        return selectedLattice.message;
+      }
     }
 
     return null;
@@ -654,20 +721,60 @@ export function FieldLayoutGenerator() {
           {/* BALANCED LATTICE */}
           {design === "lattice" && (
             <FormField
-              label="Number of Treatments"
-              helper="Must be a perfect square with prime square root: 4, 9, 25, or 49 treatments."
+              label="Block Size (k)"
+              helper="A balanced lattice uses k blocks of k plots per replication, for k² treatments."
               required
             >
-              <select value={nTreatments} onChange={e => setNTreatments(Number(e.target.value))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
-                <option value={4}>4 treatments (2x2, replications = 3)</option>
-                <option value={9}>9 treatments (3x3, replications = 4)</option>
-                <option value={25}>25 treatments (5x5, replications = 6)</option>
-                <option value={49}>49 treatments (7x7, replications = 8)</option>
-              </select>
-              <p className="text-xs text-gray-400 mt-1">
-                Replications are fixed by the balanced lattice constraint: r = block_size + 1
-              </p>
+              {latticeOptionsError ? (
+                <Alert>
+                  <AlertDescription>
+                    Could not load available block sizes: {latticeOptionsError}
+                    <button
+                      type="button"
+                      onClick={() => { setLatticeOptionsError(null); setLatticeOptions(null); }}
+                      className="ml-2 underline"
+                    >
+                      Retry
+                    </button>
+                  </AlertDescription>
+                </Alert>
+              ) : !latticeOptions ? (
+                <p className="text-sm text-gray-400">Loading available block sizes…</p>
+              ) : (
+                <>
+                  <select
+                    value={latticeBlockSize}
+                    onChange={e => setLatticeBlockSize(Number(e.target.value))}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    {latticeOptions.map(o => (
+                      <option key={o.block_size} value={o.block_size}>
+                        {`k=${o.block_size} — ${o.treatments} treatments (${o.block_size}x${o.block_size}, replications = ${o.replications})`}
+                        {o.status === "not_implemented" ? " — not yet supported" : ""}
+                        {o.status === "no_construction" ? " — no valid design exists" : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedLattice && selectedLattice.status !== "supported" && (
+                    <Alert className="mt-2">
+                      <AlertDescription>
+                        <span className="font-medium">
+                          {selectedLattice.status === "not_implemented"
+                            ? "Not yet supported. "
+                            : "No valid design exists for this block size. "}
+                        </span>
+                        {selectedLattice.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <p className="text-xs text-gray-400 mt-1">
+                    Replications are fixed by the balanced lattice constraint: r = k + 1.
+                    Every block size is listed — unavailable ones show why.
+                  </p>
+                </>
+              )}
             </FormField>
           )}
 
@@ -752,7 +859,13 @@ export function FieldLayoutGenerator() {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={generate}
-              disabled={isLoading || (selectedDesign?.requiresPro && !isPro)}
+              disabled={
+                isLoading ||
+                (selectedDesign?.requiresPro && !isPro) ||
+                (design === "lattice" &&
+                  (!!latticeOptionsError || !latticeOptions ||
+                    (!!selectedLattice && selectedLattice.status !== "supported")))
+              }
               style={{ backgroundColor: "#1B5E20" }}
               className="text-white hover:opacity-90 disabled:opacity-60"
             >
