@@ -11,6 +11,17 @@ export interface DatasetContext {
   genotypeColumn: string;
   repColumn: string;
   environmentColumn: string | null;
+  /**
+   * Columns whose interaction defines the environment when no single explicit
+   * Environment column exists — e.g. ["Location", "Year"] for a trial run at
+   * 3 locations over 3 years (9 environments, not 3).
+   *
+   * Used ONLY when environmentColumn is null: an explicitly supplied
+   * Environment column always takes precedence and is never overwritten.
+   * An ordered list rather than a fixed Location/Year pair so season or
+   * management regime can be added later without reshaping this type.
+   */
+  environmentFactorColumns?: string[];
   availableTraitColumns: string[];
   mode: "single" | "multi";
   /** Server-issued token from /genetics/upload-preview — required for stateful endpoints like /analysis/descriptive-stats */

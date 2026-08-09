@@ -117,6 +117,14 @@ export default function VivaSenseWorkspace() {
       const genotypeValue = (formData.get("genotype") as string | null) || "";
       const repValue = (formData.get("rep") as string | null) || "";
       const environmentValue = ((formData.get("location") as string | null) || "").trim() || null;
+      // Environment factors (Location x Year). Only meaningful when no explicit
+      // environment column was given — the backend enforces that precedence too.
+      const envFactorLocation = ((formData.get("env_factor_location") as string | null) || "").trim();
+      const envFactorYear = ((formData.get("env_factor_year") as string | null) || "").trim();
+      const environmentFactorColumns =
+        !environmentValue && envFactorLocation && envFactorYear
+          ? [envFactorLocation, envFactorYear]
+          : [];
       const traitValues = ((formData.get("traits") as string | null) || "")
         .split(",")
         .map((v) => v.trim())
@@ -133,10 +141,13 @@ export default function VivaSenseWorkspace() {
       // environment column actually has ≥2 distinct levels. A single-level
       // column cannot support Environment / GxE estimation, and forcing "multi"
       // makes the backend report impossible env/GxE statistics.
+      // Shared resolver — the same one DatasetUpload uses. Construction and
+      // rep re-nesting live in the backend engine; nothing is reimplemented here.
       const { mode: effectiveMode, downgradeReason } = await resolveEnvironmentMode(
         file,
         environmentValue,
-        environmentValue ? "multi" : "single"
+        environmentValue || environmentFactorColumns.length >= 2 ? "multi" : "single",
+        environmentFactorColumns
       );
       const effectiveEnvironment = effectiveMode === "multi" ? environmentValue : null;
       if (downgradeReason) {
@@ -161,6 +172,9 @@ export default function VivaSenseWorkspace() {
           genotype_column: genotypeValue,
           rep_column: repValue,
           environment_column: effectiveEnvironment,
+          // Applied by the backend only when environment_column is absent.
+          environment_factor_columns:
+            effectiveMode === "multi" ? environmentFactorColumns : [],
           trait_columns: traitValues,
           mode: effectiveMode,
           random_environment: false,

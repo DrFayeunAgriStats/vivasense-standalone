@@ -66,6 +66,11 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   // Column assignments
   const [genotype, setGenotype] = useState("");
   const [environment, setEnvironment] = useState("");
+  // Multi-environment structure (ANOVA only — see metStructureSupported below).
+  // Captured as distinct fields so a trial at 3 locations over 3 years is
+  // 9 environments, not 3. Used only when no explicit Environment column is set.
+  const [locationFactor, setLocationFactor] = useState("");
+  const [yearFactor, setYearFactor] = useState("");
   const [block, setBlock] = useState("");
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [alpha, setAlpha] = useState("0.05");
@@ -237,6 +242,12 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
 
   // Which fields are needed per analysis type
   const needsEnvironment = ["variance_components"].includes(analysisType as string);
+  // ANOVA is the one type here that reaches /genetics/analyze-upload, which is
+  // where the backend reconstructs Environment = Location x Year and nests Rep
+  // within it. The dataset-token endpoints used by variance_components and
+  // correlations read their environment from the cached upload context instead,
+  // so offering these fields there would be a control that changes nothing.
+  const metStructureSupported = analysisType === "anova";
   // Correlation requires a replication column: the backend's /genetics/correlation
   // returns 500 (surfacing as a CORS error, since error responses omit CORS headers)
   // when rep_column is empty, so collect and require it here.
@@ -282,11 +293,20 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
       fd.append("genotype", genotype);
       if (environment) fd.append("location", environment);
       if (block) fd.append("rep", block);
+      // Environment factors. Sent under their own keys so the existing
+      // "location" key (which actually carries the explicit Environment column)
+      // keeps its meaning and precedence.
+      if (metStructureSupported && !environment) {
+        if (locationFactor) fd.append("env_factor_location", locationFactor);
+        if (yearFactor) fd.append("env_factor_year", yearFactor);
+      }
       if (selectedTraits.length > 0) fd.append("traits", selectedTraits.join(","));
       console.log("[Genetics] Submitting:", {
         analysisType,
         genotype,
         location: environment,
+        env_factor_location: metStructureSupported && !environment ? locationFactor : "",
+        env_factor_year: metStructureSupported && !environment ? yearFactor : "",
         rep: block,
         traits: selectedTraits.join(","),
         alpha,
@@ -448,6 +468,65 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                     {needsEnvironment && renderColumnSelect("Environment / Location column", environment, setEnvironment, "env_col")}
                     {needsBlock && renderColumnSelect("Block / Rep column", block, setBlock, "block_col", true)}
                     {analysisType === "anova" && renderColumnSelect("Block / Rep column (optional — RCBD)", block, setBlock, "block_col", false)}
+
+                    {/*
+                      Multi-environment structure. A trial at 3 locations over
+                      3 years has 9 environments, not 3 — forcing one of them
+                      into a single Environment slot (and the other into Rep)
+                      describes a different experiment. An explicit Environment
+                      column always wins; Location x Year is the fallback.
+                    */}
+                    {metStructureSupported && (
+                      <div className="rounded-lg border border-border p-4 space-y-3">
+                        <div>
+                          <p className="text-sm font-medium">Multi-environment structure (optional)</p>
+                          <p className="text-xs text-muted-foreground">
+                            Leave blank for a single-environment trial.
+                          </p>
+                        </div>
+
+                        {renderColumnSelect(
+                          "Environment column (optional)", environment, setEnvironment, "env_col_anova", false
+                        )}
+
+                        {!environment && (
+                          <>
+                            <p className="text-xs text-muted-foreground">
+                              No single Environment column? Give Location and Year instead and
+                              the environment is built from their combination.
+                            </p>
+                            {renderColumnSelect(
+                              "Location column", locationFactor, setLocationFactor, "env_factor_location", false
+                            )}
+                            {renderColumnSelect(
+                              "Year / Season column", yearFactor, setYearFactor, "env_factor_year", false
+                            )}
+                            {locationFactor && yearFactor && (
+                              <p className="text-xs text-muted-foreground">
+                                Environment will be built as{" "}
+                                <span className="font-medium text-foreground">
+                                  {locationFactor} × {yearFactor}
+                                </span>
+                                , with replication nested within it. The engine confirms the
+                                environment count when the analysis runs.
+                              </p>
+                            )}
+                            {!!locationFactor !== !!yearFactor && (
+                              <p className="text-xs text-amber-600 dark:text-amber-500">
+                                Both Location and Year are needed. With only one set, the trial is
+                                analysed as single-environment.
+                              </p>
+                            )}
+                          </>
+                        )}
+                        {environment && (
+                          <p className="text-xs text-muted-foreground">
+                            Using “{environment}” as the environment. Location × Year is not applied
+                            when an explicit Environment column is set.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Regression: Response Variable + Predictor Variables */}
                     {isRegression && (

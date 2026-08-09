@@ -182,6 +182,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         genotype_column: treatmentCol || datasetContext.genotypeColumn,
         rep_column: repColumn || datasetContext.repColumn,
         environment_column: datasetContext.environmentColumn ?? null,
+        // Applied by the backend only when environment_column is absent.
+        environment_factor_columns: datasetContext.environmentFactorColumns ?? [],
         trait_columns: selectedTraits,
         mode: datasetContext.mode,
         random_environment: false,

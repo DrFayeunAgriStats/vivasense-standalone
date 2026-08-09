@@ -26,18 +26,11 @@ const isMissing = (value: unknown): boolean => {
 };
 
 /**
- * Count the number of distinct non-missing values in a single column of an
- * uploaded CSV/Excel file. Reads the first sheet only, matching the rest of the
- * upload pipeline. Returns 0 if the column is absent or entirely missing.
- *
- * Throws if the file cannot be parsed — callers should decide whether to treat
- * a parse failure as "cannot confirm multi-environment" (safer: fall back to
- * single) or surface the error.
+ * Read the first sheet of an uploaded CSV/Excel file as row objects, matching
+ * the rest of the upload pipeline. Throws if the file cannot be parsed —
+ * callers decide whether that means "cannot confirm multi-environment".
  */
-export async function countDistinctColumnValues(
-  file: File,
-  columnName: string
-): Promise<number> {
+async function readRows(file: File): Promise<Record<string, unknown>[]> {
   const lowerName = file.name.toLowerCase();
   let workbook: XLSX.WorkBook;
   if (lowerName.endsWith(".csv")) {
@@ -49,15 +42,54 @@ export async function countDistinctColumnValues(
   }
 
   const firstSheetName = workbook.SheetNames[0];
-  if (!firstSheetName) return 0;
+  if (!firstSheetName) return [];
   const sheet = workbook.Sheets[firstSheetName];
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+  return XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+}
 
+/**
+ * Count distinct non-missing values in a single column. Returns 0 when the
+ * column is absent or entirely missing.
+ */
+export async function countDistinctColumnValues(
+  file: File,
+  columnName: string
+): Promise<number> {
+  const rows = await readRows(file);
   const seen = new Set<string>();
   for (const row of rows) {
     const raw = row[columnName];
     if (isMissing(raw)) continue;
     seen.add(String(raw).trim());
+  }
+  return seen.size;
+}
+
+/**
+ * Count distinct COMBINATIONS across several columns — the number of
+ * environments implied by, say, Location × Year. A trial at 3 locations over
+ * 3 years yields 9, not 3. Rows with any missing component are skipped, since a
+ * partially-known environment cannot be assigned to a level.
+ */
+export async function countDistinctCombinations(
+  file: File,
+  columnNames: string[]
+): Promise<number> {
+  if (columnNames.length === 0) return 0;
+  const rows = await readRows(file);
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const parts: string[] = [];
+    let usable = true;
+    for (const col of columnNames) {
+      const raw = row[col];
+      if (isMissing(raw)) {
+        usable = false;
+        break;
+      }
+      parts.push(String(raw).trim());
+    }
+    if (usable) seen.add(JSON.stringify(parts));
   }
   return seen.size;
 }
@@ -76,13 +108,43 @@ export async function countDistinctColumnValues(
 export async function resolveEnvironmentMode(
   file: File,
   environmentColumn: string | null | undefined,
-  requestedMode: "single" | "multi"
+  requestedMode: "single" | "multi",
+  environmentFactorColumns: string[] = []
 ): Promise<{ mode: "single" | "multi"; distinctCount: number; downgradeReason: string | null }> {
   const col = (environmentColumn ?? "").trim();
+  const factors = environmentFactorColumns.map((c) => c.trim()).filter(Boolean);
 
-  // No environment column selected → single-environment, nothing to validate.
+  // No explicit environment column: the environment may still be defined by the
+  // interaction of factor columns (Location × Year). Count the combinations
+  // rather than assuming single-environment, which is what previously forced a
+  // 9-environment trial down to one. An explicit column always takes priority.
   if (!col) {
-    return { mode: "single", distinctCount: 0, downgradeReason: null };
+    if (requestedMode !== "multi" || factors.length < 2) {
+      return { mode: "single", distinctCount: 0, downgradeReason: null };
+    }
+    let comboCount: number;
+    try {
+      comboCount = await countDistinctCombinations(file, factors);
+    } catch {
+      return {
+        mode: "single",
+        distinctCount: 0,
+        downgradeReason:
+          `Could not read ${factors.join(" × ")} to confirm multiple environments; ` +
+          `running single-environment analysis instead.`,
+      };
+    }
+    if (comboCount < 2) {
+      return {
+        mode: "single",
+        distinctCount: comboCount,
+        downgradeReason:
+          `${factors.join(" × ")} yields ${comboCount === 1 ? "only 1 environment" : "no usable environments"}, ` +
+          `so Environment and Genotype×Environment effects cannot be estimated. ` +
+          `Running single-environment analysis instead.`,
+      };
+    }
+    return { mode: "multi", distinctCount: comboCount, downgradeReason: null };
   }
 
   // Only multi runs need the ≥2-level guarantee.

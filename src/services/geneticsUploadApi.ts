@@ -49,6 +49,12 @@ export interface UploadAnalysisRequest {
   genotype_column: string;
   rep_column: string;
   environment_column: string | null;
+  /**
+   * Ordered columns whose interaction defines the environment, e.g.
+   * ["Location", "Year"]. Applied by the backend ONLY when
+   * environment_column is absent — an explicit environment column always wins.
+   */
+  environment_factor_columns?: string[];
   numeric_factor_columns?: string[];
   trait_columns: string[];
   mode: "single" | "multi";

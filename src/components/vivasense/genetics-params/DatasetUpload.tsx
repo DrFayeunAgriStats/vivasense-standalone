@@ -27,6 +27,9 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   const [genotypeCol, setGenotypeCol] = useState("");
   const [repCol, setRepCol] = useState("");
   const [envCol, setEnvCol] = useState("");
+  // Environment factors, used only when no explicit Environment column is set.
+  const [locationCol, setLocationCol] = useState("");
+  const [yearCol, setYearCol] = useState("");
   const [mode, setMode] = useState<"single" | "multi">("single");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,10 +70,15 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
       // distinct levels. Otherwise the backend would compute impossible
       // Environment / GxE statistics. Downgrade to single-environment mode and
       // tell the user before they interpret results that don't exist.
+      // Environment factors participate only when no explicit column is set —
+      // an explicitly mapped Environment column always takes precedence.
+      const envFactors = !envCol && locationCol && yearCol ? [locationCol, yearCol] : [];
+
       const { mode: effectiveMode, downgradeReason } = await resolveEnvironmentMode(
         file,
         envCol || null,
-        mode
+        mode,
+        envFactors
       );
       if (downgradeReason) {
         setMode("single");
@@ -87,6 +95,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         genotypeColumn: genotypeCol,
         repColumn: repCol,
         environmentColumn: envCol || null,
+        environmentFactorColumns: envFactors,
         availableTraitColumns: preview.detected_columns.traits,
         mode: effectiveMode,
         datasetToken: preview.dataset_token ?? null,
@@ -218,6 +227,80 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/*
+              Location + Year are captured as their own fields rather than
+              competing for the single Environment slot. A trial at 3 locations
+              over 3 years has 9 environments, not 3; forcing one of them into
+              "Environment" (and the other into Rep) silently describes a
+              different experiment. Only used when Environment Column is None.
+            */}
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-sm font-medium">
+                    Environment built from Location × Year
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Use these when your trial spans several locations <em>and</em> several
+                    years and you have no single Environment column.
+                  </p>
+                </div>
+                {envCol && (
+                  <span className="text-xs rounded-md bg-muted px-2 py-1 text-muted-foreground">
+                    Not used — “{envCol}” is set as the Environment column
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Location Column</Label>
+                  <Select
+                    value={locationCol || "__none__"}
+                    onValueChange={(v) => setLocationCol(v === "__none__" ? "" : v)}
+                    disabled={!!envCol}
+                  >
+                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {preview.column_names.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Year / Season Column</Label>
+                  <Select
+                    value={yearCol || "__none__"}
+                    onValueChange={(v) => setYearCol(v === "__none__" ? "" : v)}
+                    disabled={!!envCol}
+                  >
+                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {preview.column_names.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {!envCol && locationCol && yearCol && (
+                <p className="text-xs text-muted-foreground">
+                  Environment will be constructed as{" "}
+                  <span className="font-medium text-foreground">
+                    {locationCol} × {yearCol}
+                  </span>
+                  , and replication treated as nested within it. The exact number of
+                  environments is confirmed by the backend when the analysis runs.
+                </p>
+              )}
+              {!envCol && !!locationCol !== !!yearCol && (
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  Both Location and Year are needed to construct an environment. With
+                  only one set, the data is analysed as single-environment.
+                </p>
+              )}
             </div>
 
             {/* Data preview */}
