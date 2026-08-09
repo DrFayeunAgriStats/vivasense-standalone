@@ -12,7 +12,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { extractRows, fmtNum, formatP } from "./GeneticsResultsDashboard";
+import { anovaSourceLabel, extractRows, fmtNum, formatP } from "./GeneticsResultsDashboard";
 
 /* ── Types ─────────────────────────────────────────── */
 
@@ -267,7 +267,7 @@ export function AcademicResultsPanel({
                             const isSig = !isNaN(pNum) && pNum < 0.05;
                             return (
                               <TableRow key={i}>
-                                <TableCell className="font-medium">{String(row.source ?? row.Source ?? row.term ?? "")}</TableCell>
+                                <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term)}</TableCell>
                                 <TableCell className="text-right font-mono">{String(row.df ?? row.DF ?? "—")}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ss ?? row.SS ?? row.sum_sq)}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ms ?? row.MS ?? row.mean_sq)}</TableCell>

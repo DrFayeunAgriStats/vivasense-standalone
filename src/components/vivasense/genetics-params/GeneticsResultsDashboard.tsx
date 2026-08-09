@@ -57,6 +57,22 @@ export function formatP(v: unknown): string {
   return n.toFixed(4) + " ns";
 }
 
+/**
+ * Human-readable labels for ANOVA source terms emitted by the R engine.
+ *
+ * Display only — the underlying source keys, statistical objects and API
+ * payloads are untouched. Terms with no entry fall through to the raw key.
+ */
+const ANOVA_SOURCE_LABELS: Record<string, string> = {
+  "environment:rep": "Replication(Environment)",
+  "environment:genotype": "Environment × Genotype",
+};
+
+export function anovaSourceLabel(src: unknown): string {
+  const key = String(src ?? "").trim();
+  return ANOVA_SOURCE_LABELS[key] ?? key;
+}
+
 export function extractRows(data: unknown): Record<string, unknown>[] {
   const isInterceptRow = (row: Record<string, unknown>): boolean => {
     const label = String(row.source ?? row.Source ?? row.term ?? "").trim().toLowerCase();
@@ -275,7 +291,7 @@ export function GeneticsResultsDashboard({ result }: Props) {
                         const isSig = !isNaN(pNum) && pNum < 0.05;
                         return (
                           <TableRow key={i}>
-                            <TableCell className="font-medium">{String(row.source ?? row.Source ?? row.term ?? "")}</TableCell>
+                            <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term)}</TableCell>
                             <TableCell className="text-right font-mono">{String(row.df ?? row.DF ?? "—")}</TableCell>
                             <TableCell className="text-right font-mono">{fmtNum(row.ss ?? row.SS ?? row.sum_sq)}</TableCell>
                             <TableCell className="text-right font-mono">{fmtNum(row.ms ?? row.MS ?? row.mean_sq)}</TableCell>
