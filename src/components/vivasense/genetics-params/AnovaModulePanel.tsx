@@ -20,7 +20,7 @@ import {
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type {
   DatasetContext, AnovaDesignType,
 } from "@/types/geneticsUpload";
@@ -151,6 +151,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     if (validation) return;
     setIsAnalyzing(true);
     setResults(null);
+    // Hoisted so the failure path reports the same fields and elapsed time.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "anova" as const,
+      backendEndpoint: "/genetics/analyze-upload?module=anova",
+      datasetName: datasetContext.file.name,
+      datasetToken: datasetContext.datasetToken ?? null,
+      designType: design,
+      traits: selectedTraits,
+      startedAt,
+      parameters: { design_type: design, mode: datasetContext.mode },
+    };
     try {
       // "factorial" already includes replications as blocks (rep is a model source);
       // the separate "factorial_rcbd" path is not used (it errors on the backend).
@@ -186,7 +198,6 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         sub_plot_column: isSplitPlot ? subPlot : undefined,
       };
 
-      const startedAt = performance.now();
       const res = await analyzeUpload(request);
 
       setResults(res);
@@ -194,18 +205,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
-      void recordAnalysis({
-        analysisType: "anova",
-        backendEndpoint: "/genetics/analyze-upload?module=anova",
-        datasetName: datasetContext.file.name,
-        datasetToken: datasetContext.datasetToken ?? null,
-        designType: effectiveDesign,
-        traits: selectedTraits,
-        startedAt,
-        parameters: { design_type: effectiveDesign, mode: datasetContext.mode },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
     } catch (err: any) {
+      void recordAnalysisFailure(historyBase, err);
       toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
     } finally {
       setIsAnalyzing(false);

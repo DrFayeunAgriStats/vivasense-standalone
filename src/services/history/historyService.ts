@@ -2,8 +2,11 @@
  * Research Analysis History — centralized service (Phase 1).
  *
  * The ONE entry point the rest of the app uses:
- *   • recordAnalysis(input)     — persist exactly one row after a SUCCESSFUL analysis
- *   • listRecentAnalyses(limit) — read the current user's history (newest first)
+ *   • recordAnalysis(input)        — persist exactly one row for an analysis run,
+ *                                    successful or failed (see status below)
+ *   • recordAnalysisFailure(input, error)
+ *                                  — convenience wrapper for catch branches
+ *   • listRecentAnalyses(limit)    — read the current user's history (newest first)
  *
  * Writes are best-effort and NEVER throw — a history failure must not break an
  * analysis flow. Persistence is Supabase-only; the Railway backend is untouched.
@@ -68,14 +71,28 @@ function dedupeKey(i: RecordAnalysisInput): string {
     i.datasetToken ?? i.datasetName ?? "",
     (i.traits ?? []).join(","),
     i.designType ?? "",
+    // Status participates so a failure is never swallowed as a "duplicate" of a
+    // preceding success on the same dataset (or vice versa) inside the window.
+    i.status ?? "success",
   ].join("|");
 }
 
 /**
- * Persist exactly ONE history row after a successful analysis. Call only on
- * success paths — never in catch/failure branches. Silently ignores duplicate
- * executions fired within a short window (guards React StrictMode double-invoke).
- * Never throws.
+ * Persist exactly ONE history row for an analysis run.
+ *
+ * Call on BOTH outcomes:
+ *   • success path  — omit `status` (defaults to 'success')
+ *   • catch/failure — pass `status: 'failure'` plus `errorMessage`, or use the
+ *     recordAnalysisFailure() wrapper below
+ *
+ * Recording failures is what makes the completion rate computable; before
+ * 2026-08-08 a DB CHECK constraint allowed only 'success', so this function was
+ * documented as success-only. That restriction is gone (migration
+ * 20260808000100) and calling it from a catch branch is now correct.
+ *
+ * Silently ignores duplicate executions fired within a short window (guards
+ * React StrictMode double-invoke). Never throws — a history failure must not
+ * break, or mask, the analysis flow it is reporting on.
  */
 export async function recordAnalysis(input: RecordAnalysisInput): Promise<void> {
   try {
@@ -94,6 +111,23 @@ export async function recordAnalysis(input: RecordAnalysisInput): Promise<void> 
     // History persistence is non-blocking by design.
     console.warn("[history] recordAnalysis skipped (non-blocking):", err);
   }
+}
+
+/**
+ * Record a FAILED analysis run from a catch branch.
+ *
+ * Pass the same descriptive fields the success call site passes (analysisType,
+ * backendEndpoint, dataset, traits, designType, startedAt, parameters) so the
+ * two outcomes are directly comparable; `response` is deliberately not accepted
+ * because a failed run has none worth extracting metrics from.
+ */
+export async function recordAnalysisFailure(
+  input: Omit<RecordAnalysisInput, "status" | "response">,
+  error: unknown,
+): Promise<void> {
+  const message =
+    error instanceof Error ? error.message : typeof error === "string" ? error : "Unknown error";
+  await recordAnalysis({ ...input, status: "failure", errorMessage: message });
 }
 
 /** Read the current user's most recent analyses. Returns [] when signed out or on error. */

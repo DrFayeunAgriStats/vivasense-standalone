@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Play, AlertTriangle, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runStability, buildStabilityPayload } from "@/lib/advancedAnalysisApi";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type {
   StabilityResponse, StabilityMethod, GgeBiplotType,
@@ -70,8 +70,18 @@ export function StabilityPanel({ datasetContext }: Props) {
     setIsRunning(true);
     setError(null);
     setResult(null);
+    // Hoisted so the failure path reports the same fields and elapsed time.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "stability" as const,
+      backendEndpoint: "/analysis/stability",
+      datasetName: datasetContext?.file?.name ?? null,
+      datasetToken,
+      traits: trait ? [trait] : null,
+      startedAt,
+      parameters: { methods, gge: ggeEnabled, ammi: ammiEnabled },
+    };
     try {
-      const startedAt = performance.now();
       const res = await runStability(
         buildStabilityPayload({
           datasetToken,
@@ -97,16 +107,7 @@ export function StabilityPanel({ datasetContext }: Props) {
       );
 
       setResult(res);
-      void recordAnalysis({
-        analysisType: "stability",
-        backendEndpoint: "/analysis/stability",
-        datasetName: datasetContext?.file?.name ?? null,
-        datasetToken,
-        traits: trait ? [trait] : null,
-        startedAt,
-        parameters: { methods, gge: ggeEnabled, ammi: ammiEnabled },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
       // Auto-pick the most informative tab available
       const hasAmmi = !!res.ammi_results && Array.isArray(res.ammi_results.anova_table?.source);
       const hasGge = !!res.gge_results && !!res.gge_results.biplot_data;
@@ -119,6 +120,9 @@ export function StabilityPanel({ datasetContext }: Props) {
       });
     } catch (e) {
       const raw = (e as Error).message ?? "Unexpected error";
+      // Record the raw error, not the friendlier rewrite below — the rewrite
+      // drops the detail that makes a failure diagnosable.
+      void recordAnalysisFailure(historyBase, raw);
       // Friendlier messaging for common backend cases
       let msg = raw;
       if (/at least 2 environments|n_environments/i.test(raw))

@@ -22,7 +22,7 @@ import {
 import { Loader2, Play, AlertTriangle, Settings2, Sigma } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runBlup, buildBlupPayload } from "@/lib/advancedAnalysisApi";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { BlupResponse } from "@/types/advancedAnalysis";
 import {
@@ -61,8 +61,18 @@ export function BlupPanel({ datasetContext }: Props) {
     setIsRunning(true);
     setError(null);
     setResult(null);
+    // Hoisted so the failure path reports the same fields and elapsed time.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "blup" as const,
+      backendEndpoint: "/analysis/blup",
+      datasetName: datasetContext?.file?.name ?? null,
+      datasetToken,
+      traits: trait ? [trait] : null,
+      startedAt,
+      parameters: { fixed_effects: fixedEffects, random_effects: ["genotype"] },
+    };
     try {
-      const startedAt = performance.now();
       const res = await runBlup(buildBlupPayload({
         datasetToken,
         trait,
@@ -71,19 +81,11 @@ export function BlupPanel({ datasetContext }: Props) {
       }));
       if (res.status !== "success") throw new Error("BLUP analysis failed on the server.");
       setResult(res);
-      void recordAnalysis({
-        analysisType: "blup",
-        backendEndpoint: "/analysis/blup",
-        datasetName: datasetContext?.file?.name ?? null,
-        datasetToken,
-        traits: trait ? [trait] : null,
-        startedAt,
-        parameters: { fixed_effects: fixedEffects, random_effects: ["genotype"] },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
       toast({ title: "BLUPs computed", description: `${res.genotype_blups.length} genotypes (${res.model_type})` });
     } catch (e) {
       const msg = (e as Error).message ?? "Unexpected error";
+      void recordAnalysisFailure(historyBase, msg);
       setError(msg);
       toast({ title: "Analysis failed", description: msg, variant: "destructive" });
     } finally {

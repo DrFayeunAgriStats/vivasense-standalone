@@ -18,7 +18,7 @@ import {
 import { Loader2, Play, AlertTriangle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPca } from "@/lib/advancedAnalysisApi";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PcaResponse } from "@/types/advancedAnalysis";
 import {
@@ -49,8 +49,18 @@ export function PcaPanel({ datasetContext }: Props) {
     setIsRunning(true);
     setError(null);
     setResult(null);
+    // Hoisted so the failure path reports the same fields and elapsed time.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "pca" as const,
+      backendEndpoint: "/analysis/pca",
+      datasetName: datasetContext?.file?.name ?? null,
+      datasetToken,
+      traits,
+      startedAt,
+      parameters: { scale: standardize, n_components: nComponents > 0 ? nComponents : null },
+    };
     try {
-      const startedAt = performance.now();
       const res = await runPca({
         dataset_token: datasetToken,
         trait_columns: traits,
@@ -59,21 +69,13 @@ export function PcaPanel({ datasetContext }: Props) {
       });
       if (res.status !== "success") throw new Error("PCA failed on the server.");
       setResult(res);
-      void recordAnalysis({
-        analysisType: "pca",
-        backendEndpoint: "/analysis/pca",
-        datasetName: datasetContext?.file?.name ?? null,
-        datasetToken,
-        traits,
-        startedAt,
-        parameters: { scale: standardize, n_components: nComponents > 0 ? nComponents : null },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
       setPcA(0);
       setPcB(Math.min(1, res.variance_explained.length - 1));
       toast({ title: "PCA complete", description: `${res.n_traits} traits × ${res.n_genotypes} genotypes` });
     } catch (e) {
       const msg = (e as Error).message ?? "Unexpected error";
+      void recordAnalysisFailure(historyBase, msg);
       setError(msg);
       toast({ title: "Analysis failed", description: msg, variant: "destructive" });
     } finally { setIsRunning(false); }

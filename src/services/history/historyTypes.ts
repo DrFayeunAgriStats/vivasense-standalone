@@ -20,6 +20,12 @@ export type AnalysisTypeId =
   | "selection_index"
   | "trait_association";
 
+/**
+ * Outcome of a recorded analysis. 'failure' became storable on 2026-08-08
+ * (migration 20260808000100); before that the DB CHECK allowed only 'success'.
+ */
+export type AnalysisStatus = "success" | "failure";
+
 /** A row as stored in / read from public.analysis_history. */
 export interface AnalysisHistoryRecord {
   id: string;
@@ -36,7 +42,7 @@ export interface AnalysisHistoryRecord {
   dataset_token: string | null;
   traits: string[] | null;
 
-  analysis_status: "success";
+  analysis_status: AnalysisStatus;
   execution_time_ms: number | null;
   backend_endpoint: string | null;
   backend_version: string | null;
@@ -77,6 +83,13 @@ export interface RecordAnalysisInput {
   title?: string | null;
   /** Optional study/project name (future grouping; not populated automatically yet). */
   studyName?: string | null;
+  /** Outcome. Defaults to 'success' so existing success call sites are unchanged. */
+  status?: AnalysisStatus;
+  /**
+   * Error text for a failed run. Stored in result_summary.error_message —
+   * never in a column of its own, and never for a successful run.
+   */
+  errorMessage?: string | null;
 }
 
 /** Denormalized profile snapshot stored alongside each analysis. */

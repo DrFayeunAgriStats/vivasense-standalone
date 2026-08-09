@@ -17,7 +17,7 @@ import { computeCorrelation, computeGeneticParameters, computeRegression, fileTo
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { useToast } from "@/hooks/use-toast";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
@@ -91,6 +91,19 @@ export default function VivaSenseWorkspace() {
   const handleGeneticsSubmit = async (analysisType: GeneticsAnalysisType, formData: FormData) => {
     setIsLoading(true);
     setError(null);
+    // Hoisted out of the try so the failure path can report elapsed time and
+    // resolve the same history type/endpoint the success path uses.
+    const startedAt = performance.now();
+    const historyType =
+      analysisType === "variance_components" ? "genetic_parameters"
+      : analysisType === "correlations" ? "correlation"
+      : analysisType === "regression" ? "regression"
+      : "anova";
+    const historyEndpoint =
+      historyType === "anova" ? "/genetics/analyze-upload?module=anova"
+      : historyType === "genetic_parameters" ? "/analysis/genetic-parameters"
+      : historyType === "correlation" ? "/genetics/correlation"
+      : "/analysis/regression";
     try {
       // Check Pro gating
       const guard = classifyGeneticsRequest(analysisType);
@@ -130,7 +143,6 @@ export default function VivaSenseWorkspace() {
         toast({ title: "Single-environment analysis", description: downgradeReason });
       }
 
-      const startedAt = performance.now();
       let result: unknown;
       let historyTraits: string[] = traitValues;
 
@@ -219,17 +231,9 @@ export default function VivaSenseWorkspace() {
         results: result,
       });
 
-      // Persist to Research Analysis History (best-effort; success path only).
-      const historyType =
-        analysisType === "variance_components" ? "genetic_parameters"
-        : analysisType === "correlations" ? "correlation"
-        : analysisType === "regression" ? "regression"
-        : "anova";
-      const historyEndpoint =
-        historyType === "anova" ? "/genetics/analyze-upload?module=anova"
-        : historyType === "genetic_parameters" ? "/analysis/genetic-parameters"
-        : historyType === "correlation" ? "/genetics/correlation"
-        : "/analysis/regression";
+      // Persist to Research Analysis History (best-effort, never blocking).
+      // historyType/historyEndpoint are resolved above so the catch branch can
+      // record the matching failure row.
       void recordAnalysis({
         analysisType: historyType,
         backendEndpoint: historyEndpoint,
@@ -257,6 +261,18 @@ export default function VivaSenseWorkspace() {
       setCurrentModule("results");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Analysis failed";
+      // Failure row mirrors the success row's type/endpoint. Dataset-level
+      // fields are not all in scope here (the throw may predate them), so only
+      // what is reliably known is recorded — nothing is invented.
+      void recordAnalysisFailure(
+        {
+          analysisType: historyType,
+          backendEndpoint: historyEndpoint,
+          startedAt,
+          parameters: { requested_analysis: analysisType },
+        },
+        err,
+      );
       setError(message);
     } finally {
       setIsLoading(false);

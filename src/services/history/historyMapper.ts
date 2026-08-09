@@ -144,6 +144,15 @@ export function deriveResultSummary(input: RecordAnalysisInput): Record<string, 
   const summary: Record<string, unknown> = {};
   if (input.traits?.length) summary.n_traits = input.traits.length;
 
+  // Failed runs carry the error instead of result metrics. A failure has no
+  // trustworthy response to extract headline statistics from, so nothing is
+  // derived from it — recording a fabricated F or h2 for a crashed run would be
+  // worse than recording none.
+  if (input.status === "failure") {
+    if (input.errorMessage) summary.error_message = String(input.errorMessage).slice(0, 500);
+    return summary;
+  }
+
   const r = input.response as Record<string, unknown> | undefined;
   if (r && typeof r === "object") {
     const ds = r.dataset_summary as Record<string, unknown> | undefined;
@@ -189,7 +198,7 @@ export function buildHistoryRow(
     dataset_name: input.datasetName ?? null,
     dataset_token: input.datasetToken ?? null,
     traits: input.traits ?? null,
-    analysis_status: "success",
+    analysis_status: input.status ?? "success",
     execution_time_ms: executionMs,
     backend_endpoint: input.backendEndpoint,
     backend_version: null, // only if the backend returns one; never inferred

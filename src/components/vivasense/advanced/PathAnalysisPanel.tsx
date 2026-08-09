@@ -14,7 +14,7 @@ import {
 import { Loader2, Play, AlertTriangle, GitBranch } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPathAnalysis, buildPathAnalysisPayload } from "@/lib/advancedAnalysisApi";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PathAnalysisResponse, PathAnalysisMethod, PathDiagramEdge, PathDecompositionRow, PathCoefficientRow } from "@/types/advancedAnalysis";
 import {
@@ -70,8 +70,19 @@ export function PathAnalysisPanel({ datasetContext }: Props) {
       return toast({ title: "Outcome cannot also be a predictor." });
     }
     setIsRunning(true); setError(null); setResult(null);
+    // Hoisted out of the try so the failure path can report elapsed time and the
+    // same descriptive fields as the success path.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "path_analysis" as const,
+      backendEndpoint: "/analysis/path-analysis",
+      datasetName: datasetContext?.file?.name ?? null,
+      datasetToken,
+      traits: [outcome, ...predictors],
+      startedAt,
+      parameters: { outcome_trait: outcome, method, standardize },
+    };
     try {
-      const startedAt = performance.now();
       const res = await runPathAnalysis(buildPathAnalysisPayload({
         datasetToken,
         outcomeTrait: outcome,
@@ -82,19 +93,13 @@ export function PathAnalysisPanel({ datasetContext }: Props) {
       console.log("[PATH RESPONSE]", res);
       if (res.status !== "success") throw new Error("Path analysis failed on the server.");
       setResult(res);
-      void recordAnalysis({
-        analysisType: "path_analysis",
-        backendEndpoint: "/analysis/path-analysis",
-        datasetName: datasetContext?.file?.name ?? null,
-        datasetToken,
-        traits: [outcome, ...predictors],
-        startedAt,
-        parameters: { outcome_trait: outcome, method, standardize },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
       toast({ title: "Path analysis complete" });
     } catch (e) {
       const raw = (e as Error).message ?? "Unexpected error";
+      // Record the raw error, not the user-facing rewrite below — the sanitized
+      // copy drops the detail that makes a failure diagnosable.
+      void recordAnalysisFailure(historyBase, raw);
       const msg = /singular|constant|missing|rank/i.test(raw)
         ? "This analysis could not be completed. Check trait type, missing values, or constant columns."
         : raw;

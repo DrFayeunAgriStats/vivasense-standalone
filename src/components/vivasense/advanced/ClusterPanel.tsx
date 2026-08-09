@@ -22,7 +22,7 @@ import {
 import { Loader2, Play, AlertTriangle, Network, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runCluster, buildClusterPayload } from "@/lib/advancedAnalysisApi";
-import { recordAnalysis } from "@/services/history/historyService";
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { ClusterResponse } from "@/types/advancedAnalysis";
 import {
@@ -56,8 +56,18 @@ export function ClusterPanel({ datasetContext }: Props) {
     setIsRunning(true);
     setError(null);
     setResult(null);
+    // Hoisted so the failure path reports the same fields and elapsed time.
+    const startedAt = performance.now();
+    const historyBase = {
+      analysisType: "cluster" as const,
+      backendEndpoint: "/analysis/cluster",
+      datasetName: datasetContext?.file?.name ?? null,
+      datasetToken,
+      traits,
+      startedAt,
+      parameters: { method: linkage, k: k ? Number(k) : null, scale: standardize },
+    };
     try {
-      const startedAt = performance.now();
       const res = await runCluster(buildClusterPayload({
         datasetToken,
         traits,
@@ -67,19 +77,11 @@ export function ClusterPanel({ datasetContext }: Props) {
       }));
       if (res.status !== "success") throw new Error("Cluster analysis failed.");
       setResult(res);
-      void recordAnalysis({
-        analysisType: "cluster",
-        backendEndpoint: "/analysis/cluster",
-        datasetName: datasetContext?.file?.name ?? null,
-        datasetToken,
-        traits,
-        startedAt,
-        parameters: { method: linkage, k: k ? Number(k) : null, scale: standardize },
-        response: res,
-      });
+      void recordAnalysis({ ...historyBase, response: res });
       toast({ title: "Cluster analysis complete", description: `k=${res.optimal_k}, ${res.method}` });
     } catch (e) {
       const msg = (e as Error).message ?? "Unexpected error";
+      void recordAnalysisFailure(historyBase, msg);
       setError(msg);
       toast({ title: "Analysis failed", description: msg, variant: "destructive" });
     } finally { setIsRunning(false); }
