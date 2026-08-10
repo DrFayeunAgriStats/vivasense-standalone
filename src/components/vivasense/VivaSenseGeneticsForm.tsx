@@ -257,6 +257,21 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
   // /genetics/analyze-upload path; the block/rep column is optional (RCBD vs CRD).
   const needsGenotype = analysisType !== "" && !isRegression;
 
+  // Whether this run will actually be multi-environment. Mirrors the condition
+  // the workspace uses when it builds the request — an explicit Environment
+  // column, or a complete Location + Year pair — rather than any separate
+  // "mode" state, of which this form has none.
+  const isMultiEnvironmentRun =
+    metStructureSupported && (environment !== "" || (locationFactor !== "" && yearFactor !== ""));
+
+  // Replication is optional for CRD, which has no blocking structure to declare.
+  // A multi-environment run is a different case: the replication structure
+  // within each environment has to be identified before the trial can be
+  // described at all. Leaving it blank previously made the run look like a CRD
+  // and failed downstream with nothing pointing at the missing field.
+  // Equivalent to the portal's showReplication = design !== "CRD".
+  const replicationMissingForMet = isMultiEnvironmentRun && !block;
+
   const isFormValid = useMemo(() => {
     if (!file || !datasetToken || !analysisType) return false;
     if (isRegression) {
@@ -265,10 +280,11 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
     if (needsGenotype && !genotype) return false;
     if (needsEnvironment && !environment) return false;
     if (needsBlock && !block) return false;
+    if (replicationMissingForMet) return false;
     if (needsTraits && selectedTraits.length < 1) return false;
     if (analysisType === "correlations" && selectedTraits.length < 2) return false;
     return true;
-  }, [file, datasetToken, analysisType, genotype, environment, block, selectedTraits, needsGenotype, needsEnvironment, needsTraits, isRegression, responseVar, selectedPredictors]);
+  }, [file, datasetToken, analysisType, genotype, environment, block, selectedTraits, needsGenotype, needsEnvironment, needsTraits, replicationMissingForMet, isRegression, responseVar, selectedPredictors]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -467,7 +483,26 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                     {needsGenotype && renderColumnSelect("Genotype column", genotype, setGenotype, "gen_col")}
                     {needsEnvironment && renderColumnSelect("Environment / Location column", environment, setEnvironment, "env_col")}
                     {needsBlock && renderColumnSelect("Block / Rep column", block, setBlock, "block_col", true)}
-                    {analysisType === "anova" && renderColumnSelect("Block / Rep column (optional — RCBD)", block, setBlock, "block_col", false)}
+                    {analysisType === "anova" && (
+                      <div className="space-y-2">
+                        {renderColumnSelect(
+                          isMultiEnvironmentRun
+                            ? "Replication / Block column"
+                            : "Block / Rep column (optional — RCBD)",
+                          block,
+                          setBlock,
+                          "block_col",
+                          isMultiEnvironmentRun
+                        )}
+                        {replicationMissingForMet && (
+                          <p className="text-sm text-destructive" role="alert">
+                            Replication is required for multi-environment analysis. Replication
+                            must be identified so the engine can establish the replication
+                            structure within each environment.
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/*
                       Multi-environment structure. A trial at 3 locations over
