@@ -346,7 +346,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 />
                 <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
                 <p className="sm:col-span-2 text-xs text-muted-foreground">
-                  Replications are included as blocks; the factorial model estimates Factor A, Factor B, their interaction, and the error term.
+                  {factorC && factorC !== "None"
+                    ? "Replications are included as blocks; the factorial model estimates Factor A, Factor B, Factor C, all three two-way interactions, the three-way interaction, and the error term."
+                    : "Replications are included as blocks; the factorial model estimates Factor A, Factor B, their interaction, and the error term."}
                 </p>
               </>
             )}
