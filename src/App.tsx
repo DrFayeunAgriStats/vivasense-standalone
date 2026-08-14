@@ -5,6 +5,7 @@ import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
 import DataCapture from "@/pages/DataCapture";
+import HelpLearning from "@/pages/HelpLearning";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,22 @@ function App() {
               element={
                 <VivaSenseAuthGuard>
                   <DataCapture />
+                </VivaSenseAuthGuard>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <VivaSenseAuthGuard>
+                  <HelpLearning />
+                </VivaSenseAuthGuard>
+              }
+            />
+            <Route
+              path="/help/:tutorialSlug"
+              element={
+                <VivaSenseAuthGuard>
+                  <HelpLearning />
                 </VivaSenseAuthGuard>
               }
             />
