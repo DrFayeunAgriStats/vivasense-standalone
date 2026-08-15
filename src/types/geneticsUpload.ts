@@ -155,6 +155,94 @@ export interface AnalyzeUploadResponse {
   failed_traits: string[];
 }
 
+// ── Dataset registration (POST /upload/dataset) ─────────────────────────────
+
+/**
+ * Confirms a column mapping server-side and returns a token whose cached
+ * context carries THAT mapping.
+ *
+ * The token handed back by /genetics/upload-preview is registered from
+ * auto-detected columns, and /analysis/* endpoints read the mapping from the
+ * token's context — they do not accept column roles in their own body. So an
+ * analysis that depends on an explicitly declared genotype column must register
+ * the declaration here first, or the backend would silently analyse whichever
+ * column detection happened to pick.
+ */
+export interface RegisterDatasetRequest {
+  base64_content: string;
+  file_type: string;
+  genotype_column?: string | null;
+  rep_column?: string | null;
+  environment_column?: string | null;
+  factor_column?: string | null;
+  main_plot_column?: string | null;
+  sub_plot_column?: string | null;
+  design_type: "crd" | "rcbd" | "factorial" | "split_plot_rcbd";
+  mode: "single" | "multi";
+  random_environment?: boolean;
+  selection_intensity?: number;
+}
+
+export interface RegisterDatasetResponse {
+  dataset_token: string;
+  n_genotypes: number | null;
+  n_reps: number;
+  n_environments: number | null;
+  n_rows: number;
+  column_names: string[];
+  mode: string;
+  design_type: string;
+}
+
+// ── Genetic parameters module (POST /analysis/genetic-parameters) ───────────
+
+export interface GeneticParametersRequest {
+  dataset_token: string;
+  trait_columns: string[];
+  /**
+   * Column roles are resolved from the dataset token's cached context; these are
+   * sent so the request is self-describing (and forward-compatible if the
+   * endpoint starts honouring them). They are NOT a substitute for registering
+   * the mapping — see RegisterDatasetRequest.
+   */
+  genotype_column: string;
+  rep_column: string | null;
+  design_type: "crd" | "rcbd";
+  mode: "single";
+}
+
+export interface GeneticParametersTraitResult {
+  trait: string;
+  status: string;
+  grand_mean?: number | null;
+  descriptive_stats?: Record<string, number | null> | null;
+  /** Populated only on a genuine genetics run — {} means the analysis did not complete. */
+  variance_components?: Record<string, number | null> | null;
+  heritability?: Record<string, number | string | null> | null;
+  gcv?: number | null;
+  pcv?: number | null;
+  /** Genetic advance (absolute units). */
+  ga?: number | null;
+  /** Genetic advance as % of the grand mean. */
+  gam?: number | null;
+  breeding_implication?: string | null;
+  interpretation?: string | null;
+  data_warnings?: string[];
+  error?: string | null;
+  analysis_context?: {
+    is_single_environment?: boolean;
+    environment_count?: number;
+    design_type?: string;
+  } | null;
+}
+
+export interface GeneticParametersResponse {
+  dataset_token: string;
+  mode: string;
+  trait_results: Record<string, GeneticParametersTraitResult>;
+  failed_traits: string[];
+}
+
 // ── Correlation ─────────────────────────────────────────────────────────────
 
 export interface CorrelationRequest {

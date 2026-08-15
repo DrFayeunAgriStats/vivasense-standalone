@@ -9,6 +9,10 @@ import type {
   CorrelationRequest,
   CorrelationResponse,
   AnalysisModule,
+  RegisterDatasetRequest,
+  RegisterDatasetResponse,
+  GeneticParametersRequest,
+  GeneticParametersResponse,
 } from "@/types/geneticsUpload";
 
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
@@ -70,6 +74,42 @@ export async function computeGeneticParameters(body: {
   return vivaSenseRequest<Record<string, unknown>>(url, {
     method: "POST",
     jsonBody: body,
+  });
+}
+
+/**
+ * Register a confirmed column mapping and receive a dataset token whose cached
+ * context carries it. Required before any /analysis/* call that depends on an
+ * explicitly declared column role — those endpoints read roles from the token,
+ * not from their own request body.
+ */
+export async function registerDataset(
+  body: RegisterDatasetRequest
+): Promise<RegisterDatasetResponse> {
+  const url = "/upload/dataset";
+  console.log("[MODULE] upload-dataset");
+  console.log("[REQUEST] upload-dataset", url, { ...body, base64_content: "<omitted>" });
+  return vivaSenseRequest<RegisterDatasetResponse>(url, {
+    method: "POST",
+    jsonBody: body,
+    timeoutMs: 120000,
+  });
+}
+
+/**
+ * Variance components & heritability for one or more traits, single environment.
+ * The token must already carry the declared genotype / replication mapping.
+ */
+export async function computeVarianceComponents(
+  body: GeneticParametersRequest
+): Promise<GeneticParametersResponse> {
+  const url = "/analysis/genetic-parameters";
+  console.log("[MODULE] genetic-parameters");
+  console.log("[REQUEST] genetic-parameters", url, body);
+  return vivaSenseRequest<GeneticParametersResponse>(url, {
+    method: "POST",
+    jsonBody: body,
+    timeoutMs: 180000,
   });
 }
 
