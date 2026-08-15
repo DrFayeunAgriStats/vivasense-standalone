@@ -31,6 +31,7 @@ const MODULE = "anova" as const;
 
 interface Props {
   datasetContext: DatasetContext | null;
+  onAnalysisKindChange?: (kind: "anova" | "variance_components") => void;
 }
 
 interface DesignMeta {
@@ -62,11 +63,11 @@ const ANALYSIS_KINDS: { id: AnalysisKind; label: string; description: string }[]
   {
     id: "variance_components",
     label: "Variance Components & Heritability",
-    description: "σ²g, H², GCV, PCV, GA — single environment",
+    description: "σ²g, H², GCV, PCV, GA — single or multi-environment",
   },
 ];
 
-export function AnovaModulePanel({ datasetContext }: Props) {
+export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props) {
   const { toast } = useToast();
   const location = useLocation();
   // The "Genetics & Breeding" nav item redirects here carrying intent=genetics,
@@ -78,6 +79,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   useEffect(() => {
     if (intent === "genetics") setAnalysisKind("variance_components");
   }, [intent]);
+  useEffect(() => {
+    onAnalysisKindChange?.(analysisKind);
+  }, [analysisKind, onAnalysisKindChange]);
   const [design, setDesign] = useState<AnovaDesignType>("rcbd");
 
   // Mappings (per-design)

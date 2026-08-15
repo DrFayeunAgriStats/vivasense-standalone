@@ -97,8 +97,8 @@ export async function registerDataset(
 }
 
 /**
- * Variance components & heritability for one or more traits, single environment.
- * The token must already carry the declared genotype / replication mapping.
+ * Variance components & heritability for one or more traits. The token must
+ * already carry the declared genotype, replication and environment mapping.
  */
 export async function computeVarianceComponents(
   body: GeneticParametersRequest

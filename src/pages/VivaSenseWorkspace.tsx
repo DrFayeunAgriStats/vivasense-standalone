@@ -60,6 +60,7 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+  const [anovaAnalysisKind, setAnovaAnalysisKind] = useState<"anova" | "variance_components">("anova");
 
   const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
     const name = file.name.toLowerCase();
@@ -330,18 +331,22 @@ export default function VivaSenseWorkspace() {
               <ChevronRight className="h-3.5 w-3.5" />
               <span>Modules</span>
               <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-foreground">ANOVA</span>
+              <span className="text-foreground">
+                {anovaAnalysisKind === "anova" ? "ANOVA" : "Variance Components & Heritability"}
+              </span>
             </nav>
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                  Analysis of Variance
+                  {anovaAnalysisKind === "anova" ? "Analysis of Variance" : "Genetic Parameters"}
                 </span>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">ANOVA</h1>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+                  {anovaAnalysisKind === "anova" ? "ANOVA" : "Variance Components & Heritability"}
+                </h1>
                 <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                  Upload a dataset, choose your experimental design, and analyse one or more
-                  response variables — ANOVA table, ranked means with Tukey groups, diagnostics,
-                  and interpretation per trait.
+                  {anovaAnalysisKind === "anova"
+                    ? "Upload a dataset, choose your experimental design, and analyse one or more response variables — ANOVA table, ranked means with Tukey groups, diagnostics, and interpretation per trait."
+                    : "Estimate variance components, broad-sense heritability, genetic coefficients of variation and genetic advance for single or multi-environment trials."}
                 </p>
               </div>
             </div>
@@ -356,7 +361,10 @@ export default function VivaSenseWorkspace() {
                 onDatasetReady={setDatasetContext}
                 datasetContext={datasetContext}
               />
-              <AnovaModulePanel datasetContext={datasetContext} />
+              <AnovaModulePanel
+                datasetContext={datasetContext}
+                onAnalysisKindChange={setAnovaAnalysisKind}
+              />
             </div>
           </div>
         )}

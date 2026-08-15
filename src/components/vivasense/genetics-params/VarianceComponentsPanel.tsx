@@ -1,9 +1,9 @@
 /**
- * Variance Components & Heritability — single-environment genetics analysis.
+ * Variance Components & Heritability — single- and multi-environment analysis.
  *
  * A separate analysis type, not an ANOVA design variant: it estimates σ²g, σ²e,
- * σ²p, H², GCV, PCV, GA and GAM for one or more traits from a CRD or RCBD trial
- * in a single environment.
+ * σ²p, H², GCV, PCV, GA and GAM for one or more traits from a CRD/RCBD trial or
+ * a complete balanced replicated multi-environment trial.
  *
  * Governing rule for this panel: when the researcher explicitly asks for
  * variance components, the run either returns the genetics result or fails with
@@ -28,6 +28,11 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { computeVarianceComponents, registerDataset } from "@/lib/geneticsUploadApi";
+import {
+  buildVarianceComponentRows,
+  buildVarianceComponentsRequests,
+  formatVarianceComponentsError,
+} from "@/lib/varianceComponentsMapping";
 import { pl } from "@/lib/utils";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type {
@@ -37,6 +42,7 @@ import type {
 } from "@/types/geneticsUpload";
 
 type VcDesign = "crd" | "rcbd";
+type VcMode = "single" | "multi";
 
 interface Props {
   datasetContext: DatasetContext | null;
@@ -78,16 +84,22 @@ function geneticsSliceMissing(tr: GeneticParametersTraitResult): boolean {
 export function VarianceComponentsPanel({ datasetContext }: Props) {
   const { toast } = useToast();
 
+  const [analysisMode, setAnalysisMode] = useState<VcMode>(datasetContext?.mode ?? "single");
   const [design, setDesign] = useState<VcDesign>("rcbd");
   const [genotypeCol, setGenotypeCol] = useState<string>(datasetContext?.genotypeColumn ?? "");
   const [repCol, setRepCol] = useState<string>(datasetContext?.repColumn ?? "");
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<GeneticParametersResponse | null>(null);
+  const [registrationSummary, setRegistrationSummary] = useState<{
+    n_genotypes: number | null;
+    n_reps: number;
+    n_environments: number | null;
+  } | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
 
-  // Structural (non-trait) columns. Environment, Location and Year are not
-  // offered: this analysis is single-environment by definition.
+  // Structural (non-trait) columns. Environment declarations already live in
+  // datasetContext; this panel never constructs composite labels itself.
   const allColumns = useMemo(() => {
     if (!datasetContext) return [] as string[];
     const traits = new Set(datasetContext.availableTraitColumns);
@@ -116,7 +128,13 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
 
   const validation = (() => {
     if (!genotypeCol) return "Select the Genotype / Entry column.";
-    if (design === "rcbd") {
+    if (analysisMode === "multi") {
+      if (!repCol) return "Select a Replication / Block column for the multi-environment trial.";
+      if (repCol === genotypeCol) return "Genotype and Replication must be different columns.";
+      if (!datasetContext.environmentColumn && (datasetContext.environmentFactorColumns?.length ?? 0) < 2) {
+        return "Multi-environment mode requires an explicit Environment column or at least two ordered environment factor columns.";
+      }
+    } else if (design === "rcbd") {
       if (!repCol) return "Select a Replication / Block column (required for RCBD).";
       if (repCol === genotypeCol) return "Genotype and Replication must be different columns.";
     }
@@ -124,12 +142,23 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
     return null;
   })();
 
-  const effectiveRep = design === "rcbd" ? repCol : null;
+  const effectiveDesign: VcDesign = analysisMode === "multi" ? "rcbd" : design;
+  const effectiveRep = effectiveDesign === "rcbd" ? repCol : null;
+  const requestMapping = buildVarianceComponentsRequests(datasetContext, {
+    mode: analysisMode,
+    design,
+    genotypeColumn: genotypeCol,
+    repColumn: repCol,
+    traitColumns: selectedTraits,
+  });
+  const environmentColumn = requestMapping.registration.environment_column ?? null;
+  const environmentFactorColumns = requestMapping.registration.environment_factor_columns ?? [];
 
   const handleAnalyze = async () => {
     if (validation) return;
     setIsAnalyzing(true);
     setResults(null);
+    setRegistrationSummary(null);
     setRunError(null);
 
     const startedAt = performance.now();
@@ -138,14 +167,16 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
       backendEndpoint: "/analysis/genetic-parameters",
       datasetName: datasetContext.file.name,
       datasetToken: datasetContext.datasetToken ?? null,
-      designType: design,
+      designType: effectiveDesign,
       traits: selectedTraits,
       startedAt,
       parameters: {
         genotype_column: genotypeCol,
         rep_column: effectiveRep,
-        design_type: design,
-        mode: "single",
+        environment_column: environmentColumn,
+        environment_factor_columns: environmentFactorColumns,
+        design_type: effectiveDesign,
+        mode: analysisMode,
       },
     };
 
@@ -156,25 +187,17 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
       // columns) would analyse a column the researcher did not choose. This is
       // the explicit declaration that replaced the name-keyword heuristic; it
       // has to reach the backend as a registration, not just as request fields.
-      const registered = await registerDataset({
-        base64_content: datasetContext.base64Content,
-        file_type: datasetContext.fileType,
-        genotype_column: genotypeCol,
-        rep_column: effectiveRep,
-        environment_column: null,
-        design_type: design,
-        mode: "single",
-        random_environment: false,
-        selection_intensity: 0.2,
+      const registered = await registerDataset(requestMapping.registration);
+
+      setRegistrationSummary({
+        n_genotypes: registered.n_genotypes,
+        n_reps: registered.n_reps,
+        n_environments: registered.n_environments,
       });
 
       const res = await computeVarianceComponents({
         dataset_token: registered.dataset_token,
-        genotype_column: genotypeCol,
-        rep_column: effectiveRep,
-        design_type: design,
-        trait_columns: selectedTraits,
-        mode: "single",
+        ...requestMapping.analysis,
       });
 
       setResults(res);
@@ -203,9 +226,10 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
       });
     } catch (err: any) {
       const message = err?.message || "Variance components analysis failed";
-      setRunError(message);
+      const displayedMessage = formatVarianceComponentsError(message, analysisMode);
+      setRunError(displayedMessage);
       void recordAnalysisFailure(historyBase, err);
-      toast({ title: "Analysis failed", description: message, variant: "destructive" });
+      toast({ title: "Analysis failed", description: displayedMessage, variant: "destructive" });
     } finally {
       setIsAnalyzing(false);
     }
@@ -218,7 +242,7 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
         <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
         <span>Using: <span className="font-medium">{datasetContext.file.name}</span></span>
         <Badge variant="outline" className="ml-auto text-xs">
-          {pl(datasetContext.availableTraitColumns.length, "trait")} · single environment
+          {pl(datasetContext.availableTraitColumns.length, "trait")} · {analysisMode === "multi" ? "multi-environment" : "single environment"}
         </Badge>
       </div>
 
@@ -229,12 +253,50 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
             Variance Components &amp; Heritability
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            σ²g, H², GCV, PCV and genetic advance for a single-environment trial.
+            {analysisMode === "multi"
+              ? "Across-environment variance components and heritability for a complete balanced replicated trial."
+              : "σ²g, H², GCV, PCV and genetic advance for a single-environment trial."}
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Design — CRD or RCBD only. Factorial, split-plot and multi-environment
-              models cannot yield a single pooled error term for σ²g. */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Analysis mode</Label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={analysisMode === "single" ? "default" : "outline"}
+                onClick={() => setAnalysisMode("single")}
+              >
+                Single Environment
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={analysisMode === "multi" ? "default" : "outline"}
+                onClick={() => setAnalysisMode("multi")}
+              >
+                Multi-Environment
+              </Button>
+            </div>
+          </div>
+
+          {analysisMode === "multi" && (
+            <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">Complete balanced MET required</p>
+              <p>Multi-environment variance components currently require every genotype in every environment with consistent replication. The backend validates each selected trait.</p>
+              <p>
+                Structure: {environmentColumn
+                  ? `explicit Environment column “${environmentColumn}”`
+                  : environmentFactorColumns.length >= 2
+                    ? environmentFactorColumns.join(" × ")
+                    : "no valid environment declaration"}
+              </p>
+            </div>
+          )}
+
+          {/* Single-environment design choice. Multi-environment analysis uses
+              the approved combined-RCBD pathway and therefore requires Rep. */}
           <div className="space-y-1.5">
             <Label className="text-sm font-medium">Design</Label>
             <div className="flex flex-wrap gap-2">
@@ -243,8 +305,9 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
                   key={d.id}
                   type="button"
                   size="sm"
-                  variant={design === d.id ? "default" : "outline"}
+                  variant={effectiveDesign === d.id ? "default" : "outline"}
                   onClick={() => setDesign(d.id)}
+                  disabled={analysisMode === "multi"}
                 >
                   {d.label}
                 </Button>
@@ -254,7 +317,9 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
 
           <div className="rounded-md border bg-muted/30 p-3 flex gap-2 text-xs text-muted-foreground">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{DESIGNS.find((d) => d.id === design)?.hint}</span>
+            <span>{analysisMode === "multi"
+              ? "Combined RCBD — replication is interpreted within Environment by the backend."
+              : DESIGNS.find((d) => d.id === design)?.hint}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -273,16 +338,16 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
 
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">
-                Replication / Block Column {design === "crd" && (
+                Replication / Block Column {effectiveDesign === "crd" && (
                   <span className="font-normal text-muted-foreground">(not used for CRD)</span>
                 )}
               </Label>
               <Select
                 value={repCol || undefined}
                 onValueChange={setRepCol}
-                disabled={design === "crd"}
+                disabled={effectiveDesign === "crd"}
               >
-                <SelectTrigger><SelectValue placeholder={design === "crd" ? "Not required" : "Select column…"} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={effectiveDesign === "crd" ? "Not required" : "Select column…"} /></SelectTrigger>
                 <SelectContent>
                   {allColumns.filter((c) => c !== genotypeCol).map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -335,14 +400,25 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                Variance Components &amp; Heritability — {DESIGNS.find((d) => d.id === design)?.label}
+                Variance Components &amp; Heritability — {analysisMode === "multi" ? "Multi-Environment RCBD" : DESIGNS.find((d) => d.id === design)?.label}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 text-sm">
                 <Badge variant="secondary">{genotypeCol} as genotype</Badge>
                 {effectiveRep && <Badge variant="secondary">{effectiveRep} as replication</Badge>}
-                <Badge variant="outline">single environment</Badge>
+                <Badge variant="outline">{analysisMode === "multi" ? "multi-environment" : "single environment"}</Badge>
+                {registrationSummary && (
+                  <>
+                    <Badge variant="secondary">{registrationSummary.n_genotypes ?? "—"} genotypes</Badge>
+                    <Badge variant="secondary">{registrationSummary.n_reps} replications</Badge>
+                    {analysisMode === "multi" && (
+                      <Badge variant="secondary">
+                        {registrationSummary.n_environments ?? results.analysis_context?.environment_count ?? "—"} environments
+                      </Badge>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -386,23 +462,12 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
               );
             }
 
-            const vc = tr.variance_components ?? {};
             const her = tr.heritability ?? {};
             const h2Raw = her.h2_broad_sense;
             const h2 = typeof h2Raw === "number" ? h2Raw : Number(h2Raw);
             const h2Known = Number.isFinite(h2);
 
-            const rows: { label: string; value: string }[] = [
-              { label: "Grand Mean", value: num(tr.grand_mean) },
-              { label: "σ²g (Genotypic Variance)", value: num(vc.sigma2_genotype) },
-              { label: "σ²e (Error Variance)", value: num(vc.sigma2_error) },
-              { label: "σ²p (Phenotypic Variance)", value: num(vc.sigma2_phenotypic) },
-              { label: "H² (Broad-sense Heritability)", value: num(h2Raw) },
-              { label: "GCV% (Genotypic CV)", value: num(tr.gcv, 2) },
-              { label: "PCV% (Phenotypic CV)", value: num(tr.pcv, 2) },
-              { label: "GA (Genetic Advance)", value: num(tr.ga) },
-              { label: "GAM% (GA as % of Mean)", value: num(tr.gam, 2) },
-            ];
+            const rows = buildVarianceComponentRows(tr, analysisMode);
 
             return (
               <Card key={trait}>
@@ -410,6 +475,11 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
                   <CardTitle className="text-base">{trait}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {analysisMode === "multi" && (
+                    <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
+                      Estimated from the evaluated balanced multi-environment trial. Interpretation applies to the population and environments represented by this experiment.
+                    </div>
+                  )}
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
@@ -428,6 +498,20 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
                       </TableBody>
                     </Table>
                   </div>
+
+                  {analysisMode === "multi" && (
+                    <div className="rounded-md border bg-muted/30 p-3 text-xs space-y-1">
+                      <p className="font-medium">Analysis Context</p>
+                      <p className="text-muted-foreground">
+                        Environment effect: {tr.environment_significant == null ? "not reported" : tr.environment_significant ? "significant" : "not significant"}
+                        {tr.anova_f_env != null ? ` (F = ${num(tr.anova_f_env, 3)}, p = ${num(tr.anova_p_env, 4)})` : ""}
+                      </p>
+                      <p className="text-muted-foreground">
+                        Genotype × Environment effect: {tr.gxe_significant == null ? "not reported" : tr.gxe_significant ? "significant" : "not significant"}
+                        {tr.anova_f_gxe != null ? ` (F = ${num(tr.anova_f_gxe, 3)}, p = ${num(tr.anova_p_gxe, 4)})` : ""}
+                      </p>
+                    </div>
+                  )}
 
                   {h2Known && h2 >= 0.6 && (
                     <div className="rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-800 p-3 text-xs text-emerald-900 dark:text-emerald-200">

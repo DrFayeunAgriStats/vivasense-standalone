@@ -174,6 +174,7 @@ export interface RegisterDatasetRequest {
   genotype_column?: string | null;
   rep_column?: string | null;
   environment_column?: string | null;
+  environment_factor_columns?: string[];
   factor_column?: string | null;
   main_plot_column?: string | null;
   sub_plot_column?: string | null;
@@ -208,7 +209,7 @@ export interface GeneticParametersRequest {
   genotype_column: string;
   rep_column: string | null;
   design_type: "crd" | "rcbd";
-  mode: "single";
+  mode: "single" | "multi";
 }
 
 export interface GeneticParametersTraitResult {
@@ -227,6 +228,12 @@ export interface GeneticParametersTraitResult {
   gam?: number | null;
   breeding_implication?: string | null;
   interpretation?: string | null;
+  environment_significant?: boolean | null;
+  gxe_significant?: boolean | null;
+  anova_f_env?: number | null;
+  anova_p_env?: number | null;
+  anova_f_gxe?: number | null;
+  anova_p_gxe?: number | null;
   data_warnings?: string[];
   error?: string | null;
   analysis_context?: {
@@ -241,6 +248,11 @@ export interface GeneticParametersResponse {
   mode: string;
   trait_results: Record<string, GeneticParametersTraitResult>;
   failed_traits: string[];
+  analysis_context?: {
+    is_single_environment?: boolean;
+    environment_count?: number;
+    design_type?: string;
+  } | null;
 }
 
 // ── Correlation ─────────────────────────────────────────────────────────────
