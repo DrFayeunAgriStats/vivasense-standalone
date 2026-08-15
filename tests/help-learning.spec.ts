@@ -1,10 +1,20 @@
 import { test, expect } from "playwright/test";
 
+function supabaseAuthStorageKey(): string {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    throw new Error("VITE_SUPABASE_URL is required for authenticated Playwright tests");
+  }
+  const projectRef = new URL(supabaseUrl).hostname.split(".")[0];
+  return `sb-${projectRef}-auth-token`;
+}
+
 async function openHelpAsSignedInUser(page: import("playwright/test").Page) {
   const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60;
   const accessToken = `eyJhbGciOiJub25lIn0.${Buffer.from(JSON.stringify({ sub: "help-test-user", exp: expiresAt })).toString("base64url")}.`;
-  await page.addInitScript(({ token, exp }) => {
-    localStorage.setItem("sb-127-auth-token", JSON.stringify({
+  const storageKey = supabaseAuthStorageKey();
+  await page.addInitScript(({ key, token, exp }) => {
+    localStorage.setItem(key, JSON.stringify({
       access_token: token,
       refresh_token: "help-test-refresh-token",
       expires_at: exp,
@@ -20,7 +30,7 @@ async function openHelpAsSignedInUser(page: import("playwright/test").Page) {
         created_at: "2026-01-01T00:00:00.000Z",
       },
     }));
-  }, { token: accessToken, exp: expiresAt });
+  }, { key: storageKey, token: accessToken, exp: expiresAt });
   await page.goto("/help");
 }
 
@@ -58,7 +68,8 @@ test.describe("Help & Learning", () => {
     );
     expect(hasHorizontalOverflow).toBe(false);
 
-    await page.addInitScript(() => localStorage.removeItem("sb-127-auth-token"));
+    const storageKey = supabaseAuthStorageKey();
+    await page.addInitScript((key) => localStorage.removeItem(key), storageKey);
     await page.goto("/workspace");
     await expect(page).toHaveURL(/\/auth\?next=%2Fworkspace/);
   });
