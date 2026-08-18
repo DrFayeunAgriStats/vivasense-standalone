@@ -306,6 +306,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       const payload = {
         analysis_type: MODULE,
         design_type: design,
+        domain: results.domain ?? "general",
         dataset_summary: results.dataset_summary,
         summary_table: results.summary_table,
         trait_results: Object.fromEntries(

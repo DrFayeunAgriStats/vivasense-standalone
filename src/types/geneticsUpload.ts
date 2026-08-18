@@ -24,6 +24,8 @@ export interface DatasetContext {
   environmentFactorColumns?: string[];
   availableTraitColumns: string[];
   mode: "single" | "multi";
+  /** Researcher-confirmed or backend-suggested domain for downstream terminology. */
+  research_domain?: string;
   /** Server-issued token from /genetics/upload-preview — required for stateful endpoints like /analysis/descriptive-stats */
   datasetToken?: string | null;
   /** All column names from the uploaded file — used by design selectors (e.g. factorial / split-plot factor columns). */
