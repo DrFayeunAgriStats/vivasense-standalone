@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, Dna, Sparkles, Leaf, ClipboardList, CircleHelp } from "lucide-react";
+import { FlaskConical, Dna, Sparkles, Leaf, ClipboardList, CircleHelp, Bug } from "lucide-react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -38,6 +38,7 @@ const modules = [
     label: "Genetics & Breeding",
     icon: Dna,
   },
+  { module: "crop-protection", label: "Crop Protection", icon: Bug },
   { module: "advanced", label: "Advanced Analytics", icon: Sparkles },
 ] as const;
 

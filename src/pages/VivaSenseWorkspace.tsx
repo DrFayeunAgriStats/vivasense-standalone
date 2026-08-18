@@ -21,10 +21,11 @@ import { recordAnalysis, recordAnalysisFailure } from "@/services/history/histor
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
 import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerator";
+import { CropProtectionDashboard } from "@/components/vivasense/crop-protection/CropProtectionDashboard";
 import { WorkspaceV3Dashboard } from "@/components/vivasense/workspace/v3/WorkspaceV3Dashboard";
 import type { DatasetContext } from "@/types/geneticsUpload";
 
-type ModuleType = "selection" | "anova" | "genetics" | "advanced" | "results" | "field-layout";
+type ModuleType = "selection" | "anova" | "genetics" | "crop-protection" | "advanced" | "results" | "field-layout";
 type WorkspaceSection = "overview" | "anova" | "genetics" | "advanced";
 
 interface AnalysisState {
@@ -47,6 +48,10 @@ export default function VivaSenseWorkspace() {
       setError(null);
       setActiveSection(m);
       setCurrentModule(m);
+    } else if (m === "crop-protection") {
+      // Crop Protection has its own module screen and no overview section.
+      setError(null);
+      setCurrentModule("crop-protection");
     } else if (m === "field-layout") {
       setError(null);
       setCurrentModule("field-layout");
@@ -392,6 +397,36 @@ export default function VivaSenseWorkspace() {
               <VivaSenseGeneticsForm
                 onSubmit={handleGeneticsSubmit}
                 isLoading={isLoading}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Crop Protection Screen */}
+        {currentModule === "crop-protection" && (
+          <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+              <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span>Modules</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-foreground">Crop Protection</span>
+            </nav>
+            <div className="mt-4">
+              <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                Crop Protection
+              </span>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+                Crop Protection Analytics
+              </h1>
+            </div>
+            <div className="mt-8">
+              <CropProtectionDashboard
+                initialWorkflow={
+                  new URLSearchParams(location.search).get("workflow") === "bioassay"
+                    ? "bioassay"
+                    : "landing"
+                }
               />
             </div>
           </div>

@@ -1,0 +1,1549 @@
+{
+ "status": "success",
+ "analysis_type": "crop_protection_bioassay",
+ "design": {
+  "design_type": "factorial_crd",
+  "total_rows": 54,
+  "factorial_rows": 45,
+  "control_rows": 3,
+  "factorial_treatments": [
+   "CL",
+   "B",
+   "CLB"
+  ],
+  "dose_levels": [
+   0.2,
+   0.4,
+   0.6,
+   0.8,
+   1.0
+  ],
+  "cells": 15,
+  "balanced": true,
+  "cell_replication": 3,
+  "cell_counts": [
+   {
+    "treatment": "B",
+    "dose": 0.2,
+    "n": 3
+   },
+   {
+    "treatment": "B",
+    "dose": 0.4,
+    "n": 3
+   },
+   {
+    "treatment": "B",
+    "dose": 0.6,
+    "n": 3
+   },
+   {
+    "treatment": "B",
+    "dose": 0.8,
+    "n": 3
+   },
+   {
+    "treatment": "B",
+    "dose": 1.0,
+    "n": 3
+   },
+   {
+    "treatment": "CL",
+    "dose": 0.2,
+    "n": 3
+   },
+   {
+    "treatment": "CL",
+    "dose": 0.4,
+    "n": 3
+   },
+   {
+    "treatment": "CL",
+    "dose": 0.6,
+    "n": 3
+   },
+   {
+    "treatment": "CL",
+    "dose": 0.8,
+    "n": 3
+   },
+   {
+    "treatment": "CL",
+    "dose": 1.0,
+    "n": 3
+   },
+   {
+    "treatment": "CLB",
+    "dose": 0.2,
+    "n": 3
+   },
+   {
+    "treatment": "CLB",
+    "dose": 0.4,
+    "n": 3
+   },
+   {
+    "treatment": "CLB",
+    "dose": 0.6,
+    "n": 3
+   },
+   {
+    "treatment": "CLB",
+    "dose": 0.8,
+    "n": 3
+   },
+   {
+    "treatment": "CLB",
+    "dose": 1.0,
+    "n": 3
+   }
+  ],
+  "replicate_role": "experimental_unit_identifier",
+  "control_rows_used": [
+   0,
+   1,
+   2
+  ]
+ },
+ "warnings": [
+  {
+   "code": "repeated_control_blocks",
+   "severity": "warning",
+   "response_id": null,
+   "message": "Repeated control blocks were detected and resolved by the declared policy.",
+   "details": {
+    "control_level": "C",
+    "control_dose": 0.0,
+    "control_rows_available": 9,
+    "control_rows_used": [
+     0,
+     1,
+     2
+    ],
+    "n_control": 3,
+    "repeated_control_blocks_detected": true,
+    "duplicates_removed": 6,
+    "selection_rule": "deduplicate_identical_replicates"
+   }
+  },
+  {
+   "code": "abbott_floor_applied",
+   "severity": "warning",
+   "response_id": null,
+   "message": "Negative Abbott values were floored at zero under the declared policy.",
+   "details": {
+    "observation_time": 24.0
+   }
+  }
+ ],
+ "response_results": [
+  {
+   "response_id": "mortality_24h",
+   "biological_type": "mortality",
+   "anova": [
+    {
+     "source": "Treatment",
+     "df": 2,
+     "ss": 23205.54155111105,
+     "ms": 11602.770775555526,
+     "f_value": 94.92709738150681,
+     "p_value": 1.058759881881001e-13
+    },
+    {
+     "source": "Dose",
+     "df": 4,
+     "ss": 641.961075555555,
+     "ms": 160.49026888888875,
+     "f_value": 1.313037694039106,
+     "p_value": 0.2876635571473091
+    },
+    {
+     "source": "Treatment:Dose",
+     "df": 8,
+     "ss": 1299.057337777777,
+     "ms": 162.38216722222214,
+     "f_value": 1.328516101808965,
+     "p_value": 0.2677246714517835
+    },
+    {
+     "source": "Error",
+     "df": 30,
+     "ss": 3666.846799999991,
+     "ms": 122.22822666666637,
+     "f_value": null,
+     "p_value": null
+    }
+   ],
+   "interaction": {
+    "significant": false,
+    "means": [
+     {
+      "treatment": "B",
+      "dose": 0.2,
+      "n": 3,
+      "mean_inference_scale": 6.143333333333334,
+      "mean_display_scale": 3.331606067202552,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 3.331606067202552,
+      "letter": "e",
+      "mean": 3.331606067202552,
+      "se": 3.331606067202552,
+      "tukey_letter": "e"
+     },
+     {
+      "treatment": "CL",
+      "dose": 0.2,
+      "n": 3,
+      "mean_inference_scale": 75,
+      "mean_display_scale": 89.99942383015978,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 5.775498243524597,
+      "letter": "a",
+      "mean": 89.99942383015978,
+      "se": 5.775498243524597,
+      "tukey_letter": "a"
+     },
+     {
+      "treatment": "CLB",
+      "dose": 0.2,
+      "n": 3,
+      "mean_inference_scale": 33.01,
+      "mean_display_scale": 30.012352241729953,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 5.780635062184931,
+      "letter": "cde",
+      "mean": 30.012352241729953,
+      "se": 5.780635062184931,
+      "tukey_letter": "cde"
+     },
+     {
+      "treatment": "B",
+      "dose": 0.4,
+      "n": 3,
+      "mean_inference_scale": 15,
+      "mean_display_scale": 10.000576169840205,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 5.775498243524596,
+      "letter": "de",
+      "mean": 10.000576169840205,
+      "se": 5.775498243524596,
+      "tukey_letter": "de"
+     },
+     {
+      "treatment": "CL",
+      "dose": 0.4,
+      "n": 3,
+      "mean_inference_scale": 70.07333333333334,
+      "mean_display_scale": 83.33151551798342,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 8.819239628012578,
+      "letter": "ab",
+      "mean": 83.33151551798342,
+      "se": 8.819239628012578,
+      "tukey_letter": "ab"
+     },
+     {
+      "treatment": "CLB",
+      "dose": 0.4,
+      "n": 3,
+      "mean_inference_scale": 28.783333333333335,
+      "mean_display_scale": 23.337454584654225,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 3.330544276741269,
+      "letter": "cde",
+      "mean": 23.337454584654225,
+      "se": 3.330544276741269,
+      "tukey_letter": "cde"
+     },
+     {
+      "treatment": "B",
+      "dose": 0.6,
+      "n": 3,
+      "mean_inference_scale": 26.07,
+      "mean_display_scale": 20.000090549219124,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 5.774578995214301,
+      "letter": "de",
+      "mean": 20.000090549219124,
+      "se": 5.774578995214301,
+      "tukey_letter": "de"
+     },
+     {
+      "treatment": "CL",
+      "dose": 0.6,
+      "n": 3,
+      "mean_inference_scale": 59.71,
+      "mean_display_scale": 73.3364129247112,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 8.82005623356662,
+      "letter": "abc",
+      "mean": 73.3364129247112,
+      "se": 8.82005623356662,
+      "tukey_letter": "abc"
+     },
+     {
+      "treatment": "CLB",
+      "dose": 0.6,
+      "n": 3,
+      "mean_inference_scale": 34.92666666666667,
+      "mean_display_scale": 33.33515114868324,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 8.81752180001892,
+      "letter": "cde",
+      "mean": 33.33515114868324,
+      "se": 8.81752180001892,
+      "tukey_letter": "cde"
+     },
+     {
+      "treatment": "B",
+      "dose": 0.8,
+      "n": 3,
+      "mean_inference_scale": 23.856666666666666,
+      "mean_display_scale": 16.669546272477856,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 3.337364035435101,
+      "letter": "de",
+      "mean": 16.669546272477856,
+      "se": 3.337364035435101,
+      "tukey_letter": "de"
+     },
+     {
+      "treatment": "CL",
+      "dose": 0.8,
+      "n": 3,
+      "mean_inference_scale": 83.85666666666667,
+      "mean_display_scale": 96.66839393279744,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 3.331606067202562,
+      "letter": "a",
+      "mean": 96.66839393279744,
+      "se": 3.331606067202562,
+      "tukey_letter": "a"
+     },
+     {
+      "treatment": "CLB",
+      "dose": 0.8,
+      "n": 3,
+      "mean_inference_scale": 36.93333333333333,
+      "mean_display_scale": 36.668103398011624,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 8.816830848793348,
+      "letter": "bcde",
+      "mean": 36.668103398011624,
+      "se": 8.816830848793348,
+      "tukey_letter": "bcde"
+     },
+     {
+      "treatment": "B",
+      "dose": 1.0,
+      "n": 3,
+      "mean_inference_scale": 15,
+      "mean_display_scale": 10.000576169840205,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 5.775498243524596,
+      "letter": "de",
+      "mean": 10.000576169840205,
+      "se": 5.775498243524596,
+      "tukey_letter": "de"
+     },
+     {
+      "treatment": "CL",
+      "dose": 1.0,
+      "n": 3,
+      "mean_inference_scale": 70.07333333333334,
+      "mean_display_scale": 83.33151551798342,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 8.819239628012578,
+      "letter": "ab",
+      "mean": 83.33151551798342,
+      "se": 8.819239628012578,
+      "tukey_letter": "ab"
+     },
+     {
+      "treatment": "CLB",
+      "dose": 1.0,
+      "n": 3,
+      "mean_inference_scale": 41.166666666666664,
+      "mean_display_scale": 43.354402186093424,
+      "se_inference_scale": 6.383004169058808,
+      "se_display_scale": 3.322798906953286,
+      "letter": "bcd",
+      "mean": 43.354402186093424,
+      "se": 3.322798906953286,
+      "tukey_letter": "bcd"
+     }
+    ]
+   },
+   "primary_mean_separation": {
+    "treatment": [
+     {
+      "level": "B",
+      "n": 15,
+      "mean_inference_scale": 17.214,
+      "mean_display_scale": 12.000479045715988,
+      "se_display_scale": 2.430563706192779
+     },
+     {
+      "level": "CL",
+      "n": 15,
+      "mean_inference_scale": 71.74266666666666,
+      "mean_display_scale": 85.33345234472705,
+      "se_display_scale": 3.500635330004981
+     },
+     {
+      "level": "CLB",
+      "n": 15,
+      "mean_inference_scale": 34.964,
+      "mean_display_scale": 33.34149271183449,
+      "se_display_scale": 3.034463009466553
+     }
+    ],
+    "dose": [
+     {
+      "level": "0.2",
+      "n": 9,
+      "mean_inference_scale": 38.05111111111111,
+      "mean_display_scale": 41.114460713030766,
+      "se_display_scale": 13.064398152357379
+     },
+     {
+      "level": "0.4",
+      "n": 9,
+      "mean_inference_scale": 37.952222222222225,
+      "mean_display_scale": 38.889848757492615,
+      "se_display_scale": 11.718903114759236
+     },
+     {
+      "level": "0.6",
+      "n": 9,
+      "mean_inference_scale": 40.23555555555556,
+      "mean_display_scale": 42.22388487420452,
+      "se_display_scale": 8.941177480236572
+     },
+     {
+      "level": "0.8",
+      "n": 9,
+      "mean_inference_scale": 48.215555555555554,
+      "mean_display_scale": 50.00201453442897,
+      "se_display_scale": 12.360127090428156
+     },
+     {
+      "level": "1.0",
+      "n": 9,
+      "mean_inference_scale": 42.08,
+      "mean_display_scale": 45.56216462463902,
+      "se_display_scale": 11.068682125003136
+     }
+    ]
+   },
+   "treatment_marginal_means": [
+    {
+     "level": "B",
+     "n": 15,
+     "mean_inference_scale": 17.214,
+     "mean_display_scale": 12.000479045715988,
+     "se_display_scale": 2.430563706192779
+    },
+    {
+     "level": "CL",
+     "n": 15,
+     "mean_inference_scale": 71.74266666666666,
+     "mean_display_scale": 85.33345234472705,
+     "se_display_scale": 3.500635330004981
+    },
+    {
+     "level": "CLB",
+     "n": 15,
+     "mean_inference_scale": 34.964,
+     "mean_display_scale": 33.34149271183449,
+     "se_display_scale": 3.034463009466553
+    }
+   ],
+   "dose_marginal_means": [
+    {
+     "level": "0.2",
+     "n": 9,
+     "mean_inference_scale": 38.05111111111111,
+     "mean_display_scale": 41.114460713030766,
+     "se_display_scale": 13.064398152357379
+    },
+    {
+     "level": "0.4",
+     "n": 9,
+     "mean_inference_scale": 37.952222222222225,
+     "mean_display_scale": 38.889848757492615,
+     "se_display_scale": 11.718903114759236
+    },
+    {
+     "level": "0.6",
+     "n": 9,
+     "mean_inference_scale": 40.23555555555556,
+     "mean_display_scale": 42.22388487420452,
+     "se_display_scale": 8.941177480236572
+    },
+    {
+     "level": "0.8",
+     "n": 9,
+     "mean_inference_scale": 48.215555555555554,
+     "mean_display_scale": 50.00201453442897,
+     "se_display_scale": 12.360127090428156
+    },
+    {
+     "level": "1.0",
+     "n": 9,
+     "mean_inference_scale": 42.08,
+     "mean_display_scale": 45.56216462463902,
+     "se_display_scale": 11.068682125003136
+    }
+   ],
+   "diagnostics": {
+    "residual_normality": {
+     "test": "Shapiro-Wilk",
+     "statistic": 0.9729889538310228,
+     "p_value": 0.36988453943974997,
+     "passed": true
+    },
+    "homogeneity": {
+     "test": "Levene (median-centered)",
+     "grouping": "Treatment \u00d7 Dose cell",
+     "statistic": 0.35988931080281605,
+     "p_value": 0.9767477862817714,
+     "passed": true
+    }
+   },
+   "mortality_correction": {
+    "abbott_applied": true,
+    "scales": {
+     "raw": "percent_mortality",
+     "inference": "explicit_transformed_column",
+     "corrected": "abbott_percent"
+    },
+    "control_n": 3,
+    "control_mean_raw_mortality": 16.662726513784026,
+    "control_policy": "deduplicate_identical_replicates",
+    "duplicates_removed": 6,
+    "rows": [
+     {
+      "source_row": 0,
+      "treatment": "C",
+      "dose": 0.0,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 29.998543138136764,
+      "transformed_mortality": 33.21,
+      "raw_abbott_value": null,
+      "display_abbott_value": null,
+      "floor_applied": false,
+      "abbott_status": "reference_control"
+     },
+     {
+      "source_row": 1,
+      "treatment": "C",
+      "dose": 0.0,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": null,
+      "display_abbott_value": null,
+      "floor_applied": false,
+      "abbott_status": "reference_control"
+     },
+     {
+      "source_row": 2,
+      "treatment": "C",
+      "dose": 0.0,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": null,
+      "display_abbott_value": null,
+      "floor_applied": false,
+      "abbott_status": "reference_control"
+     },
+     {
+      "source_row": 3,
+      "treatment": "CL",
+      "dose": 0.2,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 79.99308969208704,
+      "transformed_mortality": 63.43,
+      "raw_abbott_value": 75.99284273294336,
+      "display_abbott_value": 75.99284273294336,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 4,
+      "treatment": "CL",
+      "dose": 0.2,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 100.0,
+      "transformed_mortality": 90.0,
+      "raw_abbott_value": 100.0,
+      "display_abbott_value": 100.0,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 5,
+      "treatment": "CL",
+      "dose": 0.2,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 90.00518179839231,
+      "transformed_mortality": 71.57,
+      "raw_abbott_value": 88.00678521926827,
+      "display_abbott_value": 88.00678521926827,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 6,
+      "treatment": "CL",
+      "dose": 0.4,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 79.99308969208704,
+      "transformed_mortality": 63.43,
+      "raw_abbott_value": 75.99284273294336,
+      "display_abbott_value": 75.99284273294336,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 7,
+      "treatment": "CL",
+      "dose": 0.4,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 100.0,
+      "transformed_mortality": 90.0,
+      "raw_abbott_value": 100.0,
+      "display_abbott_value": 100.0,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 8,
+      "treatment": "CL",
+      "dose": 0.4,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 70.00145686186322,
+      "transformed_mortality": 56.79,
+      "raw_abbott_value": 64.00345021714857,
+      "display_abbott_value": 64.00345021714857,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 9,
+      "treatment": "CL",
+      "dose": 0.6,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 90.00518179839231,
+      "transformed_mortality": 71.57,
+      "raw_abbott_value": 88.00678521926827,
+      "display_abbott_value": 88.00678521926827,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 10,
+      "treatment": "CL",
+      "dose": 0.6,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 60.00260011387808,
+      "transformed_mortality": 50.77,
+      "raw_abbott_value": 52.005389409892906,
+      "display_abbott_value": 52.005389409892906,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 11,
+      "treatment": "CL",
+      "dose": 0.6,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 70.00145686186322,
+      "transformed_mortality": 56.79,
+      "raw_abbott_value": 64.00345021714857,
+      "display_abbott_value": 64.00345021714857,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 12,
+      "treatment": "CL",
+      "dose": 0.8,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 100.0,
+      "transformed_mortality": 90.0,
+      "raw_abbott_value": 100.0,
+      "display_abbott_value": 100.0,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 13,
+      "treatment": "CL",
+      "dose": 0.8,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 90.00518179839231,
+      "transformed_mortality": 71.57,
+      "raw_abbott_value": 88.00678521926827,
+      "display_abbott_value": 88.00678521926827,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 14,
+      "treatment": "CL",
+      "dose": 0.8,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 100.0,
+      "transformed_mortality": 90.0,
+      "raw_abbott_value": 100.0,
+      "display_abbott_value": 100.0,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 15,
+      "treatment": "CL",
+      "dose": 1.0,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 70.00145686186322,
+      "transformed_mortality": 56.79,
+      "raw_abbott_value": 64.00345021714857,
+      "display_abbott_value": 64.00345021714857,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 16,
+      "treatment": "CL",
+      "dose": 1.0,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 79.99308969208704,
+      "transformed_mortality": 63.43,
+      "raw_abbott_value": 75.99284273294336,
+      "display_abbott_value": 75.99284273294336,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 17,
+      "treatment": "CL",
+      "dose": 1.0,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 100.0,
+      "transformed_mortality": 90.0,
+      "raw_abbott_value": 100.0,
+      "display_abbott_value": 100.0,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 21,
+      "treatment": "B",
+      "dose": 0.2,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": -8.00111166737324,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 22,
+      "treatment": "B",
+      "dose": 0.2,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 0.0,
+      "transformed_mortality": 0.0,
+      "raw_abbott_value": -19.99432644810494,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 23,
+      "treatment": "B",
+      "dose": 0.2,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 0.0,
+      "transformed_mortality": 0.0,
+      "raw_abbott_value": -19.99432644810494,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 24,
+      "treatment": "B",
+      "dose": 0.4,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": -8.00111166737324,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 25,
+      "treatment": "B",
+      "dose": 0.4,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 26,
+      "treatment": "B",
+      "dose": 0.4,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 0.0,
+      "transformed_mortality": 0.0,
+      "raw_abbott_value": -19.99432644810494,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 27,
+      "treatment": "B",
+      "dose": 0.6,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 28,
+      "treatment": "B",
+      "dose": 0.6,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 29.998543138136764,
+      "transformed_mortality": 33.21,
+      "raw_abbott_value": 16.00222333474647,
+      "display_abbott_value": 16.00222333474647,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 29,
+      "treatment": "B",
+      "dose": 0.6,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": -8.00111166737324,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 30,
+      "treatment": "B",
+      "dose": 0.8,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 31,
+      "treatment": "B",
+      "dose": 0.8,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": -8.00111166737324,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 32,
+      "treatment": "B",
+      "dose": 0.8,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 33,
+      "treatment": "B",
+      "dose": 1.0,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 0.0,
+      "transformed_mortality": 0.0,
+      "raw_abbott_value": -19.99432644810494,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 34,
+      "treatment": "B",
+      "dose": 1.0,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 9.994818201607655,
+      "transformed_mortality": 18.43,
+      "raw_abbott_value": -8.00111166737324,
+      "display_abbott_value": 0.0,
+      "floor_applied": true,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 35,
+      "treatment": "B",
+      "dose": 1.0,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 39,
+      "treatment": "CLB",
+      "dose": 0.2,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 40.031603279140135,
+      "transformed_mortality": 39.25,
+      "raw_abbott_value": 28.041326273076752,
+      "display_abbott_value": 28.041326273076752,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 40,
+      "treatment": "CLB",
+      "dose": 0.2,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 29.998543138136764,
+      "transformed_mortality": 33.21,
+      "raw_abbott_value": 16.00222333474647,
+      "display_abbott_value": 16.00222333474647,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 41,
+      "treatment": "CLB",
+      "dose": 0.2,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 42,
+      "treatment": "CLB",
+      "dose": 0.4,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 43,
+      "treatment": "CLB",
+      "dose": 0.4,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 44,
+      "treatment": "CLB",
+      "dose": 0.4,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 29.998543138136764,
+      "transformed_mortality": 33.21,
+      "raw_abbott_value": 16.00222333474647,
+      "display_abbott_value": 16.00222333474647,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 45,
+      "treatment": "CLB",
+      "dose": 0.6,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 49.99999999999999,
+      "transformed_mortality": 45.0,
+      "raw_abbott_value": 40.002836775947515,
+      "display_abbott_value": 40.002836775947515,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 46,
+      "treatment": "CLB",
+      "dose": 0.6,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 29.998543138136764,
+      "transformed_mortality": 33.21,
+      "raw_abbott_value": 16.00222333474647,
+      "display_abbott_value": 16.00222333474647,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 47,
+      "treatment": "CLB",
+      "dose": 0.6,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 48,
+      "treatment": "CLB",
+      "dose": 0.8,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 39.99739988612192,
+      "transformed_mortality": 39.23,
+      "raw_abbott_value": 28.000284142002148,
+      "display_abbott_value": 28.000284142002148,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 49,
+      "treatment": "CLB",
+      "dose": 0.8,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 49.99999999999999,
+      "transformed_mortality": 45.0,
+      "raw_abbott_value": 40.002836775947515,
+      "display_abbott_value": 40.002836775947515,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 50,
+      "treatment": "CLB",
+      "dose": 0.8,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 20.006910307912957,
+      "transformed_mortality": 26.57,
+      "raw_abbott_value": 4.012830818951691,
+      "display_abbott_value": 4.012830818951691,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 51,
+      "treatment": "CLB",
+      "dose": 1.0,
+      "replicate": "1",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 40.031603279140135,
+      "transformed_mortality": 39.25,
+      "raw_abbott_value": 28.041326273076752,
+      "display_abbott_value": 28.041326273076752,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 52,
+      "treatment": "CLB",
+      "dose": 1.0,
+      "replicate": "2",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 49.99999999999999,
+      "transformed_mortality": 45.0,
+      "raw_abbott_value": 40.002836775947515,
+      "display_abbott_value": 40.002836775947515,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     },
+     {
+      "source_row": 53,
+      "treatment": "CLB",
+      "dose": 1.0,
+      "replicate": "3",
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "raw_mortality": 40.031603279140135,
+      "transformed_mortality": 39.25,
+      "raw_abbott_value": 28.041326273076752,
+      "display_abbott_value": 28.041326273076752,
+      "floor_applied": false,
+      "abbott_status": "calculated"
+     }
+    ],
+    "verification": {
+     "supplied_column": null,
+     "max_absolute_difference": null,
+     "mismatch_count": 0,
+     "verification_status": "not_supplied"
+    },
+    "warnings": [
+     "Observed control mortality at 24.0 h was 16.66%. Assay-validity thresholds depend on the biological protocol."
+    ]
+   },
+   "interpretation_metadata": {
+    "treatment_significant": true,
+    "dose_significant": false,
+    "interaction_significant": false,
+    "interpretation_priority": "main_effects"
+   },
+   "provenance": {
+    "response_id": "mortality_24h",
+    "biological_type": "mortality",
+    "raw_column": "Mort24",
+    "inference_column": "AdtM24",
+    "display_column": "Mort24",
+    "transformation": "explicit",
+    "abbott_applied": true,
+    "control_rows_used": [
+     0,
+     1,
+     2
+    ],
+    "factorial_rows_used": [
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     39,
+     40,
+     41,
+     42,
+     43,
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51,
+     52,
+     53
+    ],
+    "excluded_rows": [
+     0,
+     1,
+     2,
+     18,
+     19,
+     20,
+     36,
+     37,
+     38
+    ],
+    "alpha": 0.05,
+    "software_engine": "VivaSense crop-protection factorial CRD adapter (R aov/agricolae)"
+   }
+  }
+ ],
+ "cotoxicity": {
+  "method": "bliss_independence",
+  "component_a": "CL",
+  "component_b": "B",
+  "mixture": "CLB",
+  "by_time": [
+   {
+    "observation_time": 24.0,
+    "time_unit": "h",
+    "cells": [
+     {
+      "dose": 0.2,
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "available": true,
+      "component_a": {
+       "level": "CL",
+       "n": 3,
+       "mean_corrected_mortality": 87.99987598407056
+      },
+      "component_b": {
+       "level": "B",
+       "n": 3,
+       "mean_corrected_mortality": 0.0
+      },
+      "mixture": {
+       "level": "CLB",
+       "n": 3,
+       "mean_corrected_mortality": 16.01879347559164
+      },
+      "bliss_expected": 87.99987598407056,
+      "excess_observed_minus_expected": -71.98108250847892,
+      "observed_expected_ratio": 0.18203200057340205,
+      "bootstrap_ci": {
+       "low": -87.9929667488728,
+       "high": -55.969198268084995,
+       "confidence_level": 0.95,
+       "bootstrap_iterations": 2000,
+       "resampling": "independent_within_component_a_component_b_and_mixture",
+       "seed": 7
+      },
+      "descriptive_direction": "negative_deviation",
+      "inference": "supports_antagonism_under_bliss",
+      "ceiling_effect": false,
+      "warnings": []
+     },
+     {
+      "dose": 0.4,
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "available": true,
+      "component_a": {
+       "level": "CL",
+       "n": 3,
+       "mean_corrected_mortality": 79.9987643166973
+      },
+      "component_b": {
+       "level": "B",
+       "n": 3,
+       "mean_corrected_mortality": 1.3376102729838968
+      },
+      "mixture": {
+       "level": "CLB",
+       "n": 3,
+       "mean_corrected_mortality": 8.009294990883284
+      },
+      "bliss_expected": 80.26630289992087,
+      "excess_observed_minus_expected": -72.25700790903758,
+      "observed_expected_ratio": 0.09978402768680628,
+      "bootstrap_ci": {
+       "low": -91.99070500911671,
+       "high": -56.42219165876059,
+       "confidence_level": 0.95,
+       "bootstrap_iterations": 2000,
+       "resampling": "independent_within_component_a_component_b_and_mixture",
+       "seed": 8
+      },
+      "descriptive_direction": "negative_deviation",
+      "inference": "supports_antagonism_under_bliss",
+      "ceiling_effect": false,
+      "warnings": []
+     },
+     {
+      "dose": 0.6,
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "available": true,
+      "component_a": {
+       "level": "CL",
+       "n": 3,
+       "mean_corrected_mortality": 68.00520828210324
+      },
+      "component_b": {
+       "level": "B",
+       "n": 3,
+       "mean_corrected_mortality": 6.671684717899388
+      },
+      "mixture": {
+       "level": "CLB",
+       "n": 3,
+       "mean_corrected_mortality": 20.005963643215228
+      },
+      "bliss_expected": 70.1397999116699,
+      "excess_observed_minus_expected": -50.13383626845467,
+      "observed_expected_ratio": 0.2852298362471751,
+      "bootstrap_ci": {
+       "low": -72.79886691244985,
+       "high": -26.937335553812474,
+       "confidence_level": 0.95,
+       "bootstrap_iterations": 2000,
+       "resampling": "independent_within_component_a_component_b_and_mixture",
+       "seed": 9
+      },
+      "descriptive_direction": "negative_deviation",
+      "inference": "supports_antagonism_under_bliss",
+      "ceiling_effect": false,
+      "warnings": []
+     },
+     {
+      "dose": 0.8,
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "available": true,
+      "component_a": {
+       "level": "CL",
+       "n": 3,
+       "mean_corrected_mortality": 96.0022617397561
+      },
+      "component_b": {
+       "level": "B",
+       "n": 3,
+       "mean_corrected_mortality": 2.6752205459677936
+      },
+      "mixture": {
+       "level": "CLB",
+       "n": 3,
+       "mean_corrected_mortality": 24.00531724563378
+      },
+      "bliss_expected": 96.10921005506815,
+      "excess_observed_minus_expected": -72.10389280943437,
+      "observed_expected_ratio": 0.24977124702075212,
+      "bootstrap_ci": {
+       "low": -92.04290507846044,
+       "high": -56.1094858968585,
+       "confidence_level": 0.95,
+       "bootstrap_iterations": 2000,
+       "resampling": "independent_within_component_a_component_b_and_mixture",
+       "seed": 10
+      },
+      "descriptive_direction": "negative_deviation",
+      "inference": "supports_antagonism_under_bliss",
+      "ceiling_effect": false,
+      "warnings": []
+     },
+     {
+      "dose": 1.0,
+      "observation_time": 24.0,
+      "time_unit": "h",
+      "available": true,
+      "component_a": {
+       "level": "CL",
+       "n": 3,
+       "mean_corrected_mortality": 79.9987643166973
+      },
+      "component_b": {
+       "level": "B",
+       "n": 3,
+       "mean_corrected_mortality": 1.3376102729838968
+      },
+      "mixture": {
+       "level": "CLB",
+       "n": 3,
+       "mean_corrected_mortality": 32.02849644070034
+      },
+      "bliss_expected": 80.26630289992087,
+      "excess_observed_minus_expected": -48.237806459220536,
+      "observed_expected_ratio": 0.39902792683294136,
+      "bootstrap_ci": {
+       "low": -67.97150355929966,
+       "high": -31.984247780756235,
+       "confidence_level": 0.95,
+       "bootstrap_iterations": 2000,
+       "resampling": "independent_within_component_a_component_b_and_mixture",
+       "seed": 11
+      },
+      "descriptive_direction": "negative_deviation",
+      "inference": "supports_antagonism_under_bliss",
+      "ceiling_effect": false,
+      "warnings": []
+     }
+    ],
+    "summary": {
+     "observation_time": 24.0,
+     "time_unit": "h",
+     "number_of_matched_doses": 5,
+     "number_positive": 0,
+     "number_additive": 0,
+     "number_negative": 5,
+     "number_supporting_synergy": 0,
+     "number_supporting_antagonism": 5,
+     "number_inconclusive": 0,
+     "number_ceiling_limited": 0
+    }
+   }
+  ],
+  "provenance": {
+   "input_scale": "abbott_corrected_percentage",
+   "expected_model": "Bliss independence: A + B - AB/100",
+   "bootstrap": "independent nonparametric resampling within each treatment role",
+   "ceiling_threshold": 99.5,
+   "bootstrap_iterations": 2000,
+   "confidence_level": 0.95,
+   "seed": 7
+  }
+ },
+ "regression": [],
+ "correlation": [],
+ "cumulative_mortality_validation": null,
+ "interpretation_metadata": {
+  "by_response": {
+   "mortality_24h": {
+    "treatment_significant": true,
+    "dose_significant": false,
+    "interaction_significant": false,
+    "interpretation_priority": "main_effects"
+   }
+  },
+  "dose_response_direction": {},
+  "control_warning_present": false,
+  "assumption_warning_present": false
+ },
+ "result_order": [
+  "design",
+  "warnings",
+  "response_results.anova",
+  "response_results.primary_mean_separation",
+  "response_results.marginal_means",
+  "response_results.mortality_correction",
+  "cotoxicity",
+  "regression",
+  "correlation",
+  "response_results.diagnostics",
+  "interpretation_metadata"
+ ],
+ "provenance": {
+  "validation": {
+   "validated_rows": 54,
+   "validated_response_ids": [
+    "mortality_24h"
+   ]
+  },
+  "request_contract": "crop_protection_bioassay_phase_3",
+  "statistical_services": [
+   "factorial_crd",
+   "abbott",
+   "bliss_independence"
+  ]
+ }
+}
