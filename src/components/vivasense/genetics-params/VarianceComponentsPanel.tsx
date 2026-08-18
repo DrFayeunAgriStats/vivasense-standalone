@@ -24,10 +24,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Loader2, Play, Dna, CheckCircle2, AlertTriangle, FileSpreadsheet, Info,
+  Loader2, Play, Dna, CheckCircle2, AlertTriangle, FileSpreadsheet, Info, Download,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { computeVarianceComponents, registerDataset } from "@/lib/geneticsUploadApi";
+import {
+  computeVarianceComponents, downloadGeneticParametersReport, registerDataset,
+} from "@/lib/geneticsUploadApi";
 import { pl } from "@/lib/utils";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type {
@@ -83,6 +85,7 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
   const [repCol, setRepCol] = useState<string>(datasetContext?.repColumn ?? "");
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [results, setResults] = useState<GeneticParametersResponse | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
 
@@ -211,6 +214,25 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
     }
   };
 
+  const handleDownload = async () => {
+    if (!results) return;
+    setIsDownloading(true);
+    try {
+      const blob = await downloadGeneticParametersReport(results);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `VivaSense_VarianceComponents_${new Date().toISOString().slice(0, 10)}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "Variance components report downloaded" });
+    } catch {
+      toast({ title: "Download failed", variant: "destructive" });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Dataset banner */}
@@ -332,11 +354,22 @@ export function VarianceComponentsPanel({ datasetContext }: Props) {
       {results && (
         <div className="space-y-6">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 Variance Components &amp; Heritability — {DESIGNS.find((d) => d.id === design)?.label}
               </CardTitle>
+              <Button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                size="sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isDownloading
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Download className="h-4 w-4" />}
+                {isDownloading ? "Downloading..." : "Download Report"}
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 text-sm">

@@ -113,6 +113,26 @@ export async function computeVarianceComponents(
   });
 }
 
+export async function downloadGeneticParametersReport(
+  results: GeneticParametersResponse
+): Promise<Blob> {
+  const url = "/export/genetic-parameters-word";
+  console.log("[MODULE] genetic_parameters");
+  console.log("[REQUEST] export-genetic-parameters-word", url);
+  return vivaSenseRequest<Blob>(url, {
+    method: "POST",
+    jsonBody: {
+      dataset_token: results.dataset_token,
+      module: "genetic_parameters",
+      domain: results.domain ?? "general",
+      mode: results.mode,
+      trait_results: results.trait_results,
+      failed_traits: results.failed_traits,
+    },
+    responseType: "blob",
+  });
+}
+
 export async function computeRegression(body: {
   dataset_token: string;
   x_variable: string;

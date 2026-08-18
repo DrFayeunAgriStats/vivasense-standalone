@@ -239,6 +239,7 @@ export interface GeneticParametersTraitResult {
 export interface GeneticParametersResponse {
   dataset_token: string;
   mode: string;
+  domain?: string | null;
   trait_results: Record<string, GeneticParametersTraitResult>;
   failed_traits: string[];
 }
