@@ -19,6 +19,20 @@ interface Props {
 }
 
 export function InteractionPlot({ means, responseLabel, displayColumn }: Props) {
+  const dynamicFactors = means[0]?.factor_levels ? Object.keys(means[0].factor_levels!) : [];
+  if (dynamicFactors.length === 3) {
+    const count = (factor: string) => new Set(means.map(m => String(m.factor_levels?.[factor]))).size;
+    const facet = dynamicFactors.reduce((best, factor) => count(factor) < count(best) ? factor : best);
+    const [line, x] = dynamicFactors.filter(factor => factor !== facet);
+    const facetLevels = Array.from(new Set(means.map(m => String(m.factor_levels?.[facet]))));
+    const lineLevels = Array.from(new Set(means.map(m => String(m.factor_levels?.[line]))));
+    const xLevels = Array.from(new Set(means.map(m => String(m.factor_levels?.[x]))));
+    return <div className="grid gap-6 lg:grid-cols-2">{facetLevels.map(facetLevel => {
+      const data = xLevels.map(xLevel => { const point: Record<string, number | string> = { level: xLevel }; lineLevels.forEach(lineLevel => { const cell = means.find(m => String(m.factor_levels?.[facet]) === facetLevel && String(m.factor_levels?.[line]) === lineLevel && String(m.factor_levels?.[x]) === xLevel); if (cell) point[lineLevel] = cell.mean_display_scale ?? cell.mean; }); return point; });
+      return <div key={facetLevel} className="space-y-2"><h4 className="text-sm font-medium">{facet} = {facetLevel}</h4><div className="h-72"><ResponsiveContainer width="100%" height="100%"><LineChart data={data}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="level" label={{ value: x, position: "insideBottom", offset: -5 }} /><YAxis label={{ value: responseLabel, angle: -90, position: "insideLeft" }} /><Tooltip formatter={value => fmt(value)} /><Legend />{lineLevels.map((level, index) => <Line key={level} dataKey={level} name={`${line} ${level}`} stroke={SERIES_COLORS[index % SERIES_COLORS.length]} dot />)}</LineChart></ResponsiveContainer></div></div>;
+    })}<p className="text-xs text-muted-foreground lg:col-span-2">Faceted display-scale means{displayColumn ? ` (${displayColumn})` : ""}; panels show {facet}, lines show {line}, and the x-axis shows {x}.</p></div>;
+  }
+  if (dynamicFactors.length === 1) return null;
   const treatments = Array.from(new Set(means.map((m) => m.treatment)));
   const doses = Array.from(new Set(means.map((m) => m.dose))).sort((a, b) => a - b);
 

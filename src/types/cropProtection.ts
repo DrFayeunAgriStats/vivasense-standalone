@@ -23,12 +23,24 @@ export interface BioassayDataset {
 export interface BioassayDesignRequest {
   /** The backend accepts a single design for this workflow. */
   design_type: "crd";
-  treatment_column: string;
-  dose_column: string;
+  factor_columns: BioassayFactorRequest[];
+  dose_factor_id?: string | null;
+  /** Legacy adapter fields accepted by the backend during API migration. */
+  treatment_column?: string | null;
+  dose_column?: string | null;
   /** Experimental-unit identifier. Never enters the model as a block. */
   replicate_column: string;
-  control_treatment_level: string;
+  control_treatment_level?: string | null;
   expected_dose_series: number[];
+}
+
+export type BioassayFactorRole = "treatment" | "dose" | "formulation" | "variety" | "level" | "other";
+
+export interface BioassayFactorRequest {
+  id: string;
+  column: string;
+  display_name?: string | null;
+  semantic_role?: BioassayFactorRole | null;
 }
 
 export interface BioassayResponseDefinition {
@@ -91,8 +103,7 @@ export interface BioassayWarning {
 }
 
 export interface BioassayCellCount {
-  treatment: string;
-  dose: number;
+  factor_levels: Record<string, string | number>;
   n: number;
 }
 
@@ -109,6 +120,8 @@ export interface BioassayDesignSummary {
   cell_counts: BioassayCellCount[];
   replicate_role: string;
   control_rows_used: number[];
+  factor_count?: number;
+  factors?: { column: string; display_name: string; levels: number }[];
 }
 
 export interface AnovaRow {
@@ -133,6 +146,7 @@ export interface InteractionMean {
   mean: number;
   se: number;
   tukey_letter: string;
+  factor_levels?: Record<string, string | number>;
 }
 
 /** Marginal means carry no Tukey letter — the backend does not compute one. */
@@ -223,6 +237,8 @@ export interface BioassayResponseResult {
   primary_mean_separation: unknown;
   treatment_marginal_means: MarginalMean[];
   dose_marginal_means: MarginalMean[];
+  cell_means?: InteractionMean[];
+  marginal_means?: Record<string, MarginalMean[]>;
   diagnostics: BioassayDiagnostics;
   mortality_correction: MortalityCorrection | null;
   interpretation_metadata: ResponseInterpretation;

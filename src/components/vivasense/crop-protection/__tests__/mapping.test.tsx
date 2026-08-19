@@ -14,15 +14,17 @@ import { BioassayPanel } from "../BioassayPanel";
 const COLUMNS = ["Treatment", "Dose", "Rep", "Mort48_pct", "AdtM48", "WTL"];
 
 const EMPTY_ROLES: RoleMappingState = {
-  treatmentColumn: "",
-  doseColumn: "",
+  factors: [
+    { id: "factor_1", column: "", displayName: "Treatment", semanticRole: "treatment" },
+    { id: "factor_2", column: "", displayName: "Dose", semanticRole: "dose" },
+  ],
   replicateColumn: "",
   controlLevel: "",
   doseSeriesText: "",
 };
 
 describe("Role mapping", () => {
-  it("asks for Treatment, Dose, Replicate and Control explicitly", () => {
+  it("asks for dynamic factors, Replicate and optional Control explicitly", () => {
     render(
       <BioassayRoleMapping
         columns={COLUMNS}
@@ -31,10 +33,11 @@ describe("Role mapping", () => {
         onChange={vi.fn()}
       />
     );
-    expect(screen.getByText("Treatment column")).toBeInTheDocument();
-    expect(screen.getByText("Dose / Concentration column")).toBeInTheDocument();
+    expect(screen.getByText("Experimental Factors")).toBeInTheDocument();
+    expect(screen.getByText("Factor 1 column")).toBeInTheDocument();
+    expect(screen.getByText("Factor 2 column")).toBeInTheDocument();
     expect(screen.getByText("Replicate column")).toBeInTheDocument();
-    expect(screen.getByText("Control treatment level")).toBeInTheDocument();
+    expect(screen.getByText("Control level (optional)")).toBeInTheDocument();
     expect(screen.getByText("Expected dose levels")).toBeInTheDocument();
   });
 
@@ -48,9 +51,9 @@ describe("Role mapping", () => {
       />
     );
     expect(
-      screen.getByText(/Replicate identifies independent experimental units in a CRD/i)
+      screen.getByText(/Replicate identifies repeated experimental units/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/not automatically treated as a block/i)).toBeInTheDocument();
+    expect(screen.getByText(/not itself an experimental factor/i)).toBeInTheDocument();
     expect(screen.queryByText(/^Block column$/i)).toBeNull();
     expect(screen.queryByText(/Block \/ Replication/i)).toBeNull();
   });

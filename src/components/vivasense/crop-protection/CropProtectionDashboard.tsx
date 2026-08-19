@@ -47,7 +47,7 @@ export function CropProtectionDashboard({ initialWorkflow = "landing" }: Props) 
             Bioassay / Efficacy Analysis
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Treatment × Dose factorial CRD with control-referenced mortality correction.
+            One- to three-factor CRD with optional dose and control-aware bioassay tools.
           </p>
         </div>
         <BioassayPanel />
@@ -69,7 +69,7 @@ export function CropProtectionDashboard({ initialWorkflow = "landing" }: Props) 
             Bioassay / Efficacy Analysis
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Treatment × Dose factorial CRD, Abbott-corrected mortality, Tukey mean
+            Dynamic factorial CRD, Abbott-corrected mortality, Tukey mean
             separation, and optional joint-action assessment.
           </p>
         </CardHeader>

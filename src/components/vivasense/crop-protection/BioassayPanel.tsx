@@ -42,8 +42,10 @@ export function BioassayPanel() {
 
   const [dataset, setDataset] = useState<BioassayDatasetState | null>(null);
   const [roles, setRoles] = useState<RoleMappingState>({
-    treatmentColumn: "",
-    doseColumn: "",
+    factors: [
+      { id: "factor_1", column: "", displayName: "Treatment", semanticRole: "treatment" },
+      { id: "factor_2", column: "", displayName: "Dose", semanticRole: "dose" },
+    ],
     replicateColumn: "",
     controlLevel: "",
     doseSeriesText: "",
@@ -66,15 +68,18 @@ export function BioassayPanel() {
   const [results, setResults] = useState<BioassayAnalysisResponse | null>(null);
   const [submitted, setSubmitted] = useState<BioassayResponseDefinition[]>([]);
 
-  // Treatment values visible in the preview rows, offered as control-level hints.
+  const treatmentFactor = roles.factors.find(f => f.semanticRole === "treatment") ?? roles.factors[0];
+  const doseFactor = roles.factors.find(f => f.semanticRole === "dose");
+
+  // Values of the treatment (or first) factor, offered as control-level hints.
   const controlSuggestions = useMemo(() => {
-    if (!dataset || !roles.treatmentColumn) return [];
+    if (!dataset || !treatmentFactor?.column) return [];
     const seen = dataset.preview
-      .map((row) => row[roles.treatmentColumn])
+      .map((row) => row[treatmentFactor.column])
       .filter((value) => value !== null && value !== undefined)
       .map(String);
     return Array.from(new Set(seen));
-  }, [dataset, roles.treatmentColumn]);
+  }, [dataset, treatmentFactor?.column]);
 
   const eligibleCotoxResponses = drafts.filter(
     (draft) => draft.type === "mortality" && draft.abbottCorrection && draft.id.trim()
@@ -82,14 +87,12 @@ export function BioassayPanel() {
 
   const validation = (() => {
     if (!dataset) return "Upload a dataset to begin.";
-    if (!roles.treatmentColumn) return "Select the Treatment column.";
-    if (!roles.doseColumn) return "Select the Dose / Concentration column.";
+    if (roles.factors.length < 1 || roles.factors.length > 3) return "Select one to three experimental factors.";
+    if (roles.factors.some(f => !f.column)) return "Select a column for every experimental factor.";
+    if (new Set(roles.factors.map(f => f.column)).size !== roles.factors.length) return "Experimental factor columns must be unique.";
     if (!roles.replicateColumn) return "Select the Replicate column.";
-    if (!roles.controlLevel.trim()) return "Enter the control treatment level.";
-
     const doses = parseDoseSeries(roles.doseSeriesText);
-    if (doses.length === 0) return "Confirm the expected dose levels.";
-    if (doses.some((dose) => !Number.isFinite(dose))) {
+    if (doseFactor && doses.some((dose) => !Number.isFinite(dose))) {
       return "Expected dose levels must be numbers separated by commas.";
     }
     if (new Set(doses).size !== doses.length) return "Expected dose levels must be unique.";
@@ -110,8 +113,14 @@ export function BioassayPanel() {
     }
     const ids = drafts.map((d) => d.id.trim());
     if (new Set(ids).size !== ids.length) return "Response names must be unique.";
+    if (drafts.some(d => d.type === "mortality") && (!doseFactor || !roles.controlLevel.trim())) {
+      return "Mortality analysis requires an explicitly mapped Dose factor and control level.";
+    }
 
     if (cotoxicity.enabled) {
+      if (!doseFactor) return "Joint action requires a factor with semantic role Dose.";
+      if (roles.factors.length > 2) return "Joint action is not supported for experiments with more than two factors.";
+      if (!roles.controlLevel.trim()) return "Joint action requires a control level.";
       if (!cotoxicity.componentA.trim()) return "Select Component A for joint action.";
       if (!cotoxicity.componentB.trim()) return "Select Component B for joint action.";
       if (!cotoxicity.mixture.trim()) return "Select the Mixture level for joint action.";
@@ -146,11 +155,16 @@ export function BioassayPanel() {
       },
       design: {
         design_type: "crd",
-        treatment_column: roles.treatmentColumn,
-        dose_column: roles.doseColumn,
+        factor_columns: roles.factors.map(factor => ({
+          id: factor.id,
+          column: factor.column,
+          display_name: factor.displayName.trim() || factor.column,
+          semantic_role: factor.semanticRole || null,
+        })),
+        dose_factor_id: doseFactor?.id ?? null,
         replicate_column: roles.replicateColumn,
-        control_treatment_level: roles.controlLevel.trim(),
-        expected_dose_series: parseDoseSeries(roles.doseSeriesText),
+        control_treatment_level: roles.controlLevel.trim() || null,
+        expected_dose_series: doseFactor ? parseDoseSeries(roles.doseSeriesText) : [],
       },
       responses,
       cotoxicity: cotoxicity.enabled
@@ -168,7 +182,7 @@ export function BioassayPanel() {
       // Every declared response participates in the descriptive summaries; the
       // backend skips pairs and treatments it cannot fit.
       correlation_response_ids: responses.length > 1 ? responses.map((r) => r.id) : [],
-      regression_response_ids: responses.map((r) => r.id),
+      regression_response_ids: doseFactor && roles.factors.length <= 2 ? responses.map((r) => r.id) : [],
       options: {
         alpha: ALPHA,
         floor_abbott_at_zero: true,

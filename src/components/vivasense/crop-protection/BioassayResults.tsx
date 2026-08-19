@@ -61,7 +61,7 @@ function ResponseBlock({
       }
     : null;
   const interactionFirst =
-    result.interpretation_metadata.interpretation_priority === "interaction";
+    result.interpretation_metadata.interpretation_priority !== "main_effects";
 
   const timeLabel =
     definition?.observation_time === null || definition?.observation_time === undefined
@@ -116,13 +116,14 @@ function ResponseBlock({
         )}
       </Section>
 
-      <Section title="Interaction Plot">
+      {(result.cell_means ?? result.interaction.means)[0]?.factor_levels &&
+       Object.keys((result.cell_means ?? result.interaction.means)[0].factor_levels!).length === 1 ? null : <Section title="Interaction Plot">
         <InteractionPlot
-          means={result.interaction.means}
+          means={result.cell_means ?? result.interaction.means}
           responseLabel={result.response_id}
           displayColumn={result.provenance.display_column}
         />
-      </Section>
+      </Section>}
 
       {result.mortality_correction?.abbott_applied && (
         <Section
@@ -165,12 +166,15 @@ export function BioassayResults({ results, definitions, alpha }: Props) {
         <div className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
           <div><span className="text-muted-foreground">Design:</span> Factorial CRD</div>
           <div>
-            <span className="text-muted-foreground">Treatments:</span>{" "}
-            {design.factorial_treatments.length}
+            <span className="text-muted-foreground">Experimental factors:</span>{" "}
+            {design.factor_count ?? design.factors?.length ?? 2}
           </div>
-          <div>
-            <span className="text-muted-foreground">Doses:</span> {design.dose_levels.length}
-          </div>
+          <div><span className="text-muted-foreground">Factorial cells:</span> {design.cells}</div>
+          {!design.factors && <>
+            <div><span className="text-muted-foreground">Treatments:</span> {design.factorial_treatments.length}</div>
+            <div><span className="text-muted-foreground">Doses:</span> {design.dose_levels.length}</div>
+            <div className="sm:col-span-2"><span className="text-muted-foreground">Treatments:</span> {design.factorial_treatments.join(", ")}</div>
+          </>}
           <div>
             <span className="text-muted-foreground">Factorial observations:</span>{" "}
             {design.factorial_rows}
@@ -187,10 +191,7 @@ export function BioassayResults({ results, definitions, alpha }: Props) {
             <span className="text-muted-foreground">Balanced:</span>{" "}
             {design.balanced ? "Yes" : "No"}
           </div>
-          <div className="sm:col-span-2">
-            <span className="text-muted-foreground">Treatments:</span>{" "}
-            {design.factorial_treatments.join(", ")}
-          </div>
+          {design.factors?.map(factor => <div key={factor.column}><span className="text-muted-foreground">{factor.display_name}:</span> {factor.levels} levels</div>)}
         </div>
       </Section>
 
