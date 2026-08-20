@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+  const [anovaAnalysisKind, setAnovaAnalysisKind] = useState<"anova" | "variance_components">("anova");
 
   const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
     const name = file.name.toLowerCase();
@@ -75,7 +76,7 @@ export default function VivaSenseWorkspace() {
 
   const sectionMeta: Record<WorkspaceSection, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
     overview: { label: "Overview", icon: LayoutGrid },
-    anova: { label: "ANOVA & Descriptive", icon: Sigma },
+    anova: { label: "Experimental Design & ANOVA", icon: Sigma },
     genetics: { label: "Genetics & Breeding", icon: Dna },
     advanced: { label: "Advanced Analytics", icon: Sparkles },
   };
@@ -340,15 +341,20 @@ export default function VivaSenseWorkspace() {
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                  Analysis of Variance
+                  {anovaAnalysisKind === "anova" ? "Experimental Design" : "Variance Components & Heritability"}
                 </span>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">ANOVA</h1>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+                  {anovaAnalysisKind === "anova" ? "Experimental Design & ANOVA" : "Variance Components & Heritability"}
+                </h1>
                 <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                  Upload a dataset, choose your experimental design, and analyse one or more
-                  response variables — ANOVA table, ranked means with Tukey groups, diagnostics,
-                  and interpretation per trait.
+                  {anovaAnalysisKind === "anova"
+                    ? "Upload a dataset, choose your experimental design, and analyse one or more response variables — treatment comparisons, mean separation, diagnostics, and interpretation per trait."
+                    : "Estimate variance components, broad-sense heritability, and related genetic parameters for the selected traits."}
                 </p>
               </div>
+              <Button asChild variant="outline" size="sm" className="shrink-0">
+                <Link to="/help">View Guide</Link>
+              </Button>
             </div>
             <div className="mt-8 space-y-6">
               {error && (
@@ -361,7 +367,10 @@ export default function VivaSenseWorkspace() {
                 onDatasetReady={setDatasetContext}
                 datasetContext={datasetContext}
               />
-              <AnovaModulePanel datasetContext={datasetContext} />
+              <AnovaModulePanel
+                datasetContext={datasetContext}
+                onAnalysisKindChange={setAnovaAnalysisKind}
+              />
             </div>
           </div>
         )}

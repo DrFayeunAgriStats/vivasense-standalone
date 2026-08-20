@@ -31,6 +31,7 @@ const MODULE = "anova" as const;
 
 interface Props {
   datasetContext: DatasetContext | null;
+  onAnalysisKindChange?: (kind: "anova" | "variance_components") => void;
 }
 
 interface DesignMeta {
@@ -56,17 +57,17 @@ type AnalysisKind = "anova" | "variance_components";
 const ANALYSIS_KINDS: { id: AnalysisKind; label: string; description: string }[] = [
   {
     id: "anova",
-    label: "ANOVA",
-    description: "CRD, RCBD, Factorial, Split-Plot — significance testing and mean separation",
+    label: "Experimental Design / ANOVA",
+    description: "CRD, RCBD, Factorial, Split-Plot — treatment comparisons and mean separation",
   },
   {
     id: "variance_components",
     label: "Variance Components & Heritability",
-    description: "σ²g, H², GCV, PCV, GA — single environment",
+    description: "σ²g, H², GCV, PCV, GA — specialist genetic-parameter workflow",
   },
 ];
 
-export function AnovaModulePanel({ datasetContext }: Props) {
+export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props) {
   const { toast } = useToast();
   const location = useLocation();
   // The "Genetics & Breeding" nav item redirects here carrying intent=genetics,
@@ -78,6 +79,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   useEffect(() => {
     if (intent === "genetics") setAnalysisKind("variance_components");
   }, [intent]);
+  useEffect(() => {
+    onAnalysisKindChange?.(analysisKind);
+  }, [analysisKind, onAnalysisKindChange]);
   const [design, setDesign] = useState<AnovaDesignType>("rcbd");
 
   // Mappings (per-design)
@@ -122,7 +126,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const kindSelector = (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Analysis type</CardTitle>
+        <CardTitle className="text-base">Experimental Design / Analysis type</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
         {ANALYSIS_KINDS.map((k) => {
