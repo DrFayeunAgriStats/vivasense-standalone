@@ -65,7 +65,6 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
-  const [anovaAnalysisKind, setAnovaAnalysisKind] = useState<"anova" | "variance_components">("anova");
 
   const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
     const name = file.name.toLowerCase();
@@ -341,15 +340,13 @@ export default function VivaSenseWorkspace() {
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                  {anovaAnalysisKind === "anova" ? "Experimental Design" : "Variance Components & Heritability"}
+                  Experimental Design
                 </span>
                 <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
-                  {anovaAnalysisKind === "anova" ? "Experimental Design & ANOVA" : "Variance Components & Heritability"}
+                  Experimental Design & ANOVA
                 </h1>
                 <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                  {anovaAnalysisKind === "anova"
-                    ? "Upload a dataset, choose your experimental design, and analyse one or more response variables — treatment comparisons, mean separation, diagnostics, and interpretation per trait."
-                    : "Estimate variance components, broad-sense heritability, and related genetic parameters for the selected traits."}
+                  Upload a dataset, choose the experimental design, and analyse one or more response variables using treatment comparisons, mean separation, diagnostics, and interpretation per trait.
                 </p>
               </div>
               <Button asChild variant="outline" size="sm" className="shrink-0">
@@ -369,7 +366,6 @@ export default function VivaSenseWorkspace() {
               />
               <AnovaModulePanel
                 datasetContext={datasetContext}
-                onAnalysisKindChange={setAnovaAnalysisKind}
               />
             </div>
           </div>

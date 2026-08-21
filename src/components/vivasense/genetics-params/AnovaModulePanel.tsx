@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import {
   Loader2, Play, BarChart3, Download, CheckCircle2, AlertTriangle,
-  FileSpreadsheet, Info, Dna,
+  FileSpreadsheet, Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
@@ -20,7 +19,6 @@ import {
   analyzeUpload, inferFileType, type UploadAnalysisResponse, type UploadAnalysisRequest,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
-import { VarianceComponentsPanel } from "./VarianceComponentsPanel";
 import { pl } from "@/lib/utils";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type {
@@ -31,7 +29,6 @@ const MODULE = "anova" as const;
 
 interface Props {
   datasetContext: DatasetContext | null;
-  onAnalysisKindChange?: (kind: "anova" | "variance_components") => void;
 }
 
 interface DesignMeta {
@@ -47,41 +44,8 @@ const DESIGNS: DesignMeta[] = [
   { id: "split_plot_rcbd",  label: "Split-Plot RCBD",  hint: "Restricted randomisation: main-plot factor inside replication blocks, subplot factor inside each main plot." },
 ];
 
-/**
- * Analysis types offered by this module. Variance Components & Heritability is
- * NOT an ANOVA design — it is a separate analysis with its own form and its own
- * endpoint, so it sits here rather than as a fifth tab in the design strip.
- */
-type AnalysisKind = "anova" | "variance_components";
-
-const ANALYSIS_KINDS: { id: AnalysisKind; label: string; description: string }[] = [
-  {
-    id: "anova",
-    label: "Experimental Design / ANOVA",
-    description: "CRD, RCBD, Factorial, Split-Plot — treatment comparisons and mean separation",
-  },
-  {
-    id: "variance_components",
-    label: "Variance Components & Heritability",
-    description: "σ²g, H², GCV, PCV, GA — specialist genetic-parameter workflow",
-  },
-];
-
-export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props) {
+export function AnovaModulePanel({ datasetContext }: Props) {
   const { toast } = useToast();
-  const location = useLocation();
-  // The "Genetics & Breeding" nav item redirects here carrying intent=genetics,
-  // so a researcher arriving from it lands on the genetics analysis directly.
-  const intent = new URLSearchParams(location.search).get("intent");
-  const [analysisKind, setAnalysisKind] = useState<AnalysisKind>(
-    intent === "genetics" ? "variance_components" : "anova"
-  );
-  useEffect(() => {
-    if (intent === "genetics") setAnalysisKind("variance_components");
-  }, [intent]);
-  useEffect(() => {
-    onAnalysisKindChange?.(analysisKind);
-  }, [analysisKind, onAnalysisKindChange]);
   const [design, setDesign] = useState<AnovaDesignType>("rcbd");
 
   // Mappings (per-design)
@@ -121,63 +85,17 @@ export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props
     return Array.from(new Set(candidates));
   }, [datasetContext]);
 
-  // Analysis-type chooser — rendered above every other control, including the
-  // empty state, so the choice is made before any design-specific field appears.
-  const kindSelector = (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Experimental Design / Analysis type</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2">
-        {ANALYSIS_KINDS.map((k) => {
-          const active = analysisKind === k.id;
-          const Icon = k.id === "variance_components" ? Dna : BarChart3;
-          return (
-            <button
-              key={k.id}
-              type="button"
-              onClick={() => setAnalysisKind(k.id)}
-              className={`rounded-lg border p-3 text-left transition-colors ${
-                active
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted/50"
-              }`}
-            >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <Icon className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
-                {k.label}
-              </span>
-              <span className="mt-1 block text-xs text-muted-foreground">{k.description}</span>
-            </button>
-          );
-        })}
-      </CardContent>
-    </Card>
-  );
-
   if (!datasetContext) {
     return (
       <div className="space-y-6">
-        {kindSelector}
         <Card className="border-dashed">
           <CardContent className="py-16 text-center space-y-3">
             <BarChart3 className="h-10 w-10 mx-auto text-muted-foreground/50" />
             <p className="text-muted-foreground font-medium">
-              {analysisKind === "variance_components"
-                ? "Upload a dataset first to estimate variance components and heritability."
-                : "Upload a dataset first to run ANOVA analysis."}
+              Upload a dataset first to run a domain-neutral ANOVA analysis.
             </p>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  if (analysisKind === "variance_components") {
-    return (
-      <div className="space-y-6">
-        {kindSelector}
-        <VarianceComponentsPanel datasetContext={datasetContext} />
       </div>
     );
   }
@@ -372,8 +290,6 @@ export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props
 
   return (
     <div className="space-y-6">
-      {kindSelector}
-
       {/* Dataset banner */}
       <div className="rounded-md border border-primary/20 bg-primary/5 p-3 flex items-center gap-2 text-sm">
         <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
@@ -388,10 +304,10 @@ export function AnovaModulePanel({ datasetContext, onAnalysisKindChange }: Props
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            ANOVA Analysis
+            Choose Experimental Design
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Select your experimental design to ensure correct analysis and interpretation.
+            Select the design that matches the experiment and then map the relevant treatment, replication, factor, and response columns.
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
