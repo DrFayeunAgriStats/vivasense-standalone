@@ -327,13 +327,13 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {/* Field mapping per design */}
           <div className="grid gap-4 sm:grid-cols-2">
             {design === "crd" && (
-              <ColumnSelect label="Treatment Column" value={treatmentCol} onChange={setTreatmentCol} />
+              <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
             )}
 
             {design === "rcbd" && (
               <>
                 <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
-                <ColumnSelect label="Treatment Column" value={treatmentCol} onChange={setTreatmentCol} />
+                <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
               </>
             )}
 

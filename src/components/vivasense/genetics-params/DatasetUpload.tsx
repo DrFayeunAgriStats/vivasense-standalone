@@ -18,6 +18,9 @@ interface Props {
   datasetContext: DatasetContext | null;
 }
 
+const domainNeutralWarning = (warning: string) =>
+  warning.replace(/genotype/gi, "treatment / factor");
+
 export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
@@ -182,14 +185,14 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
                   <AlertTriangle className="h-4 w-4" /> Warnings
                 </div>
                 <ul className="list-disc pl-5 space-y-0.5">
-                  {preview.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                  {preview.warnings.map((w, i) => <li key={i}>{domainNeutralWarning(w)}</li>)}
                 </ul>
               </div>
             )}
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Genotype Column</Label>
+                <Label className="text-sm font-medium">Treatment / Factor Column</Label>
                 <Select value={genotypeCol} onValueChange={setGenotypeCol}>
                   <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
                   <SelectContent>
@@ -198,7 +201,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Rep Column</Label>
+                <Label className="text-sm font-medium">Replication / Block Column</Label>
                 <Select value={repCol || "__none__"} onValueChange={(v) => setRepCol(v === "__none__" ? "" : v)}>
                   <SelectTrigger><SelectValue placeholder="None (CRD)" /></SelectTrigger>
                   <SelectContent>
