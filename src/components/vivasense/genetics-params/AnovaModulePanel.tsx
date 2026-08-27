@@ -42,6 +42,8 @@ import {
   isStaleTokenFailure,
 } from "./governedOneFactor";
 import { GovernedOneFactorPanel } from "./GovernedOneFactorPanel";
+import { isGovernedFactorial } from "./governedFactorial";
+import { GovernedFactorialPanel } from "./GovernedFactorialPanel";
 
 const MODULE = "anova" as const;
 
@@ -597,6 +599,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             // actually sent the decision objects. A legacy result without them
             // keeps the existing panel and is never relabelled "governed".
             const governed = isGovernedOneFactor(r, design);
+            const governedFactorial = isGovernedFactorial(r, design);
 
             return (
               <div key={trait} className="space-y-3">
@@ -606,6 +609,14 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                     design={design}
                     result={r}
                     mapping={{ treatment: treatmentCol, rep: repColumn }}
+                    inferentialAlpha={alpha}
+                  />
+                )}
+                {governedFactorial && (
+                  <GovernedFactorialPanel
+                    design={design}
+                    result={r}
+                    mapping={{ rep: repColumn }}
                     inferentialAlpha={alpha}
                   />
                 )}
@@ -620,7 +631,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                       : undefined
                   }
                   anovaTable={r.anova_table}
-                  meanSeparation={isSplitPlot ? undefined : r.mean_separation}
+                  meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
                   descriptiveStats={[
                     { label: "Grand Mean", value: r.grand_mean?.toFixed(4) ?? "—" },
                     { label: "Treatment Levels", value: String(r.n_genotypes) },
