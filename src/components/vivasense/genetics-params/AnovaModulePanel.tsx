@@ -657,6 +657,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                       ? tr.data_warnings.map((w) => ({ text: w }))
                       : undefined
                   }
+                  inferentialAlpha={alpha}
                   anovaTable={r.anova_table}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
                   descriptiveStats={buildDescriptiveStats(r)}

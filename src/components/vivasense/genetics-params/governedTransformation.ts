@@ -167,6 +167,21 @@ function asNumber(v: unknown): number | null {
 }
 
 /**
+ * Read a list that R may have delivered as a bare string.
+ *
+ * jsonlite unboxes a length-1 character vector, so a single warning or a single
+ * eligibility reason arrives as `"..."` rather than `["..."]`. Treating that as
+ * "not an array" silently dropped it; calling `.map` on it threw
+ * "reasons.map is not a function" and took the whole panel down. Spreading the
+ * string would be worse still — it would yield one entry per character.
+ */
+function asStringList(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map(String);
+  if (typeof v === "string") return v.length > 0 ? [v] : [];
+  return [];
+}
+
+/**
  * Present the candidate exactly as the engine reported it.
  *
  * λ is shown to four decimals rather than rounded to a "nice" value: λ = 0.15
@@ -203,7 +218,7 @@ export function readLambda(candidate: Record<string, unknown> | null | undefined
         : null,
     confidenceLevel: asNumber(profile.confidence_level),
     exactness: typeof profile.exact_vs_approximation === "string" ? profile.exact_vs_approximation : null,
-    warnings: Array.isArray(candidate.warnings) ? (candidate.warnings as unknown[]).map(String) : [],
+    warnings: asStringList(candidate.warnings),
     boundaryHit: profile.boundary_hit === true,
     intervalTruncated: profile.interval_truncated === true,
   };
@@ -239,7 +254,7 @@ export function readSelectionGate(exploration: ExplorationResponse | null | unde
     return { selectable: false, status: "none", reasons: [], blockedExplanation: null };
   }
   const status = exploration.eligibility_status;
-  const reasons = exploration.eligibility_reasons ?? [];
+  const reasons = asStringList(exploration.eligibility_reasons);
   const selectable = status === "eligible_for_future_selection";
   return {
     selectable,
@@ -369,8 +384,8 @@ export function readSelectedBranch(
         intervalMethod: typeof row.interval_method === "string" ? row.interval_method : null,
       };
     }),
-    warnings: selected.warnings ?? [],
-    acknowledgements: selected.acknowledgements ?? [],
+    warnings: asStringList(selected.warnings),
+    acknowledgements: asStringList(selected.acknowledgements),
     interpretation: typeof selected.interpretation === "string" ? selected.interpretation : null,
     effectiveN: asNumber(selected.effective_n),
   };

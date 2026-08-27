@@ -53,6 +53,25 @@ interface AcademicResultsProps {
   extraTables?: { title: string; data: unknown }[];
   /** Descriptive stats grid */
   descriptiveStats?: { label: string; value: string }[];
+  /**
+   * Selected inferential alpha for this analysis.
+   *
+   * Supplied by governed callers so the ANOVA highlighting and the
+   * mean-separation footer state the alpha the analysis was actually run at.
+   * Omitted by legacy callers, which keep the previous 0.05 behaviour.
+   */
+  inferentialAlpha?: number;
+}
+
+/** Mean-separation objects carry their own method and alpha; prefer them. */
+function separationMeta(
+  meanSeparation: unknown,
+  fallbackAlpha: number
+): { method: string; alpha: number } {
+  const ms = (meanSeparation ?? {}) as Record<string, unknown>;
+  const method = typeof ms.test === "string" && ms.test.trim() ? ms.test : "Tukey HSD";
+  const alpha = typeof ms.alpha === "number" && Number.isFinite(ms.alpha) ? ms.alpha : fallbackAlpha;
+  return { method, alpha };
 }
 
 /* ── Helpers ───────────────────────────────────────── */
@@ -102,9 +121,17 @@ export function AcademicResultsPanel({
   meanSeparation,
   extraTables,
   descriptiveStats,
+  inferentialAlpha,
 }: AcademicResultsProps) {
   const anovaRows = extractRows(anovaTable);
   const msRows = extractRows(meanSeparation);
+
+  // Significance level actually used by this analysis. Governed callers pass
+  // the selected alpha; the mean-separation object's own alpha wins when the
+  // backend supplied one, because it is the alpha that produced the letters.
+  const effectiveAlpha = typeof inferentialAlpha === "number" ? inferentialAlpha : 0.05;
+  const separation = separationMeta(meanSeparation, effectiveAlpha);
+  const alphaText = separation.alpha.toFixed(2);
   const hasDetailedStats = anovaRows.length > 0 || msRows.length > 0 || (extraTables && extraTables.length > 0) || (descriptiveStats && descriptiveStats.length > 0);
 
   // In domain-neutral mode, strip genetics-specific sentences from free text and hide reliability/classifications/recommendation.
@@ -264,7 +291,7 @@ export function AcademicResultsPanel({
                           {anovaRows.map((row, i) => {
                             const pVal = row.p_value ?? row.pvalue ?? row["Pr(>F)"] ?? row["PR(>F)"];
                             const pNum = pVal != null ? Number(pVal) : NaN;
-                            const isSig = !isNaN(pNum) && pNum < 0.05;
+                            const isSig = !isNaN(pNum) && pNum <= effectiveAlpha;
                             return (
                               <TableRow key={i}>
                                 <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term)}</TableCell>
@@ -281,7 +308,9 @@ export function AcademicResultsPanel({
                         </TableBody>
                       </Table>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 italic">* p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001</p>
+                    <p className="text-xs text-muted-foreground mt-1 italic">
+                      Highlighted p-values meet the selected significance level (p &le; {alphaText}).
+                    </p>
                   </div>
                 )}
 
@@ -290,7 +319,7 @@ export function AcademicResultsPanel({
                   <div>
                     <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                       <Target className="h-4 w-4 text-primary" />
-                      Mean Separation (Tukey HSD)
+                      Mean Separation ({separation.method})
                     </h4>
                     <div className="overflow-x-auto">
                       <Table>
@@ -325,7 +354,7 @@ export function AcademicResultsPanel({
                       </Table>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 italic">
-                      Means with the same letter are not significantly different (Tukey HSD, α = 0.05)
+                      Means with the same letter are not significantly different ({separation.method}, α = {alphaText})
                     </p>
                   </div>
                 )}
