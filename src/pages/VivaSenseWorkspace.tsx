@@ -163,31 +163,22 @@ export default function VivaSenseWorkspace() {
       let historyTraits: string[] = traitValues;
 
       if (analysisType === "anova") {
-        if (traitValues.length < 1) {
-          throw new Error("Please select at least one trait.");
-        }
-        if (!genotypeValue) {
-          throw new Error("Please provide the treatment / genotype column.");
-        }
-        // Proven path: /genetics/analyze-upload?module=anova (design-aware),
-        // rendered by AcademicResultsPanel — same workflow as the ANOVA module.
-        result = await analyzeUpload({
-          base64_content: base64Content,
-          file_type: fileType,
-          genotype_column: genotypeValue,
-          rep_column: repValue,
-          environment_column: effectiveEnvironment,
-          // Applied by the backend only when environment_column is absent.
-          environment_factor_columns:
-            effectiveMode === "multi" ? environmentFactorColumns : [],
-          trait_columns: traitValues,
-          mode: effectiveMode,
-          random_environment: false,
-          selection_intensity: 2.04,
-          module: "anova",
-          design_type: repValue ? "rcbd" : "crd",
-          treatment_column: genotypeValue,
-        });
+        // RETIRED — this path used to build its own ANOVA payload, inferring the
+        // design as `repValue ? "rcbd" : "crd"`. That guess could not express a
+        // factorial or split-plot design, never sent an inferential alpha, and
+        // produced a payload different from the governed one. AnovaModulePanel
+        // is now the single authoritative ANOVA submission path, so this branch
+        // constructs nothing and directs the user there.
+        //
+        // The branch is kept (rather than deleted) because the form's union and
+        // stored history still carry "anova"; reaching here means something
+        // routed an ANOVA request to the wrong screen, and that should say so
+        // rather than silently build a weaker request.
+        throw new Error(
+          "ANOVA now runs in the Experimental Design / ANOVA module, where the design " +
+            "(CRD, RCBD, Factorial CRD, Factorial RCBD, Split-Plot RCBD) and the " +
+            "significance level are set explicitly. Open that module to run this analysis."
+        );
       } else if (analysisType === "variance_components") {
         if (traitValues.length < 1) {
           throw new Error("Please select at least one trait.");
@@ -245,7 +236,9 @@ export default function VivaSenseWorkspace() {
       }
 
       setAnalysisState({
-        type: analysisType === "anova" ? "anova" : "genetics",
+        // ANOVA can no longer reach here — the branch above throws — so every
+        // result rendered by this screen is a genetics-module result.
+        type: "genetics",
         analysisType,
         results: result,
       });
@@ -258,7 +251,9 @@ export default function VivaSenseWorkspace() {
         backendEndpoint: historyEndpoint,
         datasetName: file.name,
         datasetToken: (formData.get("dataset_token") as string | null) || null,
-        designType: analysisType === "anova" ? (repValue ? "rcbd" : "crd") : null,
+        // Design is a property of an experimental-design analysis; the
+        // genetics analyses this screen still runs do not have one.
+        designType: null,
         traits: historyTraits,
         startedAt,
         parameters: { module: "genetics", mode: effectiveMode },

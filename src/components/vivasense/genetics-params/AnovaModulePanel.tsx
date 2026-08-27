@@ -16,44 +16,47 @@ import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { downloadReport } from "@/lib/geneticsUploadApi";
 import {
-  analyzeUpload, inferFileType, type UploadAnalysisResponse, type UploadAnalysisRequest,
+  analyzeUpload, inferFileType, type UploadAnalysisResponse,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
-import type {
-  DatasetContext, AnovaDesignType,
-} from "@/types/geneticsUpload";
+import type { DatasetContext } from "@/types/geneticsUpload";
+import type { AnovaAlpha } from "@/services/geneticsUploadApi";
+import {
+  GOVERNED_DESIGNS,
+  type GovernedDesignType,
+  type ColumnMapping,
+  designMeta,
+  requiredRoles,
+  validateMapping,
+  buildStructuralPreview,
+  buildAnovaRequest,
+  describeStructuralError,
+} from "./anovaDesigns";
 
 const MODULE = "anova" as const;
+
+/** Inferential alphas the governed backend accepts. Diagnostic α stays 0.05. */
+const ALPHA_OPTIONS: AnovaAlpha[] = [0.01, 0.05, 0.1];
+const DEFAULT_ALPHA: AnovaAlpha = 0.05;
 
 interface Props {
   datasetContext: DatasetContext | null;
 }
 
-interface DesignMeta {
-  id: AnovaDesignType;
-  label: string;
-  hint: string;
-}
-
-const DESIGNS: DesignMeta[] = [
-  { id: "crd",              label: "CRD",              hint: "Completely Randomized Design — single treatment factor, no blocking." },
-  { id: "rcbd",             label: "RCBD",             hint: "Randomized Complete Block Design — one treatment factor with replication blocks." },
-  { id: "factorial",        label: "Factorial",        hint: "Two crossed treatment factors (A × B). Optionally add replication blocks." },
-  { id: "split_plot_rcbd",  label: "Split-Plot RCBD",  hint: "Restricted randomisation: main-plot factor inside replication blocks, subplot factor inside each main plot." },
-];
-
 export function AnovaModulePanel({ datasetContext }: Props) {
   const { toast } = useToast();
-  const [design, setDesign] = useState<AnovaDesignType>("rcbd");
+  const [design, setDesign] = useState<GovernedDesignType>("rcbd");
+  const [alpha, setAlpha] = useState<AnovaAlpha>(DEFAULT_ALPHA);
+  const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
+  const [showErrorDetail, setShowErrorDetail] = useState(false);
 
   // Mappings (per-design)
   const [treatmentCol, setTreatmentCol] = useState<string>("");
   const [repColumn, setRepColumn] = useState<string>("");
   const [factorA, setFactorA] = useState<string>("");
   const [factorB, setFactorB] = useState<string>("");
-  const [factorC, setFactorC] = useState<string>("");
   const [mainPlot, setMainPlot] = useState<string>("");
   const [subPlot, setSubPlot] = useState<string>("");
 
@@ -100,55 +103,38 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     );
   }
 
-  const factorAColumns = allColumns.filter(
-    (col: string) => col !== treatmentCol && col !== repColumn
-  );
-
-  const factorBColumns = allColumns.filter(
-    (col: string) => col !== treatmentCol && col !== repColumn && col !== factorA
-  );
-
-  const factorCColumns = allColumns.filter(
-    (col: string) => col !== treatmentCol && col !== repColumn && col !== factorA && col !== factorB
-  );
+  const factorAColumns = allColumns.filter((col: string) => col !== factorB);
+  const factorBColumns = allColumns.filter((col: string) => col !== factorA);
 
   const toggleTrait = (t: string) =>
     setSelectedTraits((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
-  // ── Validation ─────────────────────────────────────────────────────────
-  const validation = (() => {
-    if (selectedTraits.length === 0) return "Select at least one response variable.";
-    if (design === "crd") {
-      if (!treatmentCol) return "Select a Treatment column.";
-    }
-    if (design === "rcbd") {
-      if (!repColumn) return "Select a Replication / Block column.";
-      if (!treatmentCol) return "Select a Treatment column.";
-      if (repColumn === treatmentCol) return "Replication and Treatment must be different columns.";
-    }
-    if (design === "factorial") {
-      if (!factorA || !factorB) return "Select Factor A and Factor B columns.";
-      if (factorA === factorB) return "Factor A and Factor B must be different columns.";
-      if (factorC && factorC !== "None" && (factorC === factorA || factorC === factorB)) {
-        return "Factor C must be different from Factors A and B.";
-      }
-      // Factorial designs need replication to estimate the error term; without a
-      // rep column the model is over-parameterised (backend R error: aliased coefficients).
-      if (!repColumn) return "Select a Replication / Block column (required for the factorial error term).";
-      if (repColumn === factorA || repColumn === factorB) return "Replication must differ from the factor columns.";
-    }
-    if (design === "split_plot_rcbd") {
-      if (!repColumn) return "Select a Replication / Block column.";
-      if (!mainPlot) return "Select a Main-Plot factor column.";
-      if (!subPlot) return "Select a Subplot factor column.";
-      const cols = [repColumn, mainPlot, subPlot];
-      if (new Set(cols).size !== cols.length) return "Replication, Main-plot and Subplot must be different columns.";
-    }
-    return null;
-  })();
+  // ── Mapping + validation ───────────────────────────────────────────────
+  // Only roles the chosen design actually uses are collected, so a column left
+  // over from a previous selection is never sent. That matters most for
+  // Factorial CRD: a stray block would reintroduce the synthetic-block model
+  // that aliased Factor B away.
+  const mapping: ColumnMapping = {
+    treatment: treatmentCol,
+    rep: repColumn,
+    factor_a: factorA,
+    factor_b: factorB,
+    main_plot: mainPlot,
+    sub_plot: subPlot,
+  };
+  const issue = validateMapping(design, mapping, selectedTraits);
+  const validation = issue?.message ?? null;
+
+  const preview = buildStructuralPreview(
+    design,
+    mapping,
+    alpha,
+    (datasetContext.dataPreview ?? []) as Record<string, unknown>[]
+  );
 
   const isSplitPlot = design === "split_plot_rcbd";
-  const isFactorialFamily = design === "factorial";
+  const isFactorialFamily = design === "factorial_crd" || design === "factorial_rcbd";
+  const roles = requiredRoles(design);
 
   // ── Run analysis ──────────────────────────────────────────────────────
   const handleAnalyze = async () => {
@@ -165,48 +151,30 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       designType: design,
       traits: selectedTraits,
       startedAt,
-      parameters: { design_type: design, mode: datasetContext.mode },
+      parameters: { design_type: design, alpha, mode: datasetContext.mode },
     };
     try {
-      // "factorial" already includes replications as blocks (rep is a model source);
-      // the separate "factorial_rcbd" path is not used (it errors on the backend).
-      const effectiveDesign: AnovaDesignType = design;
-
-      console.log("[MODULE]", MODULE, "[DESIGN]", effectiveDesign);
+      console.log("[MODULE]", MODULE, "[DESIGN]", design, "[ALPHA]", alpha);
       console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
 
-      // Direct call to /genetics/analyze-upload?module=anova — no two-step token workflow.
-      // Request structure mirrors the proven FIA AnovaModulePanel: design-specific
-      // column roles are sent so factorial and split-plot designs analyse correctly,
-      // not just RCBD/CRD.
-      const request: UploadAnalysisRequest = {
-        base64_content: datasetContext.base64Content,
-        file_type: datasetContext.fileType,
-        // Legacy fields kept for backend back-compat.
-        genotype_column: treatmentCol || datasetContext.genotypeColumn,
-        rep_column: repColumn || datasetContext.repColumn,
-        environment_column: datasetContext.environmentColumn ?? null,
-        // Applied by the backend only when environment_column is absent.
-        environment_factor_columns: datasetContext.environmentFactorColumns ?? [],
-        trait_columns: selectedTraits,
-        mode: datasetContext.mode,
-        random_environment: false,
-        selection_intensity: 2.04,
-        module: "anova",
-        // Design-aware fields — populated per design so the backend receives the
-        // correct treatment/factor/plot roles it validates and uses.
-        design_type: effectiveDesign,
-        treatment_column: design === "crd" || design === "rcbd" ? treatmentCol : undefined,
-        factor_a_column: isFactorialFamily ? factorA : undefined,
-        factor_b_column: isFactorialFamily ? factorB : undefined,
-        factor_c_column: isFactorialFamily && factorC && factorC !== "None" ? factorC : undefined,
-        main_plot_column: isSplitPlot ? mainPlot : undefined,
-        sub_plot_column: isSplitPlot ? subPlot : undefined,
-      };
+      const request = buildAnovaRequest({
+        datasetContext,
+        design,
+        alpha,
+        mapping,
+        traits: selectedTraits,
+      });
 
       const res = await analyzeUpload(request);
 
       setResults(res);
+      // A trait can fail structurally while the HTTP call succeeds — the
+      // backend rejects invalid structures before fitting rather than
+      // returning a partial model, so surface the reason here.
+      const firstFailure = Object.values(res.trait_results ?? {}).find(
+        (tr) => tr.status === "failed" && tr.error
+      );
+      setStructuralError(firstFailure?.error ? describeStructuralError(firstFailure.error) : null);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
@@ -311,9 +279,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
-          <Tabs value={design} onValueChange={(v) => setDesign(v as AnovaDesignType)}>
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-              {DESIGNS.map((d) => (
+          <Tabs value={design} onValueChange={(v) => setDesign(v as GovernedDesignType)}>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+              {GOVERNED_DESIGNS.map((d) => (
                 <TabsTrigger key={d.id} value={d.id} className="text-xs sm:text-sm">{d.label}</TabsTrigger>
               ))}
             </TabsList>
@@ -321,55 +289,86 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
           <div className="rounded-md border bg-muted/30 p-3 flex gap-2 text-xs text-muted-foreground">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{DESIGNS.find((d) => d.id === design)?.hint}</span>
+            <span>{designMeta(design).hint}</span>
           </div>
 
-          {/* Field mapping per design */}
+          {/* Field mapping — driven by the design's required roles */}
           <div className="grid gap-4 sm:grid-cols-2">
-            {design === "crd" && (
+            {roles.includes("treatment") && (
               <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
             )}
-
-            {design === "rcbd" && (
-              <>
-                <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
-                <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
-              </>
+            {roles.includes("factor_a") && (
+              <ColumnSelect label="Factor A Column" value={factorA} onChange={setFactorA} options={factorAColumns} />
             )}
-
-            {design === "factorial" && (
-              <>
-                <ColumnSelect label="Factor A Column" value={factorA} onChange={setFactorA} options={factorAColumns} />
-                <ColumnSelect label="Factor B Column" value={factorB} onChange={setFactorB} options={factorBColumns} />
-                <ColumnSelect
-                  label="Factor C Column (optional)"
-                  value={factorC}
-                  onChange={setFactorC}
-                  options={["None", ...factorCColumns]}
-                  placeholder="None"
-                />
-                <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
-                <p className="sm:col-span-2 text-xs text-muted-foreground">
-                  {factorC && factorC !== "None"
-                    ? "Replications are included as blocks; the factorial model estimates Factor A, Factor B, Factor C, all three two-way interactions, the three-way interaction, and the error term."
-                    : "Replications are included as blocks; the factorial model estimates Factor A, Factor B, their interaction, and the error term."}
-                </p>
-              </>
+            {roles.includes("factor_b") && (
+              <ColumnSelect label="Factor B Column" value={factorB} onChange={setFactorB} options={factorBColumns} />
             )}
-
-            {design === "split_plot_rcbd" && (
-              <>
-                <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
-                <ColumnSelect label="Main-Plot Factor Column" value={mainPlot} onChange={setMainPlot} />
-                <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={setSubPlot} />
-              </>
+            {roles.includes("main_plot") && (
+              <ColumnSelect label="Whole-Plot Factor Column" value={mainPlot} onChange={setMainPlot} />
             )}
+            {roles.includes("sub_plot") && (
+              <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={setSubPlot} />
+            )}
+            {roles.includes("rep") && (
+              <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
+            )}
+            {isFactorialFamily && (
+              <p className="sm:col-span-2 text-xs text-muted-foreground">
+                {design === "factorial_crd"
+                  ? "Completely randomised: the model estimates Factor A, Factor B, their interaction and the error term. No blocking term is fitted."
+                  : "Blocked: the model estimates the block, Factor A, Factor B, their interaction and the error term."}
+              </p>
+            )}
+          </div>
+
+          {/* Inferential alpha */}
+          <div className="rounded-md border p-3 space-y-2">
+            <Label className="text-sm font-medium">Significance level (inferential α)</Label>
+            <div className="flex flex-wrap items-center gap-2">
+              {ALPHA_OPTIONS.map((a) => (
+                <Button
+                  key={a}
+                  type="button"
+                  size="sm"
+                  variant={alpha === a ? "default" : "outline"}
+                  onClick={() => setAlpha(a)}
+                  aria-pressed={alpha === a}
+                >
+                  α = {a.toFixed(2)}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This is the <span className="font-medium">inferential</span> significance level: it decides
+              which effects are called significant, whether mean separation runs, and the wording of the
+              report. Assumption diagnostics are always evaluated at a fixed α = 0.05 and are not affected
+              by this choice.
+            </p>
+          </div>
+
+          {/* Structural preview — descriptive only */}
+          <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <Info className="h-3.5 w-3.5" /> Design summary
+            </p>
+            <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+              {preview.rows.map((row) => (
+                <div key={row.label} className="flex justify-between gap-3 border-b border-dashed py-0.5">
+                  <dt className="text-muted-foreground">{row.label}</dt>
+                  <dd className="font-medium text-right">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="text-xs text-muted-foreground">
+              Describes the structure implied by your mapping and the preview rows. Whether the design is
+              actually balanced and complete is checked by the analysis engine against the full dataset.
+            </p>
           </div>
 
           {isSplitPlot && (
             <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3 text-xs text-amber-900 dark:text-amber-200 space-y-1">
               <p className="font-semibold flex items-center gap-1.5"><Info className="h-3.5 w-3.5" /> Split-Plot RCBD</p>
-              <p>Main-plot effects are tested against whole-plot error. Subplot effects and interactions are tested against subplot error.</p>
+              <p>The whole-plot factor is tested against whole-plot error (Error A). The subplot factor and the interaction are tested against subplot error (Error B).</p>
             </div>
           )}
 
@@ -392,6 +391,34 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </div>
           )}
 
+          {structuralError && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs space-y-2"
+            >
+              <p className="font-semibold text-destructive flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" /> Design structure rejected
+              </p>
+              <p className="text-foreground">{structuralError.message}</p>
+              <p className="text-muted-foreground">
+                The analysis was stopped before any model was fitted, so no partial result was produced.
+              </p>
+              <button
+                type="button"
+                className="underline text-muted-foreground"
+                onClick={() => setShowErrorDetail((v) => !v)}
+              >
+                {showErrorDetail ? "Hide technical detail" : "Show technical detail"}
+              </button>
+              {showErrorDetail && (
+                <pre className="whitespace-pre-wrap break-words rounded bg-muted p-2 text-[11px] text-muted-foreground">
+                  {structuralError.code ? `[${structuralError.code}]\n` : ""}
+                  {structuralError.raw}
+                </pre>
+              )}
+            </div>
+          )}
+
           <Button onClick={handleAnalyze} disabled={isAnalyzing || !!validation} className="gap-2">
             {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Run Analysis
@@ -406,7 +433,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                ANOVA Results — {DESIGNS.find((d) => d.id === design)?.label}
+                ANOVA Results — {designMeta(design).fullLabel}
               </CardTitle>
               <Button onClick={handleDownload} disabled={isDownloading} size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}

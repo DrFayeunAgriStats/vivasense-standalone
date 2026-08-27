@@ -30,6 +30,15 @@ export interface DatasetContext {
   columns?: string[];
   /** Alias of `columns` for components that prefer this name. */
   availableColumns?: string[];
+  /**
+   * Sample rows returned by /genetics/upload-preview.
+   *
+   * Used only to count distinct levels for the DESCRIPTIVE structural preview.
+   * It is a sample, not the full dataset, so counts derived from it describe
+   * what the preview shows — never a completeness verdict, which the backend
+   * alone decides against the whole file.
+   */
+  dataPreview?: Record<string, unknown>[];
 }
 
 // ── Upload preview ──────────────────────────────────────────────────────────

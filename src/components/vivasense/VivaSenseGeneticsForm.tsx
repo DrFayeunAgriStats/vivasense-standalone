@@ -39,8 +39,21 @@ interface ColumnInfo {
   isNumeric: boolean;
 }
 
-const GENETICS_ANALYSIS_OPTIONS: { value: GeneticsAnalysisType; label: string; description: string }[] = [
-  { value: "anova", label: "ANOVA", description: "Fixed effects ANOVA table and significance tests" },
+/**
+ * ANOVA is deliberately NOT offered here.
+ *
+ * This form used to submit its own ANOVA request, inferring the design as
+ * `repValue ? "rcbd" : "crd"` — a guess from whether a replication column
+ * happened to be filled, with no factorial or split-plot option and no
+ * inferential alpha. That produced a second, weaker ANOVA payload alongside the
+ * governed one built by AnovaModulePanel. Two paths constructing different
+ * payloads for the same analysis cannot both be authoritative, so the governed
+ * Experimental Design / ANOVA module is now the only entry point.
+ *
+ * The `"anova"` union member is kept for stored history written by the retired
+ * path.
+ */
+export const GENETICS_ANALYSIS_OPTIONS: { value: GeneticsAnalysisType; label: string; description: string }[] = [
   { value: "variance_components", label: "Variance Components & Heritability", description: "σ²g, H², GA, GCV, PCV" },
   { value: "correlations", label: "Trait Correlations & Path Analysis", description: "Correlations, path coefficients, selection index" },
   { value: "regression", label: "Linear Regression", description: "Y on X with R², p-value, and interpretation" },

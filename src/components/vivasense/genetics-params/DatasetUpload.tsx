@@ -106,6 +106,8 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         // every non-trait column as a candidate factor/plot role.
         columns: preview.column_names,
         availableColumns: preview.column_names,
+        // Sample rows for the descriptive structural preview only.
+        dataPreview: preview.data_preview ?? [],
       };
       onDatasetReady(ctx);
       toast({ title: "Dataset ready", description: "You can now run analysis in any module." });
