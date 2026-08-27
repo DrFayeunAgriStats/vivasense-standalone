@@ -21,6 +21,7 @@ import {
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
+import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { AnovaAlpha } from "@/services/geneticsUploadApi";
@@ -44,6 +45,8 @@ import {
 import { GovernedOneFactorPanel } from "./GovernedOneFactorPanel";
 import { isGovernedFactorial } from "./governedFactorial";
 import { GovernedFactorialPanel } from "./GovernedFactorialPanel";
+import { isGovernedSplitPlot } from "./governedSplitPlot";
+import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 
 const MODULE = "anova" as const;
 
@@ -600,6 +603,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             // keeps the existing panel and is never relabelled "governed".
             const governed = isGovernedOneFactor(r, design);
             const governedFactorial = isGovernedFactorial(r, design);
+            const governedSplitPlot = isGovernedSplitPlot(r, design);
 
             return (
               <div key={trait} className="space-y-3">
@@ -620,10 +624,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                     inferentialAlpha={alpha}
                   />
                 )}
+                {governedSplitPlot && (
+                  <GovernedSplitPlotPanel
+                    result={r}
+                    mapping={{ rep: repColumn, mainPlot: mainPlot, subPlot: subPlot }}
+                    inferentialAlpha={alpha}
+                  />
+                )}
                 <AcademicResultsPanel
                   moduleLabel="ANOVA"
                   domainNeutral
-                  insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${pl(r.n_genotypes ?? 0, "treatment level")} × ${pl(r.n_reps ?? 0, "replication")}`}
+                  insightSummary={describeResultScale(r)}
                   interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={
                     tr.data_warnings.length > 0
@@ -632,11 +643,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   }
                   anovaTable={r.anova_table}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
-                  descriptiveStats={[
-                    { label: "Grand Mean", value: r.grand_mean?.toFixed(4) ?? "—" },
-                    { label: "Treatment Levels", value: String(r.n_genotypes) },
-                    { label: "Replications", value: String(r.n_reps) },
-                  ]}
+                  descriptiveStats={buildDescriptiveStats(r)}
                 />
               </div>
             );

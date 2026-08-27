@@ -224,8 +224,17 @@ export interface AnalysisSettings {
 
 export interface GeneticsResult {
   environment_mode: string;
-  n_genotypes: number;
-  n_reps: number;
+  /**
+   * Optional, matching `Optional[int]` on the backend.
+   *
+   * A generic split-plot run has no single "treatment" factor, so the engine
+   * returns null for n_genotypes — rendering it unguarded produced
+   * "null treatments". Split-plot structure comes from split_plot_profile
+   * instead; these two remain only for the one-factor and factorial designs
+   * that genuinely have them.
+   */
+  n_genotypes?: number | null;
+  n_reps?: number | null;
   n_environments: number | null;
   grand_mean: number;
   variance_components: Record<string, number | null>;

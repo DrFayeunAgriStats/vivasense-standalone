@@ -4,6 +4,7 @@ import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import type { UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { pl } from "@/lib/utils";
+import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 
 interface Props {
   results: UploadAnalysisResponse;
@@ -58,7 +59,7 @@ export function AnovaUploadResults({ results }: Props) {
             <AcademicResultsPanel
               moduleLabel="ANOVA"
               domainNeutral
-              insightSummary={`Grand mean: ${r.grand_mean?.toFixed(2) ?? "—"} | ${pl(r.n_genotypes ?? 0, "treatment level")} × ${pl(r.n_reps ?? 0, "replication")}`}
+              insightSummary={describeResultScale(r)}
               interpretation={tr.analysis_result.interpretation || ""}
               statisticalNotes={
                 tr.data_warnings.length > 0
@@ -67,11 +68,7 @@ export function AnovaUploadResults({ results }: Props) {
               }
               anovaTable={r.anova_table}
               meanSeparation={r.mean_separation}
-              descriptiveStats={[
-                { label: "Grand Mean", value: r.grand_mean?.toFixed(4) ?? "—" },
-                { label: "Treatment Levels", value: String(r.n_genotypes) },
-                { label: "Replications", value: String(r.n_reps) },
-              ]}
+              descriptiveStats={buildDescriptiveStats(r)}
             />
           </div>
         );
