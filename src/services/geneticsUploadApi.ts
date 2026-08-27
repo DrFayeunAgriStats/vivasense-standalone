@@ -43,6 +43,32 @@ export interface UploadPreviewResponse {
   dataset_token?: string | null;
 }
 
+/**
+ * Inferential alpha accepted by the governed backend.
+ * Mirrors `alpha: Literal[0.01, 0.05, 0.10]` in multitrait_upload_schemas.py.
+ * (0.10 and 0.1 are the same numeric literal in both languages.)
+ */
+export type AnovaAlpha = 0.01 | 0.05 | 0.1;
+
+/**
+ * Design identifiers understood by the frozen ANOVA v1 backend.
+ *
+ * `factorial` is the LEGACY identifier this client sent before the backend
+ * separated factorial CRD from factorial RCBD. It is retained purely for
+ * backward compatibility with stored history entries and in-flight callers;
+ * new code should send `factorial_crd` or `factorial_rcbd`, because only those
+ * reach the governed two-factor path (a blockless factorial sent as `factorial`
+ * is not analysed as A*B).
+ */
+export type GovernedDesignType =
+  | "crd"
+  | "rcbd"
+  | "factorial_crd"
+  | "factorial_rcbd"
+  | "split_plot_rcbd";
+
+export type AnovaDesignTypeWire = GovernedDesignType | "factorial";
+
 export interface UploadAnalysisRequest {
   base64_content: string;
   file_type: "csv" | "xlsx" | "xls";
@@ -62,8 +88,14 @@ export interface UploadAnalysisRequest {
   selection_intensity: number;
   module?: "anova" | "genetic_parameters" | "correlation" | "heatmap";
   research_domain?: "plant_breeding" | "agronomy" | "general";
+  /**
+   * Selected inferential alpha. Omitted requests fall back to the backend
+   * default of 0.05, which is the behaviour every current caller relies on —
+   * Phase A only makes the field representable, it does not start sending it.
+   */
+  alpha?: AnovaAlpha;
   // Optional ANOVA-specific routing hints.
-  design_type?: "crd" | "rcbd" | "factorial" | "factorial_rcbd" | "split_plot_rcbd";
+  design_type?: AnovaDesignTypeWire;
   treatment_column?: string;
   factor_a_column?: string;
   factor_b_column?: string;
@@ -111,6 +143,83 @@ export interface MeanSeparation {
   group: string[];
   test: string;
   alpha: number;
+  /** Actual column name for factorial / split-plot designs. */
+  treatment_label?: string | null;
+  /**
+   * What the reported means ARE, stated rather than inferred — factorial v1
+   * sets "Marginal arithmetic mean" so a marginal mean is never mistaken for
+   * an estimated marginal / LS-mean, which v1 does not compute.
+   */
+  scale_label?: string | null;
+}
+
+// ── Governed ANOVA v1 contract ───────────────────────────────────────────────
+// These mirror genetics_schemas.py exactly. Every field is optional: a response
+// from an older backend, or from a design that does not populate a given block,
+// simply omits it and existing rendering is unaffected.
+
+/**
+ * An omnibus decision taken at the SELECTED inferential alpha.
+ *
+ * Split-plot decisions additionally name the error stratum that produced them
+ * and that stratum's df/MS, which is what makes "A was tested against Error A"
+ * checkable rather than asserted.
+ */
+export interface GovernedDecision {
+  estimable?: boolean;
+  significant?: boolean;
+  p_value?: number | null;
+  alpha?: number;
+  rule?: string;
+  error_stratum?: string;
+  denominator_df?: number | null;
+  denominator_ms?: number | null;
+  [key: string]: unknown;
+}
+
+/** Authoritative one-factor CRD / complete-RCBD omnibus decision. */
+export interface TreatmentDecision extends GovernedDecision {
+  estimable: boolean;
+  significant: boolean;
+  p_value?: number | null;
+  alpha: number;
+  inferential_alpha?: number;
+  diagnostic_alpha?: number;
+}
+
+/**
+ * Why a post-hoc family did, or did not, produce grouping letters.
+ * `status: "not_run_omnibus_not_significant"` is a governed outcome, not a
+ * failure — the gate is reporting that it stayed shut.
+ */
+export interface MeanSeparationStatus {
+  status: string;
+  method?: string;
+  alpha?: number;
+  omnibus_p_value?: number | null;
+  reason_code?: string | null;
+  message?: string;
+  residual_df?: number | null;
+  residual_ms?: number | null;
+  means_provenance?: string | null;
+  error_stratum?: string;
+  [key: string]: unknown;
+}
+
+/** Design identity, factor names/levels, model formula, SS provenance. */
+export type FactorialProfile = Record<string, unknown>;
+/** Blocks, whole/sub plots, replication, observation counts, denominator map. */
+export type SplitPlotProfile = Record<string, unknown>;
+/** Descriptive cell means backing the interaction plot. */
+export type InteractionMeansPayload = Record<string, unknown>;
+/** { moving_a_within_b: [...], moving_b_within_a: [...] } */
+export type SimpleEffects = Record<string, unknown>;
+
+/** Effective inferential + fixed diagnostic alpha provenance. */
+export interface AnalysisSettings {
+  inferential_alpha?: number;
+  diagnostic_alpha?: number;
+  [key: string]: unknown;
 }
 
 export interface GeneticsResult {
@@ -134,6 +243,50 @@ export interface GeneticsResult {
   };
   anova_table?: AnovaTable;
   mean_separation?: MeanSeparation;
+
+  // ── Governed ANOVA v1 payload (all optional; absent on older responses) ────
+
+  /** Engine design label: crd | rcbd | factorial_crd | factorial_rcbd | split_plot_rcbd. */
+  design?: string | null;
+  n_treatment_factors?: number | null;
+
+  // CRD / RCBD
+  treatment_decision?: TreatmentDecision | null;
+  mean_separation_status?: MeanSeparationStatus | null;
+  observation_accounting?: Record<string, unknown> | null;
+  experimental_unit_profile?: Record<string, unknown> | null;
+  rcbd_design_profile?: Record<string, unknown> | null;
+  diagnostic_policy?: Record<string, unknown> | null;
+
+  // Factorial v1
+  factorial_profile?: FactorialProfile | null;
+  factor_a_decision?: GovernedDecision | null;
+  factor_b_decision?: GovernedDecision | null;
+  interaction_decision?: GovernedDecision | null;
+  factor_a_mean_separation_status?: MeanSeparationStatus | null;
+  factor_b_mean_separation_status?: MeanSeparationStatus | null;
+  simple_effects?: SimpleEffects | null;
+  simple_effects_status?: Record<string, unknown> | null;
+  interaction_plot?: Record<string, unknown> | null;
+  mean_separation_b?: MeanSeparation | null;
+  interaction_separation?: InteractionMeansPayload | null;
+
+  // Three-factor factorial — LIMITED / EXPERIMENTAL, typed so it is not
+  // silently dropped, deliberately not promoted in the UI.
+  mean_separation_c?: MeanSeparation | null;
+  mean_separation_basis?: Record<string, unknown> | null;
+  two_way_interaction_means?: Record<string, unknown> | null;
+
+  // Split-Plot v1
+  split_plot_profile?: SplitPlotProfile | null;
+  whole_plot_decision?: GovernedDecision | null;
+  sub_plot_decision?: GovernedDecision | null;
+  split_plot_interaction_decision?: GovernedDecision | null;
+  main_plot_separation_status?: MeanSeparationStatus | null;
+  sub_plot_separation_status?: MeanSeparationStatus | null;
+  main_plot_mean_separation?: MeanSeparation | null;
+  /** Split-plot A×B cell means backing the interaction plot (descriptive). */
+  interaction_means?: InteractionMeansPayload | null;
 }
 
 export interface GeneticsResponse {
@@ -161,6 +314,21 @@ export interface UploadAnalysisResponse {
   failed_traits: string[];
   anova_type_warning?: string | null;
   domain?: "plant_breeding" | "agronomy" | "general";
+  /**
+   * Opaque token the backend stores alongside the full analysis result.
+   * It MUST be echoed back verbatim to POST /genetics/download-results so the
+   * export can recover result objects the frontend never serialised. Dropping
+   * it is why a hand-assembled export payload cannot satisfy exact-token
+   * identity — the backend answers 409 rather than substituting a report.
+   */
+  export_token?: string | null;
+  dataset_token?: string | null;
+  /** Effective inferential and fixed diagnostic alpha provenance. */
+  analysis_settings?: AnalysisSettings;
+  module?: string | null;
+  breeding_summary?: string | null;
+  evidence_level?: string;
+  experimental_structure?: Record<string, unknown> | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -273,6 +441,45 @@ export async function analyzeUpload(
   }
 
   return data;
+}
+
+/**
+ * Build the governed export payload for POST /genetics/download-results.
+ *
+ * The governed backend renders its report from the FULL analysis response and
+ * recovers anything the client did not serialise via `export_token`. A payload
+ * assembled field-by-field therefore cannot produce a governed report: the
+ * decision objects, profiles and separation statuses are simply absent, and
+ * without the token the backend refuses to substitute (HTTP 409) rather than
+ * export a report belonging to a different analysis.
+ *
+ * Phase A adds this builder only. The live ANOVA download still uses its
+ * existing hand-assembled payload; switching it over is Phase C, because that
+ * switch changes the produced document and so is a visible-behaviour change.
+ */
+export function buildGovernedExportPayload(
+  data: UploadAnalysisResponse,
+  options: { module?: string; domain?: "plant_breeding" | "agronomy" | "general" } = {}
+): Record<string, unknown> {
+  // Same normalisation exportWordReport applies: every entry needs "status".
+  const normalizedTraitResults: Record<string, TraitResult> = {};
+  for (const [trait, tr] of Object.entries(data.trait_results ?? {})) {
+    normalizedTraitResults[trait] = {
+      status: tr.status ?? (tr.analysis_result != null ? "success" : "failed"),
+      analysis_result: tr.analysis_result,
+      error: tr.error,
+      data_warnings: tr.data_warnings ?? [],
+    };
+  }
+  return {
+    ...data,
+    trait_results: normalizedTraitResults,
+    anova_type_warning: data.anova_type_warning ?? null,
+    module: options.module ?? data.module ?? "anova",
+    domain: options.domain ?? data.domain ?? "plant_breeding",
+    // Echoed verbatim — never regenerated, never defaulted.
+    export_token: data.export_token ?? null,
+  };
 }
 
 /**
