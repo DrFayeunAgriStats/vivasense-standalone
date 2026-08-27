@@ -47,6 +47,8 @@ import { isGovernedFactorial } from "./governedFactorial";
 import { GovernedFactorialPanel } from "./GovernedFactorialPanel";
 import { isGovernedSplitPlot } from "./governedSplitPlot";
 import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
+import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
+import { explorationEligibility } from "./governedTransformation";
 
 const MODULE = "anova" as const;
 
@@ -497,6 +499,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               triggered?: boolean; recommended_transform?: string; formula_used?: string;
               rationale?: string; disclosure_text?: string;
             };
+            // LEGACY ONLY. The governed RCBD path uses exploration -> explicit
+            // selection -> selected export; this raw/transformed report toggle is
+            // a competing mechanism and must not coexist with it. It survives
+            // solely for stored responses that predate the governed contract.
+            if (chooseExportRoute(results) === "governed" && design === "rcbd") return null;
             const triggered = Object.entries(results.trait_results)
               .map(([trait, tr]) => ({
                 trait,
@@ -624,6 +631,15 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                     inferentialAlpha={alpha}
                   />
                 )}
+                {isGovernedOneFactor(r, design) &&
+                  explorationEligibility(design, r, tr.status, results.export_token).available && (
+                    <RcbdTransformationPanel
+                      trait={trait}
+                      rawAnalysisToken={results.export_token as string}
+                      alpha={alpha}
+                      rawResult={r}
+                    />
+                  )}
                 {governedSplitPlot && (
                   <GovernedSplitPlotPanel
                     result={r}
