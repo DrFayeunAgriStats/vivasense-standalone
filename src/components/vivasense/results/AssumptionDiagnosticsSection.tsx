@@ -363,15 +363,19 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
   const isPass = status === "PASS" || (status == null && assumption_tests?.overall?.passed === true);
   const isWarn = status === "WARN" || (status == null && assumption_tests?.overall?.passed === false);
 
+  // Diagnostics are EVIDENCE, not a certificate. A test that fails to reject
+  // is not proof the assumption holds — it may only mean the data lack the
+  // power to detect a departure — so no wording here may claim assumptions
+  // were "satisfied", "passed", or that the model is "validated".
   const bannerHeadline = isPass
-    ? "Assumptions satisfied"
+    ? "No strong evidence of assumption problems"
     : isWarn
-    ? "Review recommended"
+    ? "Assumption concerns to review"
     : "Assumption diagnostics";
   const bannerSummary =
     reviewer?.summary ??
     (isPass
-      ? "ANOVA results can be interpreted with confidence."
+      ? "The diagnostics show no strong evidence of a departure from the model assumptions. Interpret alongside the design context."
       : isWarn
       ? "One or more model assumptions warrant a closer look before interpretation."
       : "");
@@ -459,9 +463,9 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
   ].filter(Boolean).length;
 
   const summaryLine = isPass
-    ? "✓ Assumptions satisfied — click to view diagnostics"
+    ? "No strong evidence of assumption problems — click to view diagnostics"
     : isWarn
-    ? "⚠ Review recommended — click to view diagnostics"
+    ? "⚠ Assumption concerns to review — click to view diagnostics"
     : "Assumption diagnostics — click to view details";
 
   if (!hasAnything) return null;

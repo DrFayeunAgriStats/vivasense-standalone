@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { downloadReport } from "@/lib/geneticsUploadApi";
 import {
-  analyzeUpload, inferFileType, type UploadAnalysisResponse,
+  analyzeUpload, inferFileType, buildGovernedExportPayload,
+  type UploadAnalysisResponse,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
@@ -34,6 +35,13 @@ import {
   buildAnovaRequest,
   describeStructuralError,
 } from "./anovaDesigns";
+import {
+  isGovernedOneFactor,
+  chooseExportRoute,
+  describeExportFailure,
+  isStaleTokenFailure,
+} from "./governedOneFactor";
+import { GovernedOneFactorPanel } from "./GovernedOneFactorPanel";
 
 const MODULE = "anova" as const;
 
@@ -51,6 +59,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [alpha, setAlpha] = useState<AnovaAlpha>(DEFAULT_ALPHA);
   const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   // Mappings (per-design)
   const [treatmentCol, setTreatmentCol] = useState<string>("");
@@ -191,8 +200,27 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // ── Download report ───────────────────────────────────────────────────
   const handleDownload = async () => {
     if (!results) return;
+    setExportError(null);
     setIsDownloading(true);
     try {
+      // Governed route: send the FULL analysis response and echo the exact
+      // export_token the backend issued. The hand-assembled payload below
+      // cannot carry governed content — it drops the decision objects, the
+      // profiles, the separation statuses and the token itself — so it is now
+      // reserved for legacy results that never had a token.
+      if (chooseExportRoute(results) === "governed") {
+        const governed = buildGovernedExportPayload(results, { module: MODULE });
+        const blob = await downloadReport(MODULE, governed);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        sonnerToast.success("ANOVA report downloaded");
+        return;
+      }
+
       const payload = {
         analysis_type: MODULE,
         design_type: design,
@@ -226,8 +254,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       a.click();
       URL.revokeObjectURL(url);
       sonnerToast.success("ANOVA report downloaded");
-    } catch {
-      sonnerToast.error("Download failed");
+    } catch (err) {
+      // An exact-token refusal (409) is not a transient failure and must not be
+      // retried against some other cached analysis — the correct action is to
+      // rerun, so say exactly that instead of a generic "Download failed".
+      const message = err instanceof Error ? err.message : String(err);
+      // The shared client throws the backend's `detail` text, not a status
+      // code, so a 409 usually arrives as prose — both signals are checked.
+      const match = /\b(409|403)\b/.exec(message);
+      const status = match ? Number(match[1]) : null;
+      const stale = isStaleTokenFailure(status, message);
+      setExportError(describeExportFailure(status, message));
+      sonnerToast.error(stale ? "Analysis identity no longer available" : "Download failed");
     } finally {
       setIsDownloading(false);
     }
@@ -526,6 +564,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </Card>
           )}
 
+          {exportError && (
+            <Card className="border-destructive/40" role="alert">
+              <CardContent className="p-4 space-y-1">
+                <div className="flex items-center gap-2 text-sm text-destructive font-medium">
+                  <AlertTriangle className="h-4 w-4" /> Report not generated
+                </div>
+                <p className="text-xs text-foreground">{exportError}</p>
+              </CardContent>
+            </Card>
+          )}
+
           {results.failed_traits.length > 0 && (
             <Card className="border-destructive/30">
               <CardContent className="p-4">
@@ -544,9 +593,22 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             const r = tr.analysis_result.result;
             if (!r) return null;
 
+            // Governed CRD/RCBD presentation renders only when the backend
+            // actually sent the decision objects. A legacy result without them
+            // keeps the existing panel and is never relabelled "governed".
+            const governed = isGovernedOneFactor(r, design);
+
             return (
-              <div key={trait} className="space-y-1">
+              <div key={trait} className="space-y-3">
                 <h3 className="text-base font-semibold text-foreground px-1">{trait}</h3>
+                {governed && (
+                  <GovernedOneFactorPanel
+                    design={design}
+                    result={r}
+                    mapping={{ treatment: treatmentCol, rep: repColumn }}
+                    inferentialAlpha={alpha}
+                  />
+                )}
                 <AcademicResultsPanel
                   moduleLabel="ANOVA"
                   domainNeutral
