@@ -193,6 +193,40 @@ export function validateMapping(
     }
   }
 
+  // W1-INT-02 — treatment must never be the column the user declared as the
+  // replication / block factor, even in a design that fits no block term.
+  //
+  // CRD requires only `treatment`, so the loops above never look at `rep`: a
+  // CRD request carries rep_column="" and the replication column vanishes from
+  // the request entirely. Pointing Treatment at the replication column
+  // therefore produced a silently valid analysis of the wrong model — the
+  // replication factor analysed as the treatment factor, over the same
+  // observations, with the same total sum of squares and a completely
+  // different partition of it.
+  //
+  // This compares declared roles; it does not count levels. A design is never
+  // inferred from how many levels a column happens to have. It fails visibly
+  // rather than silently reassigning either role.
+  //
+  // Scoped to designs that actually fit a treatment factor. Factorial and
+  // split-plot designs do not use `treatment`, so a value left over there from
+  // an earlier selection is inert and must not block them — the same reason
+  // `activeMapping` drops it from the request.
+  if (
+    roles.includes("treatment") &&
+    mapping.treatment &&
+    mapping.rep &&
+    mapping.treatment === mapping.rep
+  ) {
+    return {
+      message:
+        `"${mapping.treatment}" is mapped as both ${ROLE_LABELS.treatment} and ` +
+        `${ROLE_LABELS.rep}. A column cannot be the treatment factor and the ` +
+        `replication factor of the same analysis — reassign one of the two roles.`,
+      roles: ["treatment", "rep"],
+    };
+  }
+
   return null;
 }
 
