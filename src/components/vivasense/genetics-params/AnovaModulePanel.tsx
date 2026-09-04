@@ -17,6 +17,8 @@ import { toast as sonnerToast } from "sonner";
 import { downloadReport } from "@/lib/geneticsUploadApi";
 import {
   analyzeUpload, inferFileType, buildGovernedExportPayload,
+  RESPONSE_SEMANTIC_OPTIONS,
+  type ResponseSemantic,
   type UploadAnalysisResponse,
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
@@ -54,6 +56,54 @@ const MODULE = "anova" as const;
 
 /** Inferential alphas the governed backend accepts. Diagnostic α stays 0.05. */
 const ALPHA_OPTIONS: AnovaAlpha[] = [0.01, 0.05, 0.1];
+
+/**
+ * One trait's declared response scale (W1-INT-04A).
+ *
+ * Declared at MODULE scope on purpose. A component declared inside another
+ * component's body is a new component type on every render, so React unmounts
+ * and remounts its subtree and any in-progress interaction is destroyed — the
+ * behaviour under investigation in W1-UI-01. This selector must not repeat it.
+ * (The existing ColumnSelect is left exactly as it is; it belongs to W1-UI-01.)
+ *
+ * The Unknown cue is one muted line inside the row, not a warning panel: with
+ * several traits selected, repeated alert blocks would drown the form. It
+ * states the consequence and nothing more — it does not say a transformation is
+ * needed, and it never guesses a scale from the trait name or its values.
+ */
+export function ResponseScaleRow({
+  trait, value, onChange,
+}: {
+  trait: string;
+  value: ResponseSemantic;
+  onChange: (value: ResponseSemantic) => void;
+}) {
+  return (
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium truncate flex-1" title={trait}>{trait}</span>
+        <Select value={value} onValueChange={(v) => onChange(v as ResponseSemantic)}>
+          <SelectTrigger className="h-8 w-[190px] text-xs" aria-label={`Response scale for ${trait}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {RESPONSE_SEMANTIC_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value} className="text-xs">
+                {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {value === "unknown" && (
+        <p className="text-[11px] leading-tight text-muted-foreground">
+          Response scale not specified — VivaSense will report diagnostics but will not recommend an
+          automatic transformation.
+        </p>
+      )}
+    </div>
+  );
+}
 const DEFAULT_ALPHA: AnovaAlpha = 0.05;
 
 interface Props {
@@ -77,6 +127,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [subPlot, setSubPlot] = useState<string>("");
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  /** Declared response scale per trait. Default is Unknown for every trait. */
+  const [responseSemantics, setResponseSemantics] = useState<Record<string, ResponseSemantic>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -124,6 +176,16 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   const toggleTrait = (t: string) =>
     setSelectedTraits((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+
+  // W1-INT-04A: one declaration per trait, written by trait key. Writing trait
+  // A cannot touch trait B, and nothing else in the panel writes this map — so
+  // changing the design, the alpha or another trait's scale leaves a
+  // declaration exactly as the researcher left it. Deselecting a trait keeps
+  // its declaration rather than discarding it, so re-selecting does not
+  // silently reset the scale to unknown; buildAnovaRequest drops entries for
+  // traits that are not currently selected.
+  const setResponseSemantic = (trait: string, semantic: ResponseSemantic) =>
+    setResponseSemantics((prev) => ({ ...prev, [trait]: semantic }));
 
   // ── Mapping + validation ───────────────────────────────────────────────
   // Only roles the chosen design actually uses are collected, so a column left
@@ -179,6 +241,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         alpha,
         mapping,
         traits: selectedTraits,
+        responseSemantics,
       });
 
       const res = await analyzeUpload(request);
@@ -429,6 +492,27 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               ))}
             </div>
           </div>
+
+          {/* Response scale — declared per trait, never inferred */}
+          {selectedTraits.length > 0 && (
+            <div className="rounded-md border p-3 space-y-2">
+              <Label className="text-sm font-medium">Response scale</Label>
+              <p className="text-xs text-muted-foreground">
+                Select the measurement scale only if known. VivaSense will not infer percentage or
+                proportion status from the values alone.
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {selectedTraits.map((t) => (
+                  <ResponseScaleRow
+                    key={t}
+                    trait={t}
+                    value={responseSemantics[t] ?? "unknown"}
+                    onChange={(v) => setResponseSemantic(t, v)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {validation && (
             <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive flex items-center gap-2">

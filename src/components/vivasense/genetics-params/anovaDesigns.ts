@@ -14,6 +14,8 @@
 import type {
   AnovaAlpha,
   GovernedDesignType,
+  ResponseMetadataMap,
+  ResponseSemantic,
   UploadAnalysisRequest,
 } from "@/services/geneticsUploadApi";
 
@@ -338,6 +340,13 @@ export interface BuildAnovaRequestInput {
   alpha: AnovaAlpha;
   mapping: ColumnMapping;
   traits: string[];
+  /**
+   * Per-trait declared response scale. Only explicitly declared traits are
+   * emitted onto the wire; a trait left at "unknown" is omitted entirely so the
+   * backend resolves it to unknown rather than receiving a fabricated
+   * declaration.
+   */
+  responseSemantics?: Record<string, ResponseSemantic>;
 }
 
 /**
@@ -354,7 +363,7 @@ export interface BuildAnovaRequestInput {
  * governed v1 workflow.
  */
 export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysisRequest {
-  const { datasetContext: ctx, design, alpha, mapping, traits } = input;
+  const { datasetContext: ctx, design, alpha, mapping, traits, responseSemantics } = input;
   const active = activeMapping(design, mapping);
   const usesBlock = requiresBlock(design);
 
@@ -363,6 +372,21 @@ export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysis
   // back to whatever the dataset detected, which the backend ignores in favour
   // of the explicit factor/plot roles.
   const treatment = active.treatment ?? ctx.genotypeColumn ?? "";
+
+  // Response semantics for the SELECTED traits only, and only where explicitly
+  // declared. Two rules hold this together: a trait left at "unknown" is
+  // omitted (the backend's default is already unknown, and sending it back
+  // would be indistinguishable from a real declaration), and a declaration for
+  // a trait that is not selected is dropped (the backend rejects keys outside
+  // trait_columns, and a stale entry from a deselected trait must not fail the
+  // request). Nothing here reads a trait name or any data value.
+  const selected = new Set(traits);
+  const declared: ResponseMetadataMap = {};
+  for (const [trait, semantic] of Object.entries(responseSemantics ?? {})) {
+    if (!selected.has(trait)) continue;
+    if (semantic === "unknown") continue;
+    declared[trait] = { response_type: semantic };
+  }
 
   return {
     base64_content: ctx.base64Content,
@@ -374,6 +398,7 @@ export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysis
     environment_column: ctx.environmentColumn ?? null,
     environment_factor_columns: ctx.environmentFactorColumns ?? [],
     trait_columns: traits,
+    ...(Object.keys(declared).length > 0 ? { response_metadata: declared } : {}),
     mode: ctx.mode,
     random_environment: false,
     selection_intensity: 2.04,

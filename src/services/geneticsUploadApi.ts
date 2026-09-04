@@ -69,6 +69,31 @@ export type GovernedDesignType =
 
 export type AnovaDesignTypeWire = GovernedDesignType | "factorial";
 
+/**
+ * Declared measurement scale of a response variable (W1-INT-04A).
+ *
+ * VivaSense never infers what a response MEANS from its numeric range, its
+ * column name, its dtype or its distribution. The scale is declared by the
+ * researcher or it is absent — and absent means `unknown`, which carries no
+ * transformation assumption at all.
+ */
+export type ResponseSemantic = "unknown" | "continuous" | "count" | "percentage" | "proportion";
+
+export const RESPONSE_SEMANTIC_OPTIONS: {
+  value: ResponseSemantic;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "unknown", label: "Unknown", hint: "No transformation is recommended automatically." },
+  { value: "continuous", label: "Continuous", hint: "An ordinary measured quantity — length, mass, time." },
+  { value: "count", label: "Count", hint: "A whole-number tally of events or individuals." },
+  { value: "percentage", label: "Percentage (0–100)", hint: "A percentage of a whole, on a 0–100 scale." },
+  { value: "proportion", label: "Proportion (0–1)", hint: "A fraction of a whole, on a 0–1 scale." },
+];
+
+/** Per-trait response semantics, keyed by trait column name. */
+export type ResponseMetadataMap = Record<string, { response_type: ResponseSemantic }>;
+
 export interface UploadAnalysisRequest {
   base64_content: string;
   file_type: "csv" | "xlsx" | "xls";
@@ -83,6 +108,13 @@ export interface UploadAnalysisRequest {
   environment_factor_columns?: string[];
   numeric_factor_columns?: string[];
   trait_columns: string[];
+  /**
+   * Per-trait declared response scale. Keys must be a subset of
+   * `trait_columns`; a selected trait omitted here resolves to `unknown` on the
+   * backend. Only explicitly declared traits are sent — nothing is defaulted to
+   * `continuous`, and no entry is derived from a trait name or its values.
+   */
+  response_metadata?: ResponseMetadataMap;
   mode: "single" | "multi";
   random_environment?: boolean;
   selection_intensity: number;
