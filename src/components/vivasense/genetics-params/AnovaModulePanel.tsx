@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,12 @@ import { isGovernedSplitPlot } from "./governedSplitPlot";
 import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
 import { explorationEligibility } from "./governedTransformation";
+import {
+  createAnalysisIdentityController,
+  snapshotAnalysisContext,
+  type AnalysisResult,
+  type ScientificInputs,
+} from "./analysisIdentity";
 
 const MODULE = "anova" as const;
 
@@ -152,17 +158,18 @@ export function UnrecommendableStateNotice({ items }: { items: UnrecommendableTr
  * needed, and it never guesses a scale from the trait name or its values.
  */
 export function ResponseScaleRow({
-  trait, value, onChange,
+  trait, value, onChange, disabled = false,
 }: {
   trait: string;
   value: ResponseSemantic;
   onChange: (value: ResponseSemantic) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="space-y-0.5">
       <div className="flex items-center gap-2">
         <span className="text-xs font-medium truncate flex-1" title={trait}>{trait}</span>
-        <Select value={value} onValueChange={(v) => onChange(v as ResponseSemantic)}>
+        <Select value={value} onValueChange={(v) => onChange(v as ResponseSemantic)} disabled={disabled}>
           <SelectTrigger className="h-8 w-[190px] text-xs" aria-label={`Response scale for ${trait}`}>
             <SelectValue />
           </SelectTrigger>
@@ -185,6 +192,268 @@ export function ResponseScaleRow({
   );
 }
 const DEFAULT_ALPHA: AnovaAlpha = 0.05;
+
+/**
+ * W1-INT-06 — renders a completed analysis exclusively from the immutable
+ * context bound to it. Deliberately receives no live design/mapping/alpha
+ * from its parent at all: there is no prop through which the form above
+ * could leak into what gets displayed here, so a result can never be
+ * mislabelled by a scientific input the researcher has since changed. This
+ * is the fix for the reproduced defect where an RCBD result rendered under
+ * "Completely Randomized Design (CRD)" / "CRD has no blocking term" purely
+ * because the live design tab had changed while the request was in flight —
+ * the backend's own computation (a real, significant block effect) never
+ * changed; only the label around it did.
+ */
+export function AnalysisResultsSection({
+  analysisResult,
+  transformChoice,
+  onTransformChoiceChange,
+  showTransformWhy,
+  onToggleTransformWhy,
+  exportError,
+  isDownloading,
+  onDownload,
+}: {
+  analysisResult: AnalysisResult<UploadAnalysisResponse>;
+  transformChoice: "transformed" | "raw";
+  onTransformChoiceChange: (choice: "transformed" | "raw") => void;
+  showTransformWhy: boolean;
+  onToggleTransformWhy: () => void;
+  exportError: string | null;
+  isDownloading: boolean;
+  onDownload: () => void;
+}) {
+  const { response, context } = analysisResult;
+  const design = context.design;
+  const alpha = context.alpha;
+  const isSplitPlot = design === "split_plot_rcbd";
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            ANOVA Results — {designMeta(design).fullLabel}
+          </CardTitle>
+          <Button onClick={onDownload} disabled={isDownloading} size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+            {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {isDownloading ? "Downloading..." : "Download ANOVA Report"}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2 text-sm">
+            <Badge variant="secondary">{pl(response.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
+            <Badge variant="secondary">{pl(response.dataset_summary.n_reps ?? 0, "replication")}</Badge>
+            <Badge variant="outline">{response.dataset_summary.mode} mode</Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* W1-UI-02 — states where nothing could be recommended. Governed by
+          recommendation_state, not by `triggered`, and rendered for every
+          design including complete one-factor RCBD. */}
+      {(() => {
+        type TAState = {
+          recommendation_state?: string;
+          raw_diagnostics?: { shapiro?: { p_value?: number }; levene?: { p_value?: number } };
+        };
+        const items = Object.entries(response.trait_results)
+          .map(([trait, tr]): UnrecommendableTrait | null => {
+            const ta = (tr.analysis_result?.result as { transformation_analysis?: TAState } | undefined)
+              ?.transformation_analysis;
+            const state = ta?.recommendation_state;
+            if (!state || !(UNRECOMMENDABLE_STATES as readonly string[]).includes(state)) return null;
+            return {
+              trait,
+              state: state as UnrecommendableState,
+              shapiroP: ta?.raw_diagnostics?.shapiro?.p_value ?? null,
+              leveneP: ta?.raw_diagnostics?.levene?.p_value ?? null,
+            };
+          })
+          .filter((x): x is UnrecommendableTrait => x !== null);
+        return <UnrecommendableStateNotice items={items} />;
+      })()}
+
+      {(() => {
+        type TA = {
+          triggered?: boolean; recommended_transform?: string; formula_used?: string;
+          rationale?: string; disclosure_text?: string;
+        };
+        // LEGACY ONLY. The governed RCBD path uses exploration -> explicit
+        // selection -> selected export; this raw/transformed report toggle is
+        // a competing mechanism and must not coexist with it. It survives
+        // solely for stored responses that predate the governed contract.
+        if (chooseExportRoute(response) === "governed" && design === "rcbd") return null;
+        const triggered = Object.entries(response.trait_results)
+          .map(([trait, tr]) => ({
+            trait,
+            ta: (tr.analysis_result?.result as { transformation_analysis?: TA } | undefined)
+              ?.transformation_analysis,
+          }))
+          .filter((x): x is { trait: string; ta: TA } => !!x.ta && !!x.ta.triggered);
+        if (triggered.length === 0) return null;
+        const first = triggered[0].ta;
+        const tName = String(first.recommended_transform ?? "").replace(/_/g, " ");
+        return (
+          <Card className="border-blue-300 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/20">
+            <CardContent className="py-4 px-5 space-y-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-blue-900 dark:text-blue-200">
+                    Your data may benefit from a {tName} transformation
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-300">
+                    Residual assumptions were violated for{" "}
+                    {triggered.length === 1 ? triggered[0].trait : `${triggered.length} response variables`}.
+                    {" "}A {tName} transform ({first.formula_used}) restored them.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant={transformChoice === "transformed" ? "default" : "outline"}
+                  onClick={() => onTransformChoiceChange("transformed")}>
+                  Use transformed results
+                </Button>
+                <Button size="sm" variant={transformChoice === "raw" ? "default" : "outline"}
+                  onClick={() => onTransformChoiceChange("raw")}>
+                  Keep raw results
+                </Button>
+                <Button size="sm" variant="ghost" onClick={onToggleTransformWhy}>
+                  {showTransformWhy ? "Hide details" : "Why?"}
+                </Button>
+              </div>
+              {showTransformWhy && (
+                <div className="text-xs text-blue-900/90 dark:text-blue-200/90 space-y-2 border-t border-blue-200 dark:border-blue-800 pt-2">
+                  {triggered.map(({ trait, ta }) => (
+                    <div key={trait}>
+                      <span className="font-medium">{trait}:</span> {ta.rationale} {ta.disclosure_text}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-blue-700/80 dark:text-blue-300/70">
+                The report will use the{" "}
+                <span className="font-medium">
+                  {transformChoice === "transformed" ? "transformed" : "raw (untransformed)"}
+                </span>{" "}
+                results.{" "}
+                {transformChoice === "raw"
+                  ? "A caution note will be included because assumptions were flagged."
+                  : "Raw results remain available."}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {isSplitPlot && (
+        <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/10">
+          <CardContent className="py-4 px-5 text-sm text-amber-900 dark:text-amber-200">
+            <p className="font-semibold mb-1">Error strata</p>
+            <p>Main-plot effects are evaluated using whole-plot variability. Subplot effects and interactions are evaluated using subplot variability.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {exportError && (
+        <Card className="border-destructive/40" role="alert">
+          <CardContent className="p-4 space-y-1">
+            <div className="flex items-center gap-2 text-sm text-destructive font-medium">
+              <AlertTriangle className="h-4 w-4" /> Report not generated
+            </div>
+            <p className="text-xs text-foreground">{exportError}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {response.failed_traits.length > 0 && (
+        <Card className="border-destructive/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-sm text-destructive font-medium mb-1">
+              <AlertTriangle className="h-4 w-4" /> Failed Response Variables
+            </div>
+            <ul className="list-disc pl-5 text-sm text-muted-foreground">
+              {response.failed_traits.map((t) => <li key={t}>{t}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {Object.entries(response.trait_results).map(([trait, tr]) => {
+        if (tr.status !== "success" || !tr.analysis_result) return null;
+        const r = tr.analysis_result.result;
+        if (!r) return null;
+
+        // Governed CRD/RCBD presentation renders only when the backend
+        // actually sent the decision objects. A legacy result without them
+        // keeps the existing panel and is never relabelled "governed".
+        const governed = isGovernedOneFactor(r, design);
+        const governedFactorial = isGovernedFactorial(r, design);
+        const governedSplitPlot = isGovernedSplitPlot(r, design);
+
+        return (
+          <div key={trait} className="space-y-3">
+            <h3 className="text-base font-semibold text-foreground px-1">{trait}</h3>
+            {governed && (
+              <GovernedOneFactorPanel
+                design={design}
+                result={r}
+                mapping={{ treatment: context.mapping.treatment ?? "", rep: context.mapping.rep ?? "" }}
+                inferentialAlpha={alpha}
+              />
+            )}
+            {governedFactorial && (
+              <GovernedFactorialPanel
+                design={design}
+                result={r}
+                mapping={{ rep: context.mapping.rep ?? "" }}
+                inferentialAlpha={alpha}
+              />
+            )}
+            {isGovernedOneFactor(r, design) &&
+              explorationEligibility(design, r, tr.status, response.export_token).available && (
+                <RcbdTransformationPanel
+                  trait={trait}
+                  rawAnalysisToken={response.export_token as string}
+                  alpha={alpha}
+                  rawResult={r}
+                />
+              )}
+            {governedSplitPlot && (
+              <GovernedSplitPlotPanel
+                result={r}
+                mapping={{
+                  rep: context.mapping.rep ?? "",
+                  mainPlot: context.mapping.main_plot ?? "",
+                  subPlot: context.mapping.sub_plot ?? "",
+                }}
+                inferentialAlpha={alpha}
+              />
+            )}
+            <AcademicResultsPanel
+              moduleLabel="ANOVA"
+              domainNeutral
+              insightSummary={describeResultScale(r)}
+              interpretation={tr.analysis_result.interpretation || ""}
+              statisticalNotes={
+                tr.data_warnings.length > 0
+                  ? tr.data_warnings.map((w) => ({ text: w }))
+                  : undefined
+              }
+              inferentialAlpha={alpha}
+              anovaTable={r.anova_table}
+              meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
+              descriptiveStats={buildDescriptiveStats(r)}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 interface Props {
   datasetContext: DatasetContext | null;
@@ -210,13 +479,90 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   /** Declared response scale per trait. Default is Unknown for every trait. */
   const [responseSemantics, setResponseSemantics] = useState<Record<string, ResponseSemantic>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
+  // W1-INT-06: a result is bound, permanently, to the exact scientific
+  // context that produced it -- never to whatever the form currently
+  // contains. See analysisIdentity.ts for why `setResults(res)` alone was
+  // unsafe: a response could (and, reproduced live, did) install and render
+  // under a design/mapping/alpha the form had since changed to.
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult<UploadAnalysisResponse> | null>(null);
+  /** Set once on the first successful analysis and never cleared, so a
+   * cleared `analysisResult` can be told apart from "never run yet". */
+  const [wasAnalyzed, setWasAnalyzed] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   // Assumption-driven transformation: which branch feeds the report. Defaults to
   // "transformed" so a flagged violation is not silently ignored; "raw" keeps the
   // untransformed results (report then prints the caution disclosure).
   const [transformChoice, setTransformChoice] = useState<"transformed" | "raw">("transformed");
   const [showTransformWhy, setShowTransformWhy] = useState(false);
+
+  // W1-INT-06 — closure-independent scientific identity. `identityRef.current`
+  // is the SAME controller instance across every render and every async
+  // closure: reading `.current`'s methods after an `await` always reflects
+  // the latest mutation, never the values a stale `handleAnalyze` invocation
+  // captured at its own dispatch time. This is what makes the install gate
+  // (in handleAnalyze) correct where recomputing "current" from local
+  // `design`/`mapping`/`alpha` state variables would not be: those variables
+  // are frozen at whatever they were when that specific closure was created.
+  const identityRef = useRef(
+    createAnalysisIdentityController({
+      datasetToken: datasetContext?.datasetToken ?? null,
+      design: "rcbd",
+      mapping: {},
+      selectedTraits: [],
+      responseSemantics: {},
+      alpha: DEFAULT_ALPHA,
+      module: MODULE,
+      mode: datasetContext?.mode ?? "single",
+    })
+  );
+
+  // The one governed path by which any scientific input may change. Every
+  // onChange/onClick handler below routes through this rather than calling
+  // its `useState` setter directly, so the identity controller can never
+  // describe a different scientific state than the one React is about to
+  // render.
+  function mutateScientificInput(
+    patch: Partial<ScientificInputs>,
+    applyReactState: () => void
+  ) {
+    identityRef.current.mutate(patch);
+    applyReactState();
+    setAnalysisResult((current) => (current === null ? current : null));
+  }
+
+  // Dataset identity is supplied externally via the `datasetContext` prop,
+  // not owned by this component's own state, so it cannot be folded into
+  // `mutateScientificInput`'s call sites. `useLayoutEffect` (not the more
+  // common `useEffect`) is deliberate: an ordinary effect runs after paint,
+  // which would leave a window where the DOM already reflects a replacement
+  // dataset while `identityRef` still fingerprints the previous one — exactly
+  // the kind of gap a delayed in-flight response could exploit. A layout
+  // effect runs synchronously after DOM mutations, before the browser paints
+  // or any event (including a resolving promise's continuation) can observe
+  // the new render, so the identity update is never late relative to what is
+  // on screen.
+  useLayoutEffect(() => {
+    const token = datasetContext?.datasetToken ?? null;
+    const mode = datasetContext?.mode ?? "single";
+    const current = identityRef.current.getInputs();
+    if (token === current.datasetToken && mode === current.mode) return;
+    identityRef.current.mutate({ datasetToken: token, mode });
+    setAnalysisResult((prev) => (prev === null ? prev : null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datasetContext?.datasetToken, datasetContext?.mode]);
+
+  // Lifecycle safety: on unmount, invalidate any in-flight request's identity
+  // without touching the scientific fingerprint. A response resolving after
+  // unmount then fails the install gate's generation check even though
+  // nothing about the scientific state itself needed to change. This is
+  // explicit and intentional — not reliance on React silently ignoring a
+  // setState call on an unmounted component.
+  useLayoutEffect(() => {
+    return () => {
+      identityRef.current.invalidate();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
   const allColumns = useMemo(() => {
@@ -254,8 +600,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const factorAColumns = allColumns.filter((col: string) => col !== factorB);
   const factorBColumns = allColumns.filter((col: string) => col !== factorA);
 
-  const toggleTrait = (t: string) =>
-    setSelectedTraits((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  const toggleTrait = (t: string) => {
+    const next = selectedTraits.includes(t)
+      ? selectedTraits.filter((x) => x !== t)
+      : [...selectedTraits, t];
+    mutateScientificInput({ selectedTraits: next }, () => setSelectedTraits(next));
+  };
 
   // W1-INT-04A: one declaration per trait, written by trait key. Writing trait
   // A cannot touch trait B, and nothing else in the panel writes this map — so
@@ -264,8 +614,53 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // its declaration rather than discarding it, so re-selecting does not
   // silently reset the scale to unknown; buildAnovaRequest drops entries for
   // traits that are not currently selected.
-  const setResponseSemantic = (trait: string, semantic: ResponseSemantic) =>
-    setResponseSemantics((prev) => ({ ...prev, [trait]: semantic }));
+  const setResponseSemantic = (trait: string, semantic: ResponseSemantic) => {
+    const next = { ...responseSemantics, [trait]: semantic };
+    mutateScientificInput({ responseSemantics: next }, () => setResponseSemantics(next));
+  };
+
+  // Wrapped structural-role and design/alpha setters — every one of these
+  // routes the change through `mutateScientificInput` so the identity
+  // controller can never disagree with what React is about to render.
+  // Deliberately does not clear the per-role column state: switching design
+  // away and back must preserve whatever the researcher already selected
+  // (confirmed elsewhere as intentional). `activeMapping` already excludes
+  // any role the new design doesn't use, both for the outgoing request and
+  // for `canonicalAnalysisFingerprint`, so a value left over in an inactive
+  // role cannot affect either.
+  const changeDesign = (v: GovernedDesignType) =>
+    mutateScientificInput({ design: v }, () => setDesign(v));
+  const changeAlpha = (a: AnovaAlpha) => mutateScientificInput({ alpha: a }, () => setAlpha(a));
+  const changeTreatment = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, treatment: v } },
+      () => setTreatmentCol(v)
+    );
+  const changeRep = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, rep: v } },
+      () => setRepColumn(v)
+    );
+  const changeFactorA = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, factor_a: v } },
+      () => setFactorA(v)
+    );
+  const changeFactorB = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, factor_b: v } },
+      () => setFactorB(v)
+    );
+  const changeMainPlot = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, main_plot: v } },
+      () => setMainPlot(v)
+    );
+  const changeSubPlot = (v: string) =>
+    mutateScientificInput(
+      { mapping: { ...identityRef.current.getInputs().mapping, sub_plot: v } },
+      () => setSubPlot(v)
+    );
 
   // ── Mapping + validation ───────────────────────────────────────────────
   // Only roles the chosen design actually uses are collected, so a column left
@@ -297,36 +692,61 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // ── Run analysis ──────────────────────────────────────────────────────
   const handleAnalyze = async () => {
     if (validation) return;
+
+    // W1-INT-06 — captured synchronously, before any await. `beginDispatch`
+    // increments the generation (so a later, distinct dispatch is always
+    // distinguishable from this one) and returns the fingerprint exactly as
+    // it stands right now. `context` is an immutable snapshot of the same
+    // moment: whatever the result-rendering path later reads from it can
+    // never be altered by a subsequent form change.
+    const { generation: myGeneration, fingerprint: dispatchFingerprint } =
+      identityRef.current.beginDispatch();
+    const context = snapshotAnalysisContext(identityRef.current.getInputs(), myGeneration);
+
     setIsAnalyzing(true);
-    setResults(null);
+    setAnalysisResult(null);
     // Hoisted so the failure path reports the same fields and elapsed time.
     const startedAt = performance.now();
     const historyBase = {
       analysisType: "anova" as const,
       backendEndpoint: "/genetics/analyze-upload?module=anova",
       datasetName: datasetContext.file.name,
-      datasetToken: datasetContext.datasetToken ?? null,
-      designType: design,
-      traits: selectedTraits,
+      datasetToken: context.datasetToken,
+      designType: context.design,
+      traits: context.selectedTraits,
       startedAt,
-      parameters: { design_type: design, alpha, mode: datasetContext.mode },
+      parameters: { design_type: context.design, alpha: context.alpha, mode: context.mode },
     };
     try {
-      console.log("[MODULE]", MODULE, "[DESIGN]", design, "[ALPHA]", alpha);
-      console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
+      console.log("[MODULE]", MODULE, "[DESIGN]", context.design, "[ALPHA]", context.alpha);
+      console.log("[handleAnalyze] Running ANOVA with traits:", context.selectedTraits);
 
       const request = buildAnovaRequest({
         datasetContext,
-        design,
-        alpha,
-        mapping,
-        traits: selectedTraits,
-        responseSemantics,
+        design: context.design,
+        alpha: context.alpha,
+        mapping: context.mapping,
+        traits: context.selectedTraits,
+        responseSemantics: context.responseSemantics,
       });
 
       const res = await analyzeUpload(request);
 
-      setResults(res);
+      // Response-install gate. BOTH must still hold: no newer request has
+      // been dispatched (request identity), AND no scientific input has
+      // changed since dispatch even if no second request was ever sent
+      // (scientific identity). `isStillCurrent` reads the controller's live
+      // state directly, not anything this closure captured, so it is
+      // correct no matter how long the await took or how many renders have
+      // happened since. Either check failing means this response no longer
+      // describes anything the researcher is currently looking at: discard
+      // it silently — no result, no toast, no history record, no export.
+      if (!identityRef.current.isStillCurrent(myGeneration, dispatchFingerprint)) {
+        return;
+      }
+
+      setAnalysisResult({ response: res, context });
+      setWasAnalyzed(true);
       // A trait can fail structurally while the HTTP call succeeds — the
       // backend rejects invalid structures before fitting rather than
       // returning a partial model, so surface the reason here.
@@ -340,16 +760,34 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       // Persist to Research Analysis History (best-effort; never blocks the flow).
       void recordAnalysis({ ...historyBase, response: res });
     } catch (err: any) {
+      if (!identityRef.current.isStillCurrent(myGeneration, dispatchFingerprint)) {
+        return; // a superseded request's own failure is not the researcher's problem
+      }
       void recordAnalysisFailure(historyBase, err);
       toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
     } finally {
-      setIsAnalyzing(false);
+      // Reset the in-flight flag whenever no newer request has taken over
+      // responsibility for it — deliberately NOT the fuller `isStillCurrent`
+      // check, which also considers the fingerprint: a form change with no
+      // second request ever dispatched must still free the "Run Analysis"
+      // button, or it would remain disabled forever with nothing left to
+      // reset it.
+      if (identityRef.current.isCurrentGeneration(myGeneration)) {
+        setIsAnalyzing(false);
+      }
     }
   };
 
   // ── Download report ───────────────────────────────────────────────────
+  // W1-INT-06: operates exclusively on analysisResult.response / .context —
+  // never on live form state. If the analysis-identity inputs have changed
+  // since this result was installed, analysisResult is already null (the
+  // governed mutation path clears it), so there is nothing to download; this
+  // function is unreachable in that state because the button that calls it
+  // only renders inside `{analysisResult && (...)}`.
   const handleDownload = async () => {
-    if (!results) return;
+    if (!analysisResult) return;
+    const { response, context } = analysisResult;
     setExportError(null);
     setIsDownloading(true);
     try {
@@ -358,33 +796,34 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       // cannot carry governed content — it drops the decision objects, the
       // profiles, the separation statuses and the token itself — so it is now
       // reserved for legacy results that never had a token.
-      if (chooseExportRoute(results) === "governed") {
-        const governed = buildGovernedExportPayload(results, { module: MODULE });
+      if (chooseExportRoute(response) === "governed") {
+        const governed = buildGovernedExportPayload(response, { module: MODULE });
         const blob = await downloadReport(MODULE, governed);
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
+        a.download = `VivaSense_ANOVA_${context.design}_${new Date().toISOString().slice(0, 10)}.docx`;
         a.click();
         URL.revokeObjectURL(url);
         sonnerToast.success("ANOVA report downloaded");
         return;
       }
 
+      const resultIsSplitPlot = context.design === "split_plot_rcbd";
       const payload = {
         analysis_type: MODULE,
-        design_type: design,
-        dataset_summary: results.dataset_summary,
-        summary_table: results.summary_table,
+        design_type: context.design,
+        dataset_summary: response.dataset_summary,
+        summary_table: response.summary_table,
         trait_results: Object.fromEntries(
-          Object.entries(results.trait_results)
+          Object.entries(response.trait_results)
             .filter(([, tr]) => tr.status === "success" && tr.analysis_result)
             .map(([trait, tr]) => {
               const ar = tr.analysis_result;
               const result = ar?.result;
               return [trait, {
                 anova_table: result?.anova_table,
-                mean_separation: isSplitPlot ? undefined : result?.mean_separation,
+                mean_separation: resultIsSplitPlot ? undefined : result?.mean_separation,
                 grand_mean: result?.grand_mean,
                 n_genotypes: result?.n_genotypes,
                 n_reps: result?.n_reps,
@@ -392,7 +831,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               }];
             })
         ),
-        failed_traits: results.failed_traits,
+        failed_traits: response.failed_traits,
         transformation_choice: transformChoice,
       };
 
@@ -400,7 +839,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
+      a.download = `VivaSense_ANOVA_${context.design}_${new Date().toISOString().slice(0, 10)}.docx`;
       a.click();
       URL.revokeObjectURL(url);
       sonnerToast.success("ANOVA report downloaded");
@@ -423,17 +862,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   // ── Field selector helper ─────────────────────────────────────────────
   const ColumnSelect = ({
-    label, value, onChange, placeholder = "Select column…", options = allColumns,
+    label, value, onChange, placeholder = "Select column…", options = allColumns, disabled = false,
   }: {
     label: string;
     value: string;
     onChange: (v: string) => void;
     placeholder?: string;
     options?: string[];
+    disabled?: boolean;
   }) => (
     <div className="space-y-1.5">
       <Label className="text-sm font-medium">{label}</Label>
-      <Select value={value || undefined} onValueChange={onChange}>
+      <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger><SelectValue placeholder={placeholder} /></SelectTrigger>
         <SelectContent>
           {options.map((c) => (
@@ -467,10 +907,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
-          <Tabs value={design} onValueChange={(v) => setDesign(v as GovernedDesignType)}>
+          <Tabs value={design} onValueChange={(v) => changeDesign(v as GovernedDesignType)}>
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
               {GOVERNED_DESIGNS.map((d) => (
-                <TabsTrigger key={d.id} value={d.id} className="text-xs sm:text-sm">{d.label}</TabsTrigger>
+                <TabsTrigger key={d.id} value={d.id} className="text-xs sm:text-sm" disabled={isAnalyzing}>
+                  {d.label}
+                </TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
@@ -483,22 +925,22 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {/* Field mapping — driven by the design's required roles */}
           <div className="grid gap-4 sm:grid-cols-2">
             {roles.includes("treatment") && (
-              <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
+              <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={changeTreatment} disabled={isAnalyzing} />
             )}
             {roles.includes("factor_a") && (
-              <ColumnSelect label="Factor A Column" value={factorA} onChange={setFactorA} options={factorAColumns} />
+              <ColumnSelect label="Factor A Column" value={factorA} onChange={changeFactorA} options={factorAColumns} disabled={isAnalyzing} />
             )}
             {roles.includes("factor_b") && (
-              <ColumnSelect label="Factor B Column" value={factorB} onChange={setFactorB} options={factorBColumns} />
+              <ColumnSelect label="Factor B Column" value={factorB} onChange={changeFactorB} options={factorBColumns} disabled={isAnalyzing} />
             )}
             {roles.includes("main_plot") && (
-              <ColumnSelect label="Whole-Plot Factor Column" value={mainPlot} onChange={setMainPlot} />
+              <ColumnSelect label="Whole-Plot Factor Column" value={mainPlot} onChange={changeMainPlot} disabled={isAnalyzing} />
             )}
             {roles.includes("sub_plot") && (
-              <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={setSubPlot} />
+              <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={changeSubPlot} disabled={isAnalyzing} />
             )}
             {roles.includes("rep") && (
-              <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
+              <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={changeRep} disabled={isAnalyzing} />
             )}
             {isFactorialFamily && (
               <p className="sm:col-span-2 text-xs text-muted-foreground">
@@ -519,8 +961,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   type="button"
                   size="sm"
                   variant={alpha === a ? "default" : "outline"}
-                  onClick={() => setAlpha(a)}
+                  onClick={() => changeAlpha(a)}
                   aria-pressed={alpha === a}
+                  disabled={isAnalyzing}
                 >
                   α = {a.toFixed(2)}
                 </Button>
@@ -566,7 +1009,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             <div className="flex flex-wrap gap-3">
               {datasetContext.availableTraitColumns.map((t) => (
                 <label key={t} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <Checkbox checked={selectedTraits.includes(t)} onCheckedChange={() => toggleTrait(t)} />
+                  <Checkbox
+                    checked={selectedTraits.includes(t)}
+                    onCheckedChange={() => toggleTrait(t)}
+                    disabled={isAnalyzing}
+                  />
                   {t}
                 </label>
               ))}
@@ -588,6 +1035,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                     trait={t}
                     value={responseSemantics[t] ?? "unknown"}
                     onChange={(v) => setResponseSemantic(t, v)}
+                    disabled={isAnalyzing}
                   />
                 ))}
               </div>
@@ -635,226 +1083,31 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         </CardContent>
       </Card>
 
-      {/* Results */}
-      {results && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                ANOVA Results — {designMeta(design).fullLabel}
-              </CardTitle>
-              <Button onClick={handleDownload} disabled={isDownloading} size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-                {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {isDownloading ? "Downloading..." : "Download ANOVA Report"}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
-                <Badge variant="secondary">{pl(results.dataset_summary.n_reps ?? 0, "replication")}</Badge>
-                <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* W1-UI-02 — states where nothing could be recommended. Governed by
-              recommendation_state, not by `triggered`, and rendered for every
-              design including complete one-factor RCBD. */}
-          {(() => {
-            type TAState = {
-              recommendation_state?: string;
-              raw_diagnostics?: { shapiro?: { p_value?: number }; levene?: { p_value?: number } };
-            };
-            const items = Object.entries(results.trait_results)
-              .map(([trait, tr]): UnrecommendableTrait | null => {
-                const ta = (tr.analysis_result?.result as { transformation_analysis?: TAState } | undefined)
-                  ?.transformation_analysis;
-                const state = ta?.recommendation_state;
-                if (!state || !(UNRECOMMENDABLE_STATES as readonly string[]).includes(state)) return null;
-                return {
-                  trait,
-                  state: state as UnrecommendableState,
-                  shapiroP: ta?.raw_diagnostics?.shapiro?.p_value ?? null,
-                  leveneP: ta?.raw_diagnostics?.levene?.p_value ?? null,
-                };
-              })
-              .filter((x): x is UnrecommendableTrait => x !== null);
-            return <UnrecommendableStateNotice items={items} />;
-          })()}
-
-          {(() => {
-            type TA = {
-              triggered?: boolean; recommended_transform?: string; formula_used?: string;
-              rationale?: string; disclosure_text?: string;
-            };
-            // LEGACY ONLY. The governed RCBD path uses exploration -> explicit
-            // selection -> selected export; this raw/transformed report toggle is
-            // a competing mechanism and must not coexist with it. It survives
-            // solely for stored responses that predate the governed contract.
-            if (chooseExportRoute(results) === "governed" && design === "rcbd") return null;
-            const triggered = Object.entries(results.trait_results)
-              .map(([trait, tr]) => ({
-                trait,
-                ta: (tr.analysis_result?.result as { transformation_analysis?: TA } | undefined)
-                  ?.transformation_analysis,
-              }))
-              .filter((x): x is { trait: string; ta: TA } => !!x.ta && !!x.ta.triggered);
-            if (triggered.length === 0) return null;
-            const first = triggered[0].ta;
-            const tName = String(first.recommended_transform ?? "").replace(/_/g, " ");
-            return (
-              <Card className="border-blue-300 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/20">
-                <CardContent className="py-4 px-5 space-y-3">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      <p className="font-semibold text-blue-900 dark:text-blue-200">
-                        Your data may benefit from a {tName} transformation
-                      </p>
-                      <p className="text-sm text-blue-800 dark:text-blue-300">
-                        Residual assumptions were violated for{" "}
-                        {triggered.length === 1 ? triggered[0].trait : `${triggered.length} response variables`}.
-                        {" "}A {tName} transform ({first.formula_used}) restored them.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button size="sm" variant={transformChoice === "transformed" ? "default" : "outline"}
-                      onClick={() => setTransformChoice("transformed")}>
-                      Use transformed results
-                    </Button>
-                    <Button size="sm" variant={transformChoice === "raw" ? "default" : "outline"}
-                      onClick={() => setTransformChoice("raw")}>
-                      Keep raw results
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowTransformWhy((v) => !v)}>
-                      {showTransformWhy ? "Hide details" : "Why?"}
-                    </Button>
-                  </div>
-                  {showTransformWhy && (
-                    <div className="text-xs text-blue-900/90 dark:text-blue-200/90 space-y-2 border-t border-blue-200 dark:border-blue-800 pt-2">
-                      {triggered.map(({ trait, ta }) => (
-                        <div key={trait}>
-                          <span className="font-medium">{trait}:</span> {ta.rationale} {ta.disclosure_text}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <p className="text-xs text-blue-700/80 dark:text-blue-300/70">
-                    The report will use the{" "}
-                    <span className="font-medium">
-                      {transformChoice === "transformed" ? "transformed" : "raw (untransformed)"}
-                    </span>{" "}
-                    results.{" "}
-                    {transformChoice === "raw"
-                      ? "A caution note will be included because assumptions were flagged."
-                      : "Raw results remain available."}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })()}
-
-          {isSplitPlot && (
-            <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/10">
-              <CardContent className="py-4 px-5 text-sm text-amber-900 dark:text-amber-200">
-                <p className="font-semibold mb-1">Error strata</p>
-                <p>Main-plot effects are evaluated using whole-plot variability. Subplot effects and interactions are evaluated using subplot variability.</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {exportError && (
-            <Card className="border-destructive/40" role="alert">
-              <CardContent className="p-4 space-y-1">
-                <div className="flex items-center gap-2 text-sm text-destructive font-medium">
-                  <AlertTriangle className="h-4 w-4" /> Report not generated
-                </div>
-                <p className="text-xs text-foreground">{exportError}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {results.failed_traits.length > 0 && (
-            <Card className="border-destructive/30">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-sm text-destructive font-medium mb-1">
-                  <AlertTriangle className="h-4 w-4" /> Failed Response Variables
-                </div>
-                <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                  {results.failed_traits.map((t) => <li key={t}>{t}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {Object.entries(results.trait_results).map(([trait, tr]) => {
-            if (tr.status !== "success" || !tr.analysis_result) return null;
-            const r = tr.analysis_result.result;
-            if (!r) return null;
-
-            // Governed CRD/RCBD presentation renders only when the backend
-            // actually sent the decision objects. A legacy result without them
-            // keeps the existing panel and is never relabelled "governed".
-            const governed = isGovernedOneFactor(r, design);
-            const governedFactorial = isGovernedFactorial(r, design);
-            const governedSplitPlot = isGovernedSplitPlot(r, design);
-
-            return (
-              <div key={trait} className="space-y-3">
-                <h3 className="text-base font-semibold text-foreground px-1">{trait}</h3>
-                {governed && (
-                  <GovernedOneFactorPanel
-                    design={design}
-                    result={r}
-                    mapping={{ treatment: treatmentCol, rep: repColumn }}
-                    inferentialAlpha={alpha}
-                  />
-                )}
-                {governedFactorial && (
-                  <GovernedFactorialPanel
-                    design={design}
-                    result={r}
-                    mapping={{ rep: repColumn }}
-                    inferentialAlpha={alpha}
-                  />
-                )}
-                {isGovernedOneFactor(r, design) &&
-                  explorationEligibility(design, r, tr.status, results.export_token).available && (
-                    <RcbdTransformationPanel
-                      trait={trait}
-                      rawAnalysisToken={results.export_token as string}
-                      alpha={alpha}
-                      rawResult={r}
-                    />
-                  )}
-                {governedSplitPlot && (
-                  <GovernedSplitPlotPanel
-                    result={r}
-                    mapping={{ rep: repColumn, mainPlot: mainPlot, subPlot: subPlot }}
-                    inferentialAlpha={alpha}
-                  />
-                )}
-                <AcademicResultsPanel
-                  moduleLabel="ANOVA"
-                  domainNeutral
-                  insightSummary={describeResultScale(r)}
-                  interpretation={tr.analysis_result.interpretation || ""}
-                  statisticalNotes={
-                    tr.data_warnings.length > 0
-                      ? tr.data_warnings.map((w) => ({ text: w }))
-                      : undefined
-                  }
-                  inferentialAlpha={alpha}
-                  anovaTable={r.anova_table}
-                  meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
-                  descriptiveStats={buildDescriptiveStats(r)}
-                />
-              </div>
-            );
-          })}
+      {/* W1-INT-06 — shown once a prior result has been invalidated by an
+          analysis-identity input change, so "nothing changed visibly" is
+          never mistaken for "this still describes the current inputs". */}
+      {wasAnalyzed && !analysisResult && !isAnalyzing && (
+        <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          Analysis inputs changed. Run the analysis again to generate results for the current configuration.
         </div>
+      )}
+
+      {/* Results — rendered exclusively from analysisResult.context/.response.
+          AnalysisResultsSection never receives live design/mapping/alpha/etc.
+          as props, so it cannot describe a result using a scientific state
+          different from the one that actually produced it, regardless of
+          what the form above has since changed to. */}
+      {analysisResult && (
+        <AnalysisResultsSection
+          analysisResult={analysisResult}
+          transformChoice={transformChoice}
+          onTransformChoiceChange={setTransformChoice}
+          showTransformWhy={showTransformWhy}
+          onToggleTransformWhy={() => setShowTransformWhy((v) => !v)}
+          exportError={exportError}
+          isDownloading={isDownloading}
+          onDownload={handleDownload}
+        />
       )}
     </div>
   );
