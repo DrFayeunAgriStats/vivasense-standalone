@@ -100,7 +100,11 @@ function buildResponse(designHint: "rcbd-shaped" | "crd-shaped" = "rcbd-shaped")
 }
 
 /** Selects Genotype for Treatment and Rep for Replication/Block on a freshly
- * rendered RCBD panel, then checks the one available trait. */
+ * rendered RCBD panel, checks the one available trait, then confirms the
+ * experimental roles (W1-UI-04) so Run Analysis becomes enabled — mirroring
+ * what every one of this suite's scenarios needs before it can exercise the
+ * W1-INT-06 dispatch/install-gate behaviour that is actually under test
+ * here. */
 async function mapAndSelectTrait() {
   const combos = screen.getAllByRole("combobox");
   fireEvent.click(combos[0]);
@@ -108,6 +112,7 @@ async function mapAndSelectTrait() {
   fireEvent.click(screen.getAllByRole("combobox")[1]);
   fireEvent.click(await screen.findByRole("option", { name: "Rep" }));
   fireEvent.click(screen.getByRole("checkbox", { name: /Yield_kg/i }));
+  fireEvent.click(screen.getByRole("button", { name: /Confirm experimental roles/i }));
 }
 
 describe("W1-INT-06 — full-component installation gate control case", () => {

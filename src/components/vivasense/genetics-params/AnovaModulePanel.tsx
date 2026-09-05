@@ -37,6 +37,7 @@ import {
   buildStructuralPreview,
   buildAnovaRequest,
   describeStructuralError,
+  ROLE_LABELS,
 } from "./anovaDesigns";
 import {
   isGovernedOneFactor,
@@ -57,6 +58,7 @@ import {
   type AnalysisResult,
   type ScientificInputs,
 } from "./analysisIdentity";
+import { canonicalRoleConfirmationFingerprint } from "./roleConfirmationFingerprint";
 
 const MODULE = "anova" as const;
 
@@ -479,6 +481,15 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   /** Declared response scale per trait. Default is Unknown for every trait. */
   const [responseSemantics, setResponseSemantics] = useState<Record<string, ResponseSemantic>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // W1-UI-04 — the fingerprint of the experimental structure the researcher
+  // last explicitly confirmed, or null if nothing has been confirmed yet.
+  // Deliberately a plain fingerprint-equality check rather than a boolean
+  // flag with explicit invalidation call sites: comparing against the
+  // freshly recomputed current fingerprint on every render means dataset,
+  // design or structural-role changes invalidate automatically, with no
+  // separate "clear confirmation" handler to keep in sync as new mutation
+  // paths are added later.
+  const [confirmedRoleFingerprint, setConfirmedRoleFingerprint] = useState<string | null>(null);
   // W1-INT-06: a result is bound, permanently, to the exact scientific
   // context that produced it -- never to whatever the form currently
   // contains. See analysisIdentity.ts for why `setResults(res)` alone was
@@ -678,6 +689,20 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const issue = validateMapping(design, mapping, selectedTraits);
   const validation = issue?.message ?? null;
 
+  // W1-UI-04 — confirmation fingerprint contract: dataset identity + design +
+  // active structural-role mapping ONLY. Deliberately excludes alpha, trait
+  // selection and response semantics (unlike W1-INT-06's analysis-result
+  // fingerprint above) so changing those never forces the researcher to
+  // reconfirm an experimental structure they were never asked about.
+  const roleFingerprint = canonicalRoleConfirmationFingerprint({
+    datasetToken: datasetContext.datasetToken ?? null,
+    design,
+    mapping,
+  });
+  const rolesConfirmed = confirmedRoleFingerprint !== null && confirmedRoleFingerprint === roleFingerprint;
+  const rolesPreviouslyConfirmedNowInvalid =
+    confirmedRoleFingerprint !== null && confirmedRoleFingerprint !== roleFingerprint;
+
   const preview = buildStructuralPreview(
     design,
     mapping,
@@ -692,6 +717,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // ── Run analysis ──────────────────────────────────────────────────────
   const handleAnalyze = async () => {
     if (validation) return;
+    // W1-UI-04 — an additional boundary on top of W1-INT-02's structural
+    // validation above, not a replacement for it: the mapping can be
+    // structurally valid and still not yet be the mapping the researcher has
+    // explicitly told VivaSense to treat as the experimental roles.
+    if (!rolesConfirmed) return;
 
     // W1-INT-06 — captured synchronously, before any await. `beginDispatch`
     // increments the generation (so a later, distinct dispatch is always
@@ -1076,7 +1106,74 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </div>
           )}
 
-          <Button onClick={handleAnalyze} disabled={isAnalyzing || !!validation} className="gap-2">
+          {/* W1-UI-04 — the researcher must explicitly confirm the exact
+              current mapping before it may be used as the experimental
+              structure of an inferential model. A mapping merely being
+              complete and structurally valid is not confirmation: this
+              summary and action only render once `validation` is clear, and
+              the fingerprint used for confirmation is recomputed fresh on
+              every render, so any dataset/design/structural-role change is
+              reflected here immediately, before the researcher can act on
+              stale information. */}
+          {!validation && (
+            <div className="rounded-md border p-3 space-y-2" data-testid="role-confirmation">
+              <p className="text-sm font-medium flex items-center gap-1.5">
+                <Info className="h-3.5 w-3.5" /> Experimental roles
+              </p>
+              <p className="text-xs text-muted-foreground">
+                VivaSense will use the columns below as the experimental structure of this analysis.
+                Confirming does not change how the data is interpreted — it records that you have
+                reviewed and approved this mapping.
+              </p>
+              <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+                <div className="flex justify-between gap-3 border-b border-dashed py-0.5">
+                  <dt className="text-muted-foreground">Design</dt>
+                  <dd className="font-medium text-right">{designMeta(design).fullLabel}</dd>
+                </div>
+                {roles.map((role) => (
+                  <div key={role} className="flex justify-between gap-3 border-b border-dashed py-0.5">
+                    <dt className="text-muted-foreground">{ROLE_LABELS[role]}</dt>
+                    <dd className="font-medium text-right">{mapping[role]}</dd>
+                  </div>
+                ))}
+              </dl>
+              {isSplitPlot && (
+                <p className="text-xs text-muted-foreground">
+                  Whole plots are organized within blocks; subplots are organized within whole plots.
+                </p>
+              )}
+              {rolesConfirmed ? (
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Experimental roles confirmed.
+                </p>
+              ) : (
+                <>
+                  {rolesPreviouslyConfirmedNowInvalid && (
+                    <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      The mapping changed since you last confirmed it. Please review and confirm again
+                      before running.
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setConfirmedRoleFingerprint(roleFingerprint)}
+                    disabled={isAnalyzing}
+                  >
+                    Confirm experimental roles
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+          <Button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing || !!validation || !rolesConfirmed}
+            className="gap-2"
+          >
             {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Run Analysis
           </Button>

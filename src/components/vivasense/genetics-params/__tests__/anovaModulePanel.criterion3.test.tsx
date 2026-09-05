@@ -121,6 +121,8 @@ async function mapRcbdAndSelectTrait() {
   fireEvent.click(screen.getAllByRole("combobox")[1]);
   fireEvent.click(await screen.findByRole("option", { name: "Rep" }));
   fireEvent.click(screen.getByRole("checkbox", { name: /Yield_kg/i }));
+  // W1-UI-04: Run Analysis is now gated on explicit role confirmation.
+  fireEvent.click(screen.getByRole("button", { name: /Confirm experimental roles/i }));
 }
 
 describe("W1-INT-06 Criterion 3 — direct live-state bypass", () => {
