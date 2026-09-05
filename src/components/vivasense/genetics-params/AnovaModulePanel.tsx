@@ -58,6 +58,77 @@ const MODULE = "anova" as const;
 const ALPHA_OPTIONS: AnovaAlpha[] = [0.01, 0.05, 0.1];
 
 /**
+ * W1-UI-02 — post-run disclosure for the states in which no transformation
+ * could be recommended.
+ *
+ * `triggered === false` does not mean "nothing scientifically relevant
+ * happened". The transformation banner below is gated on `triggered`, so a
+ * trait whose residual diagnostics failed but whose scale was never declared
+ * produced no post-run signal at all — and for complete one-factor RCBD the
+ * Word report suppressed it too, leaving the finding only in the payload.
+ * `recommendation_state` is the authoritative field, so this reads that.
+ *
+ * Deliberately compact: the boilerplate is stated once and each affected trait
+ * contributes a single line with its own diagnostics. Four selected traits with
+ * two unrecommendable states produce two lines, not two warning panels.
+ * Unaffected traits contribute nothing.
+ */
+export const UNRECOMMENDABLE_STATES = [
+  "scale_unknown",
+  "unsupported_scale",
+  "declared_scale_mismatch",
+] as const;
+
+export type UnrecommendableState = (typeof UNRECOMMENDABLE_STATES)[number];
+
+/** Why no recommendation was made — the scientific meaning, stated plainly. */
+export function describeUnrecommendableState(state: UnrecommendableState): string {
+  switch (state) {
+    case "scale_unknown":
+      return "diagnostics indicate possible assumption concerns, and the response scale was not specified — no automatic transformation was recommended.";
+    case "unsupported_scale":
+      return "the response scale is known, but this workflow has no governed automatic transformation for it — no substitute was chosen.";
+    case "declared_scale_mismatch":
+      return "the declared response scale conflicts with the observed data, so no scale-dependent transformation was applied — the declared type was not rewritten.";
+  }
+}
+
+export interface UnrecommendableTrait {
+  trait: string;
+  state: UnrecommendableState;
+  shapiroP?: number | null;
+  leveneP?: number | null;
+}
+
+export function UnrecommendableStateNotice({ items }: { items: UnrecommendableTrait[] }) {
+  if (items.length === 0) return null;
+  const p = (v?: number | null) =>
+    typeof v === "number" && Number.isFinite(v) ? (v < 0.001 ? "<0.001" : v.toFixed(3)) : "—";
+  return (
+    <div className="rounded-md border bg-muted/20 p-3 space-y-1.5" data-testid="unrecommendable-states">
+      <p className="text-sm font-medium flex items-center gap-1.5">
+        <Info className="h-3.5 w-3.5" /> No transformation was recommended
+      </p>
+      <ul className="space-y-1">
+        {items.map(({ trait, state, shapiroP, leveneP }) => (
+          <li key={trait} className="text-xs text-muted-foreground" data-testid={`unrecommendable-${trait}`}>
+            <span className="font-medium text-foreground">{trait}</span> — {describeUnrecommendableState(state)}
+            {" "}
+            <span className="whitespace-nowrap">
+              (Shapiro-Wilk p = {p(shapiroP)} · Levene p = {p(leveneP)})
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-muted-foreground">
+        A significant diagnostic test does not by itself require a transformation. The untransformed
+        analysis reported here remains the result of record.
+      </p>
+    </div>
+  );
+}
+
+/**
  * One trait's declared response scale (W1-INT-04A).
  *
  * Declared at MODULE scope on purpose. A component declared inside another
@@ -577,6 +648,31 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          {/* W1-UI-02 — states where nothing could be recommended. Governed by
+              recommendation_state, not by `triggered`, and rendered for every
+              design including complete one-factor RCBD. */}
+          {(() => {
+            type TAState = {
+              recommendation_state?: string;
+              raw_diagnostics?: { shapiro?: { p_value?: number }; levene?: { p_value?: number } };
+            };
+            const items = Object.entries(results.trait_results)
+              .map(([trait, tr]): UnrecommendableTrait | null => {
+                const ta = (tr.analysis_result?.result as { transformation_analysis?: TAState } | undefined)
+                  ?.transformation_analysis;
+                const state = ta?.recommendation_state;
+                if (!state || !(UNRECOMMENDABLE_STATES as readonly string[]).includes(state)) return null;
+                return {
+                  trait,
+                  state: state as UnrecommendableState,
+                  shapiroP: ta?.raw_diagnostics?.shapiro?.p_value ?? null,
+                  leveneP: ta?.raw_diagnostics?.levene?.p_value ?? null,
+                };
+              })
+              .filter((x): x is UnrecommendableTrait => x !== null);
+            return <UnrecommendableStateNotice items={items} />;
+          })()}
 
           {(() => {
             type TA = {
