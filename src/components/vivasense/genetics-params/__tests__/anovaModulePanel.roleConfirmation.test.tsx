@@ -50,7 +50,7 @@ function buildDataset(over: Partial<DatasetContext> = {}): DatasetContext {
     availableTraitColumns: ["Yield_kg", "Height_cm"],
     mode: "single",
     datasetToken: "ds-1",
-    columns: ["Genotype", "Rep", "Variety", "Nitrogen", "Block", "Irrigation"],
+    columns: ["Genotype", "Rep", "Variety", "Nitrogen", "Block", "Irrigation", "Entry", "Location"],
     dataPreview: [
       { Genotype: "G01", Rep: "R1" },
       { Genotype: "G01", Rep: "R2" },
@@ -200,6 +200,43 @@ describe("W1-UI-04 — confirmation survives non-structural changes (RCBD)", () 
 
     rerender(<AnovaModulePanel datasetContext={buildDataset({ datasetToken: "ds-B", file: new File(["b"], "other.csv") })} />);
     expect(runButton()).toBeDisabled();
+  });
+
+  it("D — confirmation is consumed by the first qualifying mutation and cannot reactivate merely by returning to the confirmed values", async () => {
+    render(<AnovaModulePanel datasetContext={buildDataset()} />);
+
+    // State A: Treatment=Genotype, Block=Rep — confirmed.
+    await selectOption(0, "Genotype");
+    await selectOption(1, "Rep");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Yield_kg/i }));
+    fireEvent.click(confirmButton());
+    expect(runButton()).not.toBeDisabled();
+
+    // State B: Block Rep -> Location.
+    await selectOption(1, "Location");
+    expect(runButton()).toBeDisabled();
+
+    // State C: Treatment Genotype -> Entry, Block remains Location.
+    await selectOption(0, "Entry");
+    expect(runButton()).toBeDisabled();
+    expect(screen.queryByText(/Experimental roles confirmed/i)).toBeNull();
+
+    // Restore Treatment back to Genotype (Block still Location — not yet
+    // fully state A again).
+    await selectOption(0, "Genotype");
+    expect(runButton()).toBeDisabled();
+
+    // Restore Block back to Rep — the mapping is now IDENTICAL to originally
+    // confirmed state A. The stale confirmedRoleFingerprint from the very
+    // first confirmation must not be allowed to match again.
+    await selectOption(1, "Rep");
+    expect(runButton()).toBeDisabled();
+    expect(screen.queryByText(/Experimental roles confirmed/i)).toBeNull();
+    expect(screen.getByRole("button", { name: /Confirm experimental roles/i })).toBeTruthy();
+
+    // A fresh explicit confirmation is required, and only that re-enables Run.
+    fireEvent.click(confirmButton());
+    expect(runButton()).not.toBeDisabled();
   });
 });
 

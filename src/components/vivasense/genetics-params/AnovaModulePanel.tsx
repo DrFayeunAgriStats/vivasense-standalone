@@ -482,13 +482,16 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [responseSemantics, setResponseSemantics] = useState<Record<string, ResponseSemantic>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   // W1-UI-04 — the fingerprint of the experimental structure the researcher
-  // last explicitly confirmed, or null if nothing has been confirmed yet.
-  // Deliberately a plain fingerprint-equality check rather than a boolean
-  // flag with explicit invalidation call sites: comparing against the
-  // freshly recomputed current fingerprint on every render means dataset,
-  // design or structural-role changes invalidate automatically, with no
-  // separate "clear confirmation" handler to keep in sync as new mutation
-  // paths are added later.
+  // last explicitly confirmed, or null if nothing has been confirmed yet (or
+  // if that confirmation has since been consumed — see `mutateRoleInput`
+  // below). Validity is `confirmedRoleFingerprint !== null && === roleFingerprint`,
+  // but equality alone is NOT what invalidates it: every structural mutation
+  // path (`mutateRoleInput`, the dataset-identity sync effect below)
+  // unconditionally resets this to null first. Relying on equality alone
+  // would let a researcher mutate away from a confirmed mapping and back to
+  // the exact same values without ever reconfirming — the stale value here
+  // would trivially match the freshly recomputed fingerprint again, even
+  // though one or more unconfirmed intermediate states sat live in between.
   const [confirmedRoleFingerprint, setConfirmedRoleFingerprint] = useState<string | null>(null);
   // W1-INT-06: a result is bound, permanently, to the exact scientific
   // context that produced it -- never to whatever the form currently
@@ -559,6 +562,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     if (token === current.datasetToken && mode === current.mode) return;
     identityRef.current.mutate({ datasetToken: token, mode });
     setAnalysisResult((prev) => (prev === null ? prev : null));
+    // W1-UI-04 — consumed, not merely compared: see `mutateRoleInput` above
+    // for why a dataset swap must unconditionally clear any existing role
+    // confirmation rather than rely on the fingerprint (which already
+    // includes datasetToken) happening to differ afterward.
+    setConfirmedRoleFingerprint(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datasetContext?.datasetToken, datasetContext?.mode]);
 
@@ -630,6 +638,24 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     mutateScientificInput({ responseSemantics: next }, () => setResponseSemantics(next));
   };
 
+  // W1-UI-04 — the ONE governed path by which design or a structural role may
+  // change. Unconditionally consumes (clears) any existing role confirmation,
+  // regardless of what the new value is. This is deliberately NOT "clear only
+  // if the new fingerprint differs from the confirmed one": a researcher who
+  // mutates away from a confirmed mapping and later returns to the exact same
+  // values must still reconfirm — otherwise a stale `confirmedRoleFingerprint`
+  // left over from the ORIGINAL confirmation would silently equal the
+  // restored fingerprint again and reactivate Run with no new explicit
+  // confirmation action, even though one or more intervening structural
+  // states (which the researcher never confirmed) sat live in between.
+  // Confirmation is consumed by the first qualifying mutation and stays
+  // consumed through arbitrarily many later mutations, exactly like a
+  // capability that is spent on use rather than a value compared by equality.
+  function mutateRoleInput(patch: Partial<ScientificInputs>, applyReactState: () => void) {
+    mutateScientificInput(patch, applyReactState);
+    setConfirmedRoleFingerprint(null);
+  }
+
   // Wrapped structural-role and design/alpha setters — every one of these
   // routes the change through `mutateScientificInput` so the identity
   // controller can never disagree with what React is about to render.
@@ -639,36 +665,40 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // any role the new design doesn't use, both for the outgoing request and
   // for `canonicalAnalysisFingerprint`, so a value left over in an inactive
   // role cannot affect either.
+  //
+  // `changeAlpha` deliberately stays on `mutateScientificInput` alone (not
+  // `mutateRoleInput`): alpha is outside the W1-UI-04 confirmation
+  // fingerprint entirely, so it must never consume an existing confirmation.
   const changeDesign = (v: GovernedDesignType) =>
-    mutateScientificInput({ design: v }, () => setDesign(v));
+    mutateRoleInput({ design: v }, () => setDesign(v));
   const changeAlpha = (a: AnovaAlpha) => mutateScientificInput({ alpha: a }, () => setAlpha(a));
   const changeTreatment = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, treatment: v } },
       () => setTreatmentCol(v)
     );
   const changeRep = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, rep: v } },
       () => setRepColumn(v)
     );
   const changeFactorA = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, factor_a: v } },
       () => setFactorA(v)
     );
   const changeFactorB = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, factor_b: v } },
       () => setFactorB(v)
     );
   const changeMainPlot = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, main_plot: v } },
       () => setMainPlot(v)
     );
   const changeSubPlot = (v: string) =>
-    mutateScientificInput(
+    mutateRoleInput(
       { mapping: { ...identityRef.current.getInputs().mapping, sub_plot: v } },
       () => setSubPlot(v)
     );
