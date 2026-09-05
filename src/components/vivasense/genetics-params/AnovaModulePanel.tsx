@@ -120,8 +120,17 @@ export function UnrecommendableStateNotice({ items }: { items: UnrecommendableTr
           </li>
         ))}
       </ul>
+      {/* W1-UI-03: this footer is shared across every trait in the list, and
+          those traits can carry different recommendation_state values with
+          different underlying diagnostic outcomes -- UnrecommendableTrait has
+          no assumptions_met field, by design, because no single boolean
+          represents a mixed container. The wording below must therefore hold
+          regardless of whether any trait's diagnostics passed, failed, or a
+          mix of both is present; it makes no diagnostic-outcome claim at all,
+          so it cannot go stale the way the previous wording did once
+          declared_scale_mismatch became reachable with clean diagnostics. */}
       <p className="text-[11px] text-muted-foreground">
-        A significant diagnostic test does not by itself require a transformation. The untransformed
+        These notices do not by themselves mean that a transformation is required. The untransformed
         analysis reported here remains the result of record.
       </p>
     </div>
