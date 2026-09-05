@@ -367,11 +367,18 @@ export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysis
   const active = activeMapping(design, mapping);
   const usesBlock = requiresBlock(design);
 
-  // `genotype_column` is the backend's one-factor treatment slot and is a
-  // required wire field. For designs with no single treatment factor it falls
-  // back to whatever the dataset detected, which the backend ignores in favour
-  // of the explicit factor/plot roles.
-  const treatment = active.treatment ?? ctx.genotypeColumn ?? "";
+  // `genotype_column` is the backend's one-factor treatment slot. For designs
+  // with no single treatment factor (Factorial, Split-Plot), it must be sent
+  // empty rather than falling back to the generic upload-preview's detected
+  // column: the backend's own factorial precedence rule
+  // (multitrait_upload_routes.py) prefers a non-empty genotype_column over
+  // factor_a_column whenever one is present, so a leftover preview-only value
+  // here silently displaces the researcher's explicit Factor A selection in
+  // the fitted model (W1-INT-07). CRD/RCBD are unaffected: `active.treatment`
+  // is a required, validated role for both, so it is always defined by the
+  // time this line runs and the removed fallback was already unreachable for
+  // them.
+  const treatment = active.treatment ?? "";
 
   // Response semantics for the SELECTED traits only, and only where explicitly
   // declared. Two rules hold this together: a trait left at "unknown" is
