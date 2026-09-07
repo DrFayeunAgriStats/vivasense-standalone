@@ -18,7 +18,7 @@ import {
 } from "../analysisIdentity";
 
 const baseInputs = (over: Partial<ScientificInputs> = {}): ScientificInputs => ({
-  datasetToken: "ds-1",
+  datasetInstanceId: "ds-1",
   design: "rcbd",
   mapping: { treatment: "Genotype", rep: "Rep" },
   selectedTraits: ["Yield"],
@@ -53,8 +53,8 @@ describe("canonicalAnalysisFingerprint", () => {
   });
 
   it("differs when dataset identity differs", () => {
-    const a = canonicalAnalysisFingerprint(baseInputs({ datasetToken: "ds-1" }));
-    const b = canonicalAnalysisFingerprint(baseInputs({ datasetToken: "ds-2" }));
+    const a = canonicalAnalysisFingerprint(baseInputs({ datasetInstanceId: "ds-1" }));
+    const b = canonicalAnalysisFingerprint(baseInputs({ datasetInstanceId: "ds-2" }));
     expect(a).not.toBe(b);
   });
 
@@ -117,12 +117,12 @@ describe("canonicalAnalysisFingerprint", () => {
     expect(a).toBe(b);
   });
 
-  it("does not use filename as dataset identity — only datasetToken participates", () => {
+  it("does not use filename as dataset identity — only datasetInstanceId participates", () => {
     // canonicalAnalysisFingerprint's ScientificInputs has no filename field at
     // all, so there is nothing for a filename to leak through; this test
-    // pins that datasetToken alone determines the dataset component.
-    const a = canonicalAnalysisFingerprint(baseInputs({ datasetToken: "abc" }));
-    const b = canonicalAnalysisFingerprint(baseInputs({ datasetToken: "abc" }));
+    // pins that datasetInstanceId alone determines the dataset component.
+    const a = canonicalAnalysisFingerprint(baseInputs({ datasetInstanceId: "abc" }));
+    const b = canonicalAnalysisFingerprint(baseInputs({ datasetInstanceId: "abc" }));
     expect(a).toBe(b);
   });
 });

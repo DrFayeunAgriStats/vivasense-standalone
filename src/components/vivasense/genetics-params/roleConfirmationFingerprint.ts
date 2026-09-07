@@ -15,7 +15,11 @@
 import { activeMapping, type ColumnMapping, type GovernedDesignType } from "./anovaDesigns";
 
 export interface RoleConfirmationInputs {
-  datasetToken: string | null;
+  /** W1-INT-09 — current-session dataset-instance identity, NOT the backend
+   * operational datasetToken (see lib/datasetInstanceIdentity.ts). Validity
+   * is the caller's responsibility (`isValidDatasetInstanceId`) — this
+   * function only serializes whatever it is given. */
+  datasetInstanceId: string;
   design: GovernedDesignType;
   mapping: ColumnMapping;
 }
@@ -38,5 +42,5 @@ export function canonicalRoleConfirmationFingerprint(inputs: RoleConfirmationInp
     active.main_plot ?? "",
     active.sub_plot ?? "",
   ];
-  return JSON.stringify([inputs.datasetToken, inputs.design, structuralMapping]);
+  return JSON.stringify([inputs.datasetInstanceId, inputs.design, structuralMapping]);
 }

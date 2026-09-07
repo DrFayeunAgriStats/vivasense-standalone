@@ -59,6 +59,7 @@ import {
   type ScientificInputs,
 } from "./analysisIdentity";
 import { canonicalRoleConfirmationFingerprint } from "./roleConfirmationFingerprint";
+import { isValidDatasetInstanceId } from "@/lib/datasetInstanceIdentity";
 
 const MODULE = "anova" as const;
 
@@ -519,7 +520,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // are frozen at whatever they were when that specific closure was created.
   const identityRef = useRef(
     createAnalysisIdentityController({
-      datasetToken: datasetContext?.datasetToken ?? null,
+      datasetInstanceId: datasetContext?.datasetInstanceId ?? "",
       design: "rcbd",
       mapping: {},
       selectedTraits: [],
@@ -556,19 +557,26 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // the new render, so the identity update is never late relative to what is
   // on screen.
   useLayoutEffect(() => {
-    const token = datasetContext?.datasetToken ?? null;
+    // W1-INT-09 — keyed on datasetInstanceId, not datasetToken. datasetToken
+    // is a backend operational/cache token that can legitimately be `null`
+    // for two entirely different datasets; comparing on it let a real
+    // dataset swap go undetected whenever both the old and new dataset
+    // lacked a token (`null === null`). datasetInstanceId is always a
+    // caller-generated, non-empty identity for any real DatasetContext, so
+    // it cannot collapse this way.
+    const instanceId = datasetContext?.datasetInstanceId ?? "";
     const mode = datasetContext?.mode ?? "single";
     const current = identityRef.current.getInputs();
-    if (token === current.datasetToken && mode === current.mode) return;
-    identityRef.current.mutate({ datasetToken: token, mode });
+    if (instanceId === current.datasetInstanceId && mode === current.mode) return;
+    identityRef.current.mutate({ datasetInstanceId: instanceId, mode });
     setAnalysisResult((prev) => (prev === null ? prev : null));
     // W1-UI-04 — consumed, not merely compared: see `mutateRoleInput` above
     // for why a dataset swap must unconditionally clear any existing role
     // confirmation rather than rely on the fingerprint (which already
-    // includes datasetToken) happening to differ afterward.
+    // includes datasetInstanceId) happening to differ afterward.
     setConfirmedRoleFingerprint(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetContext?.datasetToken, datasetContext?.mode]);
+  }, [datasetContext?.datasetInstanceId, datasetContext?.mode]);
 
   // Lifecycle safety: on unmount, invalidate any in-flight request's identity
   // without touching the scientific fingerprint. A response resolving after
@@ -719,19 +727,32 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const issue = validateMapping(design, mapping, selectedTraits);
   const validation = issue?.message ?? null;
 
+  // W1-INT-09 — fail-closed precondition: role confirmation (and, by
+  // extension, Run) may become authorized only when this dataset carries a
+  // valid current-session instance identity. `datasetInstanceId` is required
+  // by the `DatasetContext` type, so this should always be true for any
+  // correctly-constructed context; the explicit check is the one canonical
+  // gate (not an ad-hoc truthy check) for the case where it somehow is not.
+  const hasValidDatasetInstance = isValidDatasetInstanceId(datasetContext.datasetInstanceId);
+
   // W1-UI-04 — confirmation fingerprint contract: dataset identity + design +
   // active structural-role mapping ONLY. Deliberately excludes alpha, trait
   // selection and response semantics (unlike W1-INT-06's analysis-result
   // fingerprint above) so changing those never forces the researcher to
   // reconfirm an experimental structure they were never asked about.
   const roleFingerprint = canonicalRoleConfirmationFingerprint({
-    datasetToken: datasetContext.datasetToken ?? null,
+    datasetInstanceId: datasetContext.datasetInstanceId,
     design,
     mapping,
   });
-  const rolesConfirmed = confirmedRoleFingerprint !== null && confirmedRoleFingerprint === roleFingerprint;
+  const rolesConfirmed =
+    hasValidDatasetInstance &&
+    confirmedRoleFingerprint !== null &&
+    confirmedRoleFingerprint === roleFingerprint;
   const rolesPreviouslyConfirmedNowInvalid =
-    confirmedRoleFingerprint !== null && confirmedRoleFingerprint !== roleFingerprint;
+    hasValidDatasetInstance &&
+    confirmedRoleFingerprint !== null &&
+    confirmedRoleFingerprint !== roleFingerprint;
 
   const preview = buildStructuralPreview(
     design,
@@ -771,7 +792,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       analysisType: "anova" as const,
       backendEndpoint: "/genetics/analyze-upload?module=anova",
       datasetName: datasetContext.file.name,
-      datasetToken: context.datasetToken,
+      // W1-INT-09 — history's dedup/record key wants the backend OPERATIONAL
+      // token (or its own datasetName fallback), not the scientific
+      // dataset-instance identity: read it directly off the live prop rather
+      // than off `context`, which now carries `datasetInstanceId` instead.
+      datasetToken: datasetContext.datasetToken ?? null,
       designType: context.design,
       traits: context.selectedTraits,
       startedAt,
@@ -1172,7 +1197,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   Whole plots are organized within blocks; subplots are organized within whole plots.
                 </p>
               )}
-              {rolesConfirmed ? (
+              {!hasValidDatasetInstance ? (
+                // W1-INT-09 — fail closed. In normal operation this branch is
+                // unreachable (datasetInstanceId is a required field, always
+                // set by createDatasetInstanceId()); it exists as the one
+                // explicit backstop rather than letting confirmation silently
+                // proceed with no stable dataset identity.
+                <p className="text-xs text-destructive flex items-center gap-1.5" role="alert">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  A stable dataset identity could not be established for this dataset. Please re-upload
+                  the dataset before continuing.
+                </p>
+              ) : rolesConfirmed ? (
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Experimental roles confirmed.
                 </p>

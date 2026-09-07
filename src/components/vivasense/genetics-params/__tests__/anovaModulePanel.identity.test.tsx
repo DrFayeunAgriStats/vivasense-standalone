@@ -50,6 +50,7 @@ function buildDataset(over: Partial<DatasetContext> = {}): DatasetContext {
     environmentColumn: null,
     availableTraitColumns: ["Yield_kg"],
     mode: "single",
+    datasetInstanceId: "instance-1",
     datasetToken: "ds-1",
     columns: ["Genotype", "Rep", "OtherFactor"],
     dataPreview: [
@@ -205,15 +206,17 @@ describe("W1-INT-06 — dataset replacement", () => {
     analyzeUploadMock.mockImplementation(
       () => new Promise<UploadAnalysisResponse>((resolve) => { resolveAnalyze = resolve; })
     );
-    const datasetA = buildDataset({ datasetToken: "ds-A" });
+    const datasetA = buildDataset({ datasetInstanceId: "instance-A" });
     const { rerender } = render(<AnovaModulePanel datasetContext={datasetA} />);
     await mapAndSelectTrait();
     fireEvent.click(screen.getByRole("button", { name: /Run Analysis/i }));
     expect(analyzeUploadMock).toHaveBeenCalledTimes(1);
 
-    // Replace the dataset prop entirely — a new datasetToken, simulating an
-    // upload completing while the prior analysis is still in flight.
-    const datasetB = buildDataset({ datasetToken: "ds-B", file: new File(["b"], "other.csv") });
+    // Replace the dataset prop entirely — a new datasetInstanceId (W1-INT-09;
+    // this is what a genuine dataset swap is now keyed on, not datasetToken),
+    // simulating an upload completing while the prior analysis is still in
+    // flight.
+    const datasetB = buildDataset({ datasetInstanceId: "instance-B", file: new File(["b"], "other.csv") });
     rerender(<AnovaModulePanel datasetContext={datasetB} />);
 
     await act(async () => {

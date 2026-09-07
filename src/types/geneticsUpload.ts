@@ -24,6 +24,21 @@ export interface DatasetContext {
   environmentFactorColumns?: string[];
   availableTraitColumns: string[];
   mode: "single" | "multi";
+  /**
+   * W1-INT-09 — current-session dataset-instance identity. Generated once,
+   * locally (see lib/datasetInstanceIdentity.ts), the moment this
+   * DatasetContext is constructed for governed analysis. Required precisely
+   * because `datasetToken` below is not: `datasetToken` is a backend
+   * operational/cache/capability token that can legitimately come back
+   * `null` on an otherwise-successful upload-preview response, and scientific
+   * identity (W1-INT-06's result binding, W1-UI-04's role confirmation) must
+   * never collapse to "unchanged" merely because that backend fallback fired
+   * for two different datasets. This is a CURRENT-SESSION instance identity
+   * only — not content identity, not dataset-version identity, and not a
+   * persistent project dataset identity (that remains deferred to
+   * persistence design).
+   */
+  datasetInstanceId: string;
   /** Server-issued token from /genetics/upload-preview — required for stateful endpoints like /analysis/descriptive-stats */
   datasetToken?: string | null;
   /** All column names from the uploaded file — used by design selectors (e.g. factorial / split-plot factor columns). */

@@ -17,6 +17,7 @@ import { computeCorrelation, computeGeneticParameters, computeRegression, fileTo
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { useToast } from "@/hooks/use-toast";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
+import { createDatasetInstanceId } from "@/lib/datasetInstanceIdentity";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import { AnalysisHistoryList } from "@/components/vivasense/history/AnalysisHistoryList";
 import { StudyGrid } from "@/components/vivasense/studies/StudyGrid";
@@ -269,6 +270,11 @@ export default function VivaSenseWorkspace() {
         environmentColumn: effectiveEnvironment,
         availableTraitColumns: traitValues,
         mode: effectiveMode,
+        // W1-INT-09 — this screen shares `datasetContext` state with
+        // AnovaModulePanel below; a stable instance identity is required
+        // here too so switching to the ANOVA module after a Genetics run
+        // cannot be mistaken for "no dataset change" by W1-INT-06/W1-UI-04.
+        datasetInstanceId: createDatasetInstanceId(),
         datasetToken: null,
       });
 

@@ -29,7 +29,12 @@ import { activeMapping, type ColumnMapping, type GovernedDesignType } from "./an
  * which already-computed branch of an existing result to display) is
  * deliberately excluded. */
 export interface ScientificInputs {
-  datasetToken: string | null;
+  /** W1-INT-09 — current-session dataset-instance identity, NOT the backend
+   * operational datasetToken (see lib/datasetInstanceIdentity.ts). A
+   * `datasetToken` of `null`/`undefined` is a legitimate backend fallback and
+   * must never be mistaken for "the dataset didn't change" — this field is
+   * always a caller-supplied, non-empty identity independent of it. */
+  datasetInstanceId: string;
   design: GovernedDesignType;
   mapping: ColumnMapping;
   selectedTraits: string[];
@@ -54,7 +59,7 @@ export interface AnalysisResult<TResponse> {
 
 function cloneScientificInputs(inputs: ScientificInputs): ScientificInputs {
   return {
-    datasetToken: inputs.datasetToken,
+    datasetInstanceId: inputs.datasetInstanceId,
     design: inputs.design,
     mapping: { ...inputs.mapping },
     selectedTraits: [...inputs.selectedTraits],
@@ -102,7 +107,7 @@ export function canonicalAnalysisFingerprint(inputs: ScientificInputs): string {
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
   const canonical = [
-    inputs.datasetToken,
+    inputs.datasetInstanceId,
     inputs.design,
     structuralMapping,
     sortedTraits,

@@ -13,7 +13,7 @@ import { describe, it, expect } from "vitest";
 import { canonicalRoleConfirmationFingerprint } from "../roleConfirmationFingerprint";
 
 const base = {
-  datasetToken: "ds-1",
+  datasetInstanceId: "ds-1",
   design: "rcbd" as const,
   mapping: { treatment: "Genotype", rep: "Rep" },
 };
@@ -22,7 +22,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
   it("A — same dataset + design + role mapping produces the same fingerprint", () => {
     const fp1 = canonicalRoleConfirmationFingerprint(base);
     const fp2 = canonicalRoleConfirmationFingerprint({
-      datasetToken: "ds-1",
+      datasetInstanceId: "ds-1",
       design: "rcbd",
       mapping: { treatment: "Genotype", rep: "Rep" },
     });
@@ -31,7 +31,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
 
   it("B — dataset identity change alters the fingerprint", () => {
     const fp1 = canonicalRoleConfirmationFingerprint(base);
-    const fp2 = canonicalRoleConfirmationFingerprint({ ...base, datasetToken: "ds-2" });
+    const fp2 = canonicalRoleConfirmationFingerprint({ ...base, datasetInstanceId: "ds-2" });
     expect(fp1).not.toBe(fp2);
   });
 
@@ -60,7 +60,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
   });
 
   it("F — Factor A change alters the fingerprint", () => {
-    const factorial = { datasetToken: "ds-1", design: "factorial_crd" as const, mapping: { factor_a: "Variety", factor_b: "Nitrogen" } };
+    const factorial = { datasetInstanceId: "ds-1", design: "factorial_crd" as const, mapping: { factor_a: "Variety", factor_b: "Nitrogen" } };
     const fp1 = canonicalRoleConfirmationFingerprint(factorial);
     const fp2 = canonicalRoleConfirmationFingerprint({
       ...factorial,
@@ -70,7 +70,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
   });
 
   it("G — Factor B change alters the fingerprint", () => {
-    const factorial = { datasetToken: "ds-1", design: "factorial_crd" as const, mapping: { factor_a: "Variety", factor_b: "Nitrogen" } };
+    const factorial = { datasetInstanceId: "ds-1", design: "factorial_crd" as const, mapping: { factor_a: "Variety", factor_b: "Nitrogen" } };
     const fp1 = canonicalRoleConfirmationFingerprint(factorial);
     const fp2 = canonicalRoleConfirmationFingerprint({
       ...factorial,
@@ -81,7 +81,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
 
   it("H — whole-plot (main_plot) change alters the fingerprint", () => {
     const splitPlot = {
-      datasetToken: "ds-1",
+      datasetInstanceId: "ds-1",
       design: "split_plot_rcbd" as const,
       mapping: { rep: "Block", main_plot: "Irrigation", sub_plot: "Variety" },
     };
@@ -95,7 +95,7 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
 
   it("I — subplot change alters the fingerprint", () => {
     const splitPlot = {
-      datasetToken: "ds-1",
+      datasetInstanceId: "ds-1",
       design: "split_plot_rcbd" as const,
       mapping: { rep: "Block", main_plot: "Irrigation", sub_plot: "Variety" },
     };
@@ -112,12 +112,12 @@ describe("W1-UI-04 — canonicalRoleConfirmationFingerprint", () => {
     // current design does not use must never affect anything, including this
     // fingerprint.
     const fp1 = canonicalRoleConfirmationFingerprint({
-      datasetToken: "ds-1",
+      datasetInstanceId: "ds-1",
       design: "crd",
       mapping: { treatment: "Genotype" },
     });
     const fp2 = canonicalRoleConfirmationFingerprint({
-      datasetToken: "ds-1",
+      datasetInstanceId: "ds-1",
       design: "crd",
       mapping: { treatment: "Genotype", rep: "Batch", factor_a: "Leftover" },
     });

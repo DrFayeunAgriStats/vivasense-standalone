@@ -11,6 +11,7 @@ import { Upload, Loader2, FileSpreadsheet, AlertTriangle, CheckCircle2 } from "l
 import { useToast } from "@/hooks/use-toast";
 import { uploadPreview, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
+import { createDatasetInstanceId } from "@/lib/datasetInstanceIdentity";
 import type { DatasetContext, UploadPreviewResponse } from "@/types/geneticsUpload";
 
 interface Props {
@@ -101,6 +102,10 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         environmentFactorColumns: envFactors,
         availableTraitColumns: preview.detected_columns.traits,
         mode: effectiveMode,
+        // W1-INT-09 — generated exactly once per accepted dataset-selection
+        // lifecycle, independent of whether the backend issued an
+        // operational dataset_token below.
+        datasetInstanceId: createDatasetInstanceId(),
         datasetToken: preview.dataset_token ?? null,
         // All column names — lets design selectors (factorial / split-plot) offer
         // every non-trait column as a candidate factor/plot role.

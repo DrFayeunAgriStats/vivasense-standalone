@@ -65,6 +65,7 @@ function buildDataset(): DatasetContext {
     environmentColumn: null,
     availableTraitColumns: ["Yield_kg"],
     mode: "single",
+    datasetInstanceId: "instance-criterion-3",
     datasetToken: "ds-criterion-3",
     columns: ["Genotype", "Rep"],
     dataPreview: [

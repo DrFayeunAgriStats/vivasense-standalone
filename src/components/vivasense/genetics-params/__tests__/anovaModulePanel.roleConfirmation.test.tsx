@@ -49,6 +49,7 @@ function buildDataset(over: Partial<DatasetContext> = {}): DatasetContext {
     environmentColumn: null,
     availableTraitColumns: ["Yield_kg", "Height_cm"],
     mode: "single",
+    datasetInstanceId: "instance-1",
     datasetToken: "ds-1",
     columns: ["Genotype", "Rep", "Variety", "Nitrogen", "Block", "Irrigation", "Entry", "Location"],
     dataPreview: [
@@ -191,14 +192,14 @@ describe("W1-UI-04 — confirmation survives non-structural changes (RCBD)", () 
   });
 
   it("9 — dataset replacement invalidates confirmation and blocks Run", async () => {
-    const { rerender } = render(<AnovaModulePanel datasetContext={buildDataset({ datasetToken: "ds-A" })} />);
+    const { rerender } = render(<AnovaModulePanel datasetContext={buildDataset({ datasetInstanceId: "instance-A" })} />);
     await selectOption(0, "Genotype");
     await selectOption(1, "Rep");
     fireEvent.click(screen.getByRole("checkbox", { name: /Yield_kg/i }));
     fireEvent.click(confirmButton());
     expect(runButton()).not.toBeDisabled();
 
-    rerender(<AnovaModulePanel datasetContext={buildDataset({ datasetToken: "ds-B", file: new File(["b"], "other.csv") })} />);
+    rerender(<AnovaModulePanel datasetContext={buildDataset({ datasetInstanceId: "instance-B", file: new File(["b"], "other.csv") })} />);
     expect(runButton()).toBeDisabled();
   });
 

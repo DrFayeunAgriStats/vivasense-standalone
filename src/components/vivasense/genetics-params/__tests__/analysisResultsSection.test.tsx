@@ -74,7 +74,7 @@ function buildRcbdResult(): AnalysisResult<UploadAnalysisResponse> {
   const context: AnalysisContext = {
     requestId: 1,
     dispatchedAt: Date.now(),
-    datasetToken: "ds-1",
+    datasetInstanceId: "instance-1",
     design: "rcbd",
     mapping: { treatment: "Genotype", rep: "Rep" },
     selectedTraits: ["Yield_kg"],
