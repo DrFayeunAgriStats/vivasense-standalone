@@ -49,6 +49,7 @@ import { isGovernedSplitPlot } from "./governedSplitPlot";
 import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
 import { explorationEligibility } from "./governedTransformation";
+import { runPersistentRcbdAnalysis } from "@/services/persistenceRcbdApi";
 
 const MODULE = "anova" as const;
 
@@ -161,7 +162,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     const startedAt = performance.now();
     const historyBase = {
       analysisType: "anova" as const,
-      backendEndpoint: "/genetics/analyze-upload?module=anova",
+      backendEndpoint: design === "rcbd"
+        ? "/persistence/analysis-runs/execute"
+        : "/genetics/analyze-upload?module=anova",
       datasetName: datasetContext.file.name,
       datasetToken: datasetContext.datasetToken ?? null,
       designType: design,
@@ -181,7 +184,15 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         traits: selectedTraits,
       });
 
-      const res = await analyzeUpload(request);
+      const res = design === "rcbd"
+        ? await runPersistentRcbdAnalysis({
+            datasetContext,
+            treatmentColumn: treatmentCol,
+            repColumn,
+            selectedTraits,
+            alpha,
+          })
+        : await analyzeUpload(request);
 
       setResults(res);
       // A trait can fail structurally while the HTTP call succeeds — the
@@ -195,7 +206,21 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
-      void recordAnalysis({ ...historyBase, response: res });
+      void recordAnalysis({
+        ...historyBase,
+        response: res,
+        parameters: {
+          ...historyBase.parameters,
+          ...(res.persistence
+            ? {
+                persistence_analysis_run_id: res.persistence.analysis_run_id,
+                persistence_dataset_version_id: res.persistence.dataset_version_id,
+                persistence_study_id: res.persistence.study_id,
+                persistence_outcome: res.persistence.run_outcome,
+              }
+            : {}),
+        },
+      });
     } catch (err: any) {
       void recordAnalysisFailure(historyBase, err);
       toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
@@ -210,6 +235,14 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setExportError(null);
     setIsDownloading(true);
     try {
+      if (results.persistence) {
+        const message =
+          "This RCBD result is now backed by a durable AnalysisRun. Report export from that immutable result is not yet wired, so VivaSense will not generate a substitute report through the legacy cache pathway.";
+        setExportError(message);
+        sonnerToast.error("Persistent report export not yet wired");
+        return;
+      }
+
       // Governed route: send the FULL analysis response and echo the exact
       // export_token the backend issued. The hand-assembled payload below
       // cannot carry governed content — it drops the decision objects, the
@@ -480,9 +513,19 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 ANOVA Results — {designMeta(design).fullLabel}
               </CardTitle>
-              <Button onClick={handleDownload} disabled={isDownloading} size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button
+                onClick={handleDownload}
+                disabled={isDownloading || !!results.persistence}
+                size="sm"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                title={results.persistence ? "Persistent report export is not yet wired to the immutable AnalysisResult." : undefined}
+              >
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {isDownloading ? "Downloading..." : "Download ANOVA Report"}
+                {results.persistence
+                  ? "Persistent report export pending"
+                  : isDownloading
+                    ? "Downloading..."
+                    : "Download ANOVA Report"}
               </Button>
             </CardHeader>
             <CardContent>
@@ -490,7 +533,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
                 <Badge variant="secondary">{pl(results.dataset_summary.n_reps ?? 0, "replication")}</Badge>
                 <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
+                {results.persistence && (
+                  <Badge variant="outline" className="border-emerald-300 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">
+                    durable run · {results.persistence.run_outcome}
+                  </Badge>
+                )}
               </div>
+              {results.persistence && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  AnalysisRun {results.persistence.analysis_run_id} · DatasetVersion {results.persistence.dataset_version_id}
+                </p>
+              )}
             </CardContent>
           </Card>
 
