@@ -169,7 +169,7 @@ function buildPresentationResponse(
   }
 
   const first = traitResults[selectedTraits[0]]?.analysis_result?.result;
-  const settings = first?.analysis_settings as AnalysisSettings | undefined;
+  const settings = (first as unknown as { analysis_settings?: AnalysisSettings } | undefined)?.analysis_settings;
 
   return {
     summary_table: summary,
@@ -220,7 +220,7 @@ export async function runPersistentRcbdAnalysis(
     sourceDigest,
   });
 
-  const prepareKey = `frontend-rcbd-v1:dv:${sourceDigest}`;
+  const prepareKey = `frontend-rcbd-v1:dv:${datasetId}:${sourceDigest}`;
   const prepared = await vivaSenseRequest<PrepareDatasetVersionResponse>(
     "/persistence/dataset-versions/prepare",
     {
