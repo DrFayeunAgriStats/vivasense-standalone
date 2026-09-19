@@ -133,7 +133,7 @@ function canonicalTraitToGeneticsResult(canonical: Record<string, unknown>): Gen
   };
 }
 
-function buildPresentationResponse(
+export function adaptPersistentRcbdResponse(
   payload: Record<string, Record<string, unknown>>,
   selectedTraits: string[],
   meta: PersistentRcbdMetadata,
@@ -292,5 +292,5 @@ export async function runPersistentRcbdAnalysis(
     run_status: executed.run_status,
   };
 
-  return buildPresentationResponse(executed.result_payload, input.selectedTraits, meta);
+  return adaptPersistentRcbdResponse(executed.result_payload, input.selectedTraits, meta);
 }
