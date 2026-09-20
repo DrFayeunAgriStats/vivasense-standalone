@@ -39,6 +39,9 @@ export interface DatasetContext {
    * alone decides against the whole file.
    */
   dataPreview?: Record<string, unknown>[];
+  /** Total data rows reported by the backend preview. Used to distinguish a
+   * complete preview from a sampled preview before showing exact level counts. */
+  totalRows?: number;
 }
 
 // ── Upload preview ──────────────────────────────────────────────────────────
