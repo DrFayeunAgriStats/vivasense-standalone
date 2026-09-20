@@ -32,6 +32,16 @@ interface RunAnalysisResponse {
   result_payload?: Record<string, Record<string, unknown>> | null;
 }
 
+interface ReadAnalysisRunResponse {
+  analysis_run_id: string;
+  study_id: string;
+  dataset_id: string;
+  dataset_version_id: string;
+  run_status: string;
+  result_schema_version: string;
+  result_payload: Record<string, Record<string, unknown>>;
+}
+
 export interface PersistentRcbdRunInput {
   datasetContext: DatasetContext;
   treatmentColumn: string;
@@ -295,4 +305,51 @@ export async function runPersistentRcbdAnalysis(
   };
 
   return adaptPersistentRcbdResponse(executed.result_payload, input.selectedTraits, meta);
+}
+
+export async function readPersistentRcbdAnalysis(
+  analysisRunId: string,
+): Promise<UploadAnalysisResponse> {
+  const session = await requireSession();
+  const durable = await vivaSenseRequest<ReadAnalysisRunResponse>(
+    `/persistence/analysis-runs/${analysisRunId}`,
+    {
+      method: "GET",
+      authToken: session.access_token,
+      timeoutMs: 120000,
+    },
+  );
+
+  if (durable.run_status !== "COMPLETE") {
+    throw new Error(`AnalysisRun is not complete (status=${durable.run_status}).`);
+  }
+
+  const traits = Object.keys(durable.result_payload);
+  const meta: PersistentRcbdMetadata = {
+    study_id: durable.study_id,
+    dataset_id: durable.dataset_id,
+    dataset_version_id: durable.dataset_version_id,
+    analysis_run_id: durable.analysis_run_id,
+    prepare_outcome: "DURABLE_READ",
+    run_outcome: "RECOVERED_COMPLETE",
+    run_status: durable.run_status,
+  };
+  return adaptPersistentRcbdResponse(durable.result_payload, traits, meta);
+}
+
+export async function downloadPersistentRcbdReport(
+  analysisRunId: string,
+  domain: "plant_breeding" | "agronomy" | "general" = "plant_breeding",
+): Promise<Blob> {
+  const session = await requireSession();
+  return vivaSenseRequest<Blob>(
+    `/persistence/analysis-runs/${analysisRunId}/report`,
+    {
+      method: "POST",
+      authToken: session.access_token,
+      jsonBody: { domain },
+      timeoutMs: 180000,
+      responseType: "blob",
+    },
+  );
 }
