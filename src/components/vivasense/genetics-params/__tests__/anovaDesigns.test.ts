@@ -263,21 +263,29 @@ describe("structural preview — descriptive only", () => {
   ];
 
   it("counts levels and blocks from the preview rows", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, rows.length);
     expect(preview.levelCounts.rep).toBe(2);
     expect(preview.levelCounts.main_plot).toBe(2);
     expect(preview.levelCounts.sub_plot).toBe(2);
   });
 
   it("reports expected combinations as a complete-design count, not a verdict", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, rows.length);
     expect(preview.expectedCombinations).toBe(4);
     const row = preview.rows.find((r) => r.label === "Treatment combinations");
     expect(row?.value).toContain("if complete");
   });
 
+  it("does not present sampled preview counts as full-dataset counts", () => {
+    const sampled = rows.slice(0, 2);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, sampled, 20);
+    expect(preview.levelCounts).toEqual({});
+    expect(preview.expectedCombinations).toBeNull();
+    expect(preview.rows.some((r) => /level|block/i.test(r.value))).toBe(false);
+  });
+
   it("shows the selected alpha", () => {
-    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows);
+    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows, rows.length);
     expect(preview.rows.find((r) => r.label === "Inferential α")?.value).toBe("0.01");
   });
 
@@ -288,7 +296,7 @@ describe("structural preview — descriptive only", () => {
   });
 
   it("never reports an inferential decision", () => {
-    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows, rows.length);
     const text = preview.rows.map((r) => `${r.label} ${r.value}`).join(" ").toLowerCase();
     expect(text).not.toMatch(/significant|p-value|p =|reject/);
   });
