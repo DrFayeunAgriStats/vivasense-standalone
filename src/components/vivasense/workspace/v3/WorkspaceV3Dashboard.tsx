@@ -171,7 +171,18 @@ export function WorkspaceV3Dashboard() {
 
           <RecentAnalysesV3
             rows={recent}
-            onOpen={(r) => navigate(`/workspace?module=${moduleForType(r.analysis_type)}`)}
+            onOpen={(r) => {
+              const module = moduleForType(r.analysis_type);
+              const durableRunId =
+                module === "anova"
+                  ? String(r.analysis_parameters?.persistence_analysis_run_id ?? "")
+                  : "";
+              navigate(
+                durableRunId
+                  ? `/workspace?module=anova&run=${encodeURIComponent(durableRunId)}`
+                  : `/workspace?module=${module}`
+              );
+            }}
             onViewAll={() => document.getElementById("research-dashboard")?.scrollIntoView({ behavior: "smooth" })}
           />
 

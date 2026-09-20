@@ -12,6 +12,7 @@ import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisp
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
 import { DatasetUpload } from "@/components/vivasense/genetics-params/DatasetUpload";
 import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaModulePanel";
+import { PersistentRcbdRunView } from "@/components/vivasense/genetics-params/PersistentRcbdRunView";
 import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
@@ -65,6 +66,7 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+  const persistentRunId = new URLSearchParams(location.search).get("run");
 
   const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
     const name = file.name.toLowerCase();
@@ -355,13 +357,22 @@ export default function VivaSenseWorkspace() {
                   <AlertDescription className="text-red-800">{error}</AlertDescription>
                 </Alert>
               )}
-              <DatasetUpload
-                onDatasetReady={setDatasetContext}
-                datasetContext={datasetContext}
-              />
-              <AnovaModulePanel
-                datasetContext={datasetContext}
-              />
+              {persistentRunId ? (
+                <PersistentRcbdRunView
+                  analysisRunId={persistentRunId}
+                  onStartNew={() => navigate("/workspace?module=anova")}
+                />
+              ) : (
+                <>
+                  <DatasetUpload
+                    onDatasetReady={setDatasetContext}
+                    datasetContext={datasetContext}
+                  />
+                  <AnovaModulePanel
+                    datasetContext={datasetContext}
+                  />
+                </>
+              )}
             </div>
           </div>
         )}

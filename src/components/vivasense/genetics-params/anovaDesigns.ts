@@ -236,11 +236,20 @@ export function buildStructuralPreview(
   design: GovernedDesignType,
   mapping: ColumnMapping,
   alpha: number,
-  previewRows: Record<string, unknown>[] = []
+  previewRows: Record<string, unknown>[] = [],
+  totalRows?: number,
 ): StructuralPreview {
   const meta = designMeta(design);
   const active = activeMapping(design, mapping);
-  const canCount = previewRows.length > 0;
+  // Exact level counts are shown only when the preview contains the entire
+  // dataset. /upload-preview intentionally returns only the first rows, and
+  // treating that sample as complete previously displayed "2 levels" for the
+  // 3-treatment A1 RCBD fixture.
+  const canCount =
+    previewRows.length > 0 &&
+    typeof totalRows === "number" &&
+    totalRows > 0 &&
+    previewRows.length >= totalRows;
 
   const levelCounts: Partial<Record<ColumnRole, number>> = {};
   for (const [role, column] of Object.entries(active) as [ColumnRole, string][]) {
