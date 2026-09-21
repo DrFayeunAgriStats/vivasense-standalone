@@ -37,12 +37,10 @@ export interface DatasetContext {
    */
   columnUniqueCounts?: Record<string, number>;
   /**
-   * Sample rows returned by /genetics/upload-preview.
+   * Sample rows returned by /genetics/upload-preview for display only.
    *
-   * Used only to count distinct levels for the DESCRIPTIVE structural preview.
-   * It is a sample, not the full dataset, so counts derived from it describe
-   * what the preview shows — never a completeness verdict, which the backend
-   * alone decides against the whole file.
+   * Structural level counts must come from columnUniqueCounts, never from this
+   * five-row sample. Completeness remains a backend decision over the full file.
    */
   dataPreview?: Record<string, unknown>[];
 }
