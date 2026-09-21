@@ -35,6 +35,7 @@ import {
   buildStructuralPreview,
   buildAnovaRequest,
   describeStructuralError,
+  validateOneFactorResultCounts,
 } from "./anovaDesigns";
 import {
   isGovernedOneFactor,
@@ -65,6 +66,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [design, setDesign] = useState<GovernedDesignType>("rcbd");
   const [alpha, setAlpha] = useState<AnovaAlpha>(DEFAULT_ALPHA);
   const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
+  const [resultIdentityError, setResultIdentityError] = useState<string | null>(null);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -145,7 +147,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     design,
     mapping,
     alpha,
-    (datasetContext.dataPreview ?? []) as Record<string, unknown>[]
+    (datasetContext.dataPreview ?? []) as Record<string, unknown>[],
+    datasetContext.columnUniqueCounts ?? {}
   );
 
   const isSplitPlot = design === "split_plot_rcbd";
@@ -157,6 +160,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     if (validation) return;
     setIsAnalyzing(true);
     setResults(null);
+    setResultIdentityError(null);
     // Hoisted so the failure path reports the same fields and elapsed time.
     const startedAt = performance.now();
     const historyBase = {
@@ -182,6 +186,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       });
 
       const res = await analyzeUpload(request);
+
+      const identityError = validateOneFactorResultCounts(
+        design,
+        mapping,
+        datasetContext.columnUniqueCounts,
+        res,
+      );
+      if (identityError) {
+        setResultIdentityError(identityError);
+        throw new Error(identityError);
+      }
 
       setResults(res);
       // A trait can fail structurally while the HTTP call succeeds — the
@@ -433,6 +448,21 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {validation && (
             <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5" /> {validation}
+            </div>
+          )}
+
+          {resultIdentityError && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-xs space-y-1.5"
+            >
+              <p className="font-semibold text-destructive flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" /> Result consistency check failed
+              </p>
+              <p className="text-foreground">{resultIdentityError}</p>
+              <p className="text-muted-foreground">
+                The computed response was not presented as a completed analysis and report download remains unavailable.
+              </p>
             </div>
           )}
 
