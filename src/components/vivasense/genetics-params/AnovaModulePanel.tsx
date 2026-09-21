@@ -142,11 +142,13 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const issue = validateMapping(design, mapping, selectedTraits);
   const validation = issue?.message ?? null;
 
+  const previewRows = (datasetContext.dataPreview ?? []) as Record<string, unknown>[];
   const preview = buildStructuralPreview(
     design,
     mapping,
     alpha,
-    (datasetContext.dataPreview ?? []) as Record<string, unknown>[]
+    previewRows,
+    typeof datasetContext.nRows === "number" && previewRows.length === datasetContext.nRows,
   );
 
   const isSplitPlot = design === "split_plot_rcbd";
@@ -439,8 +441,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               ))}
             </dl>
             <p className="text-xs text-muted-foreground">
-              Describes the structure implied by your mapping and the preview rows. Whether the design is
-              actually balanced and complete is checked by the analysis engine against the full dataset.
+              Describes the structure implied by your mapping. When only a sample of rows is shown, level counts
+              are labelled as lower bounds rather than full-dataset facts. Balance and completeness are checked
+              by the analysis engine against the full dataset.
             </p>
           </div>
 
