@@ -331,7 +331,7 @@ describe("one-factor result count identity", () => {
     dataset_summary: {
       n_genotypes: overrides.summaryTreatments ?? 3,
       n_reps: overrides.summaryBlocks ?? 3,
-      n_environments: null,
+      n_environments: 1,
       n_traits: 1,
       mode: "single",
     },
