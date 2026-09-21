@@ -236,11 +236,18 @@ export function buildStructuralPreview(
   design: GovernedDesignType,
   mapping: ColumnMapping,
   alpha: number,
-  previewRows: Record<string, unknown>[] = []
+  previewRows: Record<string, unknown>[] = [],
+  fullRowCount?: number
 ): StructuralPreview {
   const meta = designMeta(design);
   const active = activeMapping(design, mapping);
-  const canCount = previewRows.length > 0;
+  // upload-preview returns only a sample. Exact level counts from a partial
+  // sample are misleading (A1 showed 2 genotype levels although the full file
+  // has 3). Count levels only when the preview actually contains every row.
+  const canCount =
+    previewRows.length > 0 &&
+    typeof fullRowCount === "number" &&
+    previewRows.length === fullRowCount;
 
   const levelCounts: Partial<Record<ColumnRole, number>> = {};
   for (const [role, column] of Object.entries(active) as [ColumnRole, string][]) {
