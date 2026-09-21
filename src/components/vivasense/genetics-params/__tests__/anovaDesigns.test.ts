@@ -262,18 +262,27 @@ describe("structural preview — descriptive only", () => {
     { Block: "R2", Main: "M1", Sub: "S1", Yield: 4 },
   ];
 
-  it("counts levels and blocks from the preview rows", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+  it("counts levels and blocks only when the preview contains the full dataset", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, true);
     expect(preview.levelCounts.rep).toBe(2);
     expect(preview.levelCounts.main_plot).toBe(2);
     expect(preview.levelCounts.sub_plot).toBe(2);
   });
 
   it("reports expected combinations as a complete-design count, not a verdict", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, true);
     expect(preview.expectedCombinations).toBe(4);
     const row = preview.rows.find((r) => r.label === "Treatment combinations");
     expect(row?.value).toContain("if complete");
+  });
+
+  it("does not present sampled preview counts as full-dataset level counts", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, false);
+    expect(preview.levelCounts).toEqual({});
+    expect(preview.expectedCombinations).toBeNull();
+    const text = preview.rows.map((r) => `${r.label}: ${r.value}`).join(" ");
+    expect(text).not.toMatch(/· \d+ (level|block)/);
+    expect(text).not.toContain("Treatment combinations");
   });
 
   it("shows the selected alpha", () => {
