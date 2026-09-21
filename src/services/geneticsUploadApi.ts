@@ -37,6 +37,8 @@ export interface UploadPreviewResponse {
   data_preview: Record<string, unknown>[];
   mode_suggestion: "single" | "multi";
   column_names: string[];
+  /** Full-file distinct nonblank counts; data_preview is only the first five rows. */
+  column_unique_counts?: Record<string, number>;
   warnings: string[];
   /** Dataset token registered at preview time using auto-detected columns.
    *  Issued by POST /genetics/upload-preview; pass to stateful /analysis/* endpoints. */

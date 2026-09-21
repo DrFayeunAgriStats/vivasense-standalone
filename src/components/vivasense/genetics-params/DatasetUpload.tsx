@@ -106,7 +106,9 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         // every non-trait column as a candidate factor/plot role.
         columns: preview.column_names,
         availableColumns: preview.column_names,
-        // Sample rows for the descriptive structural preview only.
+        // Full-file counts are authoritative for structural metadata. The
+        // visible preview rows remain a display sample only.
+        columnUniqueCounts: preview.column_unique_counts ?? {},
         dataPreview: preview.data_preview ?? [],
       };
       onDatasetReady(ctx);

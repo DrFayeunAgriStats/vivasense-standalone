@@ -15,6 +15,7 @@ import type {
   AnovaAlpha,
   GovernedDesignType,
   UploadAnalysisRequest,
+  UploadAnalysisResponse,
 } from "@/services/geneticsUploadApi";
 
 export type { GovernedDesignType };
@@ -246,39 +247,28 @@ export interface StructuralPreview {
   expectedCombinations: number | null;
 }
 
-function distinctLevels(rows: Record<string, unknown>[], column: string): number {
-  const seen = new Set<string>();
-  for (const row of rows) {
-    const value = row?.[column];
-    if (value === null || value === undefined || value === "") continue;
-    seen.add(String(value));
-  }
-  return seen.size;
-}
-
 /**
  * Describe the structure implied by the current mapping.
  *
- * DESCRIPTIVE ONLY. Everything here is counted from the uploaded rows or read
- * straight off the user's own selections — no inferential decision, no
- * balanced-complete verdict, no reproduction of anything the backend decides.
- * "Expected treatment combinations" is the product of mapped factor levels,
- * i.e. what a complete design would contain — not a claim that the data is
- * complete.
+ * DESCRIPTIVE ONLY. Level counts come only from full-dataset metadata returned
+ * by the backend. The five-row data preview is deliberately NOT counted here:
+ * a treatment or block that first appears after row 5 would otherwise be
+ * silently omitted from the design summary.
  */
 export function buildStructuralPreview(
   design: GovernedDesignType,
   mapping: ColumnMapping,
   alpha: number,
-  previewRows: Record<string, unknown>[] = []
+  _previewRows: Record<string, unknown>[] = [],
+  columnUniqueCounts: Record<string, number> = {}
 ): StructuralPreview {
   const meta = designMeta(design);
   const active = activeMapping(design, mapping);
-  const canCount = previewRows.length > 0;
 
   const levelCounts: Partial<Record<ColumnRole, number>> = {};
   for (const [role, column] of Object.entries(active) as [ColumnRole, string][]) {
-    if (canCount) levelCounts[role] = distinctLevels(previewRows, column);
+    const count = columnUniqueCounts[column];
+    if (Number.isInteger(count) && count >= 0) levelCounts[role] = count;
   }
 
   const rows: PreviewRow[] = [{ label: "Design", value: meta.fullLabel }];
@@ -320,6 +310,122 @@ export function buildStructuralPreview(
     levelCounts,
     expectedCombinations,
   };
+}
+
+// ── Result identity consistency ──────────────────────────────────────────────
+
+function positiveInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
+}
+
+function recordCount(record: Record<string, unknown> | null | undefined, key: string): number | null {
+  if (!record) return null;
+  return positiveInteger(record[key]);
+}
+
+/**
+ * Fail closed when one-factor structure counts disagree across the mapped
+ * dataset metadata, response envelope, per-trait result, or RCBD profile.
+ *
+ * A computed result is not shown as complete when these identities disagree.
+ * Missing legacy fields are ignored; contradictory fields are not.
+ */
+export function validateOneFactorResultCounts(
+  design: GovernedDesignType,
+  mapping: ColumnMapping,
+  columnUniqueCounts: Record<string, number> | undefined,
+  response: UploadAnalysisResponse
+): string | null {
+  if (design !== "crd" && design !== "rcbd") return null;
+
+  type CountEvidence = { source: string; value: number };
+  const treatment: CountEvidence[] = [];
+  const blocks: CountEvidence[] = [];
+
+  const mappedTreatment = mapping.treatment;
+  const mappedBlock = mapping.rep;
+  if (mappedTreatment) {
+    const value = positiveInteger(columnUniqueCounts?.[mappedTreatment]);
+    if (value !== null) treatment.push({ source: "mapped dataset", value });
+  }
+  if (design === "rcbd" && mappedBlock) {
+    const value = positiveInteger(columnUniqueCounts?.[mappedBlock]);
+    if (value !== null) blocks.push({ source: "mapped dataset", value });
+  }
+
+  const dsTreatments = positiveInteger(response.dataset_summary?.n_genotypes);
+  if (dsTreatments !== null) treatment.push({ source: "analysis summary", value: dsTreatments });
+  if (design === "rcbd") {
+    const dsBlocks = positiveInteger(response.dataset_summary?.n_reps);
+    if (dsBlocks !== null) blocks.push({ source: "analysis summary", value: dsBlocks });
+  }
+
+  const unitIssues: string[] = [];
+
+  for (const [trait, tr] of Object.entries(response.trait_results ?? {})) {
+    if (tr.status !== "success") continue;
+    const result = tr.analysis_result?.result;
+    if (!result) continue;
+
+    const nTreatments = positiveInteger(result.n_genotypes);
+    if (nTreatments !== null) treatment.push({ source: `${trait} result`, value: nTreatments });
+
+    const profile = result.rcbd_design_profile as Record<string, unknown> | null | undefined;
+    const profileTreatments = recordCount(profile, "treatment_count");
+    if (profileTreatments !== null) {
+      treatment.push({ source: `${trait} RCBD profile`, value: profileTreatments });
+    }
+
+    if (design === "rcbd") {
+      const nBlocks = positiveInteger(result.n_reps);
+      if (nBlocks !== null) blocks.push({ source: `${trait} result`, value: nBlocks });
+      const profileBlocks = recordCount(profile, "block_count");
+      if (profileBlocks !== null) {
+        blocks.push({ source: `${trait} RCBD profile`, value: profileBlocks });
+      }
+
+      const profileUnits = recordCount(profile, "experimental_units");
+      const accounting = result.observation_accounting as Record<string, unknown> | null | undefined;
+      const effectiveN =
+        recordCount(accounting, "effective_n") ??
+        recordCount(accounting, "rows_fitted_by_r");
+
+      if (profileUnits !== null && effectiveN !== null && profileUnits !== effectiveN) {
+        unitIssues.push(
+          `${trait} experimental-unit identity disagrees: RCBD profile=${profileUnits}, effective N=${effectiveN}`
+        );
+      }
+      if (
+        profileTreatments !== null &&
+        profileBlocks !== null &&
+        profileUnits !== null &&
+        profileTreatments * profileBlocks !== profileUnits
+      ) {
+        unitIssues.push(
+          `${trait} complete-RCBD cell identity disagrees: ${profileTreatments} treatments × ${profileBlocks} blocks ≠ ${profileUnits} experimental units`
+        );
+      }
+    }
+  }
+
+  const conflict = (label: string, evidence: CountEvidence[]): string | null => {
+    const distinct = Array.from(new Set(evidence.map((item) => item.value)));
+    if (distinct.length <= 1) return null;
+    return `${label} counts disagree: ${evidence.map((item) => `${item.source}=${item.value}`).join(", ")}`;
+  };
+
+  const issues = [
+    conflict("Treatment level", treatment),
+    design === "rcbd" ? conflict("Block level", blocks) : null,
+    ...unitIssues,
+  ].filter((value): value is string => Boolean(value));
+
+  if (issues.length === 0) return null;
+  return (
+    "VivaSense withheld this result because dataset and analysis structure identities do not agree. " +
+    issues.join("; ") +
+    ". Rerun the analysis after reloading the dataset; if the mismatch persists, treat it as an integrity defect."
+  );
 }
 
 // ── Governed request construction ────────────────────────────────────────────
