@@ -31,6 +31,12 @@ export interface DatasetContext {
   /** Alias of `columns` for components that prefer this name. */
   availableColumns?: string[];
   /**
+   * Full-dataset distinct nonblank counts keyed by original column name.
+   * These are authoritative for pre-analysis structure metadata; dataPreview is
+   * intentionally only a five-row display sample and must never supply counts.
+   */
+  columnUniqueCounts?: Record<string, number>;
+  /**
    * Sample rows returned by /genetics/upload-preview.
    *
    * Used only to count distinct levels for the DESCRIPTIVE structural preview.
@@ -60,6 +66,8 @@ export interface UploadPreviewResponse {
   data_preview: Record<string, unknown>[];
   mode_suggestion: "single" | "multi";
   column_names: string[];
+  /** Full-file distinct nonblank counts, unlike the five-row data_preview sample. */
+  column_unique_counts?: Record<string, number>;
   warnings: string[];
   /** Server-issued token used by stateful analysis endpoints */
   dataset_token?: string;
