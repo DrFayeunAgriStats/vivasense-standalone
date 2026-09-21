@@ -30,6 +30,8 @@ export interface DatasetContext {
   columns?: string[];
   /** Alias of `columns` for components that prefer this name. */
   availableColumns?: string[];
+  /** Total row count reported by /genetics/upload-preview. */
+  nRows?: number;
   /**
    * Sample rows returned by /genetics/upload-preview.
    *
