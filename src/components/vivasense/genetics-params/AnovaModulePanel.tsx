@@ -146,7 +146,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     design,
     mapping,
     alpha,
-    (datasetContext.dataPreview ?? []) as Record<string, unknown>[]
+    (datasetContext.dataPreview ?? []) as Record<string, unknown>[],
+    datasetContext.nRows
   );
 
   const isSplitPlot = design === "split_plot_rcbd";
