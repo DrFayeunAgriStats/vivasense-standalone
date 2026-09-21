@@ -21,6 +21,7 @@ import {
   validateMapping,
   buildStructuralPreview,
   buildAnovaRequest,
+  validateOneFactorResultCounts,
   describeStructuralError,
   labelStoredDesign,
   isLegacyDesignId,
@@ -261,36 +262,138 @@ describe("structural preview — descriptive only", () => {
     { Block: "R1", Main: "M2", Sub: "S1", Yield: 3 },
     { Block: "R2", Main: "M1", Sub: "S1", Yield: 4 },
   ];
+  const fullCounts = { Block: 2, Main: 2, Sub: 2, Treatment: 3 };
 
-  it("counts levels and blocks from the preview rows", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+  it("uses full-dataset level counts, not the visible preview sample", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, fullCounts);
     expect(preview.levelCounts.rep).toBe(2);
     expect(preview.levelCounts.main_plot).toBe(2);
     expect(preview.levelCounts.sub_plot).toBe(2);
   });
 
+  it("does not under-count a treatment missing from the first five preview rows", () => {
+    const firstFive = [
+      { Treatment: "T1", Block: "B1" },
+      { Treatment: "T1", Block: "B2" },
+      { Treatment: "T1", Block: "B3" },
+      { Treatment: "T2", Block: "B1" },
+      { Treatment: "T2", Block: "B2" },
+    ];
+    const preview = buildStructuralPreview(
+      "rcbd",
+      { treatment: "Treatment", rep: "Block" },
+      0.05,
+      firstFive,
+      { Treatment: 3, Block: 3 },
+    );
+    expect(preview.levelCounts.treatment).toBe(3);
+    expect(preview.levelCounts.rep).toBe(3);
+    expect(preview.rows.find((r) => r.label === "Treatment / Factor")?.value).toContain("3 levels");
+  });
+
+  it("refuses to manufacture authoritative counts from preview rows alone", () => {
+    const preview = buildStructuralPreview("rcbd", fullMapping, 0.05, rows);
+    expect(preview.levelCounts).toEqual({});
+    expect(preview.expectedCombinations).toBeNull();
+  });
+
   it("reports expected combinations as a complete-design count, not a verdict", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, fullCounts);
     expect(preview.expectedCombinations).toBe(4);
     const row = preview.rows.find((r) => r.label === "Treatment combinations");
     expect(row?.value).toContain("if complete");
   });
 
   it("shows the selected alpha", () => {
-    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows);
+    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows, fullCounts);
     expect(preview.rows.find((r) => r.label === "Inferential α")?.value).toBe("0.01");
   });
 
-  it("works with no preview rows and claims no counts", () => {
-    const preview = buildStructuralPreview("crd", fullMapping, 0.05, []);
-    expect(preview.levelCounts).toEqual({});
-    expect(preview.expectedCombinations).toBeNull();
-  });
-
   it("never reports an inferential decision", () => {
-    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows, {
+      FactorA: 2, FactorB: 2, Block: 2,
+    });
     const text = preview.rows.map((r) => `${r.label} ${r.value}`).join(" ").toLowerCase();
     expect(text).not.toMatch(/significant|p-value|p =|reject/);
+  });
+});
+
+describe("one-factor result count identity", () => {
+  const response = (overrides: {
+    summaryTreatments?: number;
+    summaryBlocks?: number;
+    resultTreatments?: number;
+    resultBlocks?: number;
+    profileTreatments?: number;
+    profileBlocks?: number;
+  } = {}) => ({
+    summary_table: [],
+    dataset_summary: {
+      n_genotypes: overrides.summaryTreatments ?? 3,
+      n_reps: overrides.summaryBlocks ?? 3,
+      n_environments: null,
+      n_traits: 1,
+      mode: "single",
+    },
+    failed_traits: [],
+    trait_results: {
+      Yield: {
+        status: "success" as const,
+        error: null,
+        data_warnings: [],
+        analysis_result: {
+          status: "success",
+          mode: "single",
+          data_validation: {},
+          variance_warnings: {},
+          interpretation: null,
+          result: {
+            environment_mode: "single",
+            n_genotypes: overrides.resultTreatments ?? 3,
+            n_reps: overrides.resultBlocks ?? 3,
+            n_environments: null,
+            grand_mean: 15,
+            variance_components: {},
+            heritability: { h2_broad_sense: 0, interpretation_basis: "" },
+            genetic_parameters: { selection_intensity: 2.04 },
+            rcbd_design_profile: {
+              treatment_count: overrides.profileTreatments ?? 3,
+              block_count: overrides.profileBlocks ?? 3,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  it("passes when mapped dataset, response summary, trait result and RCBD profile agree", () => {
+    expect(validateOneFactorResultCounts(
+      "rcbd",
+      { treatment: "Treatment", rep: "Block" },
+      { Treatment: 3, Block: 3 },
+      response(),
+    )).toBeNull();
+  });
+
+  it("fails closed when any treatment count disagrees", () => {
+    const error = validateOneFactorResultCounts(
+      "rcbd",
+      { treatment: "Treatment", rep: "Block" },
+      { Treatment: 3, Block: 3 },
+      response({ profileTreatments: 2 }),
+    );
+    expect(error).toMatch(/withheld/i);
+    expect(error).toMatch(/Treatment level counts disagree/i);
+  });
+
+  it("fails closed when the block count disagrees", () => {
+    const error = validateOneFactorResultCounts(
+      "rcbd",
+      { treatment: "Treatment", rep: "Block" },
+      { Treatment: 3, Block: 3 },
+      response({ resultBlocks: 2 }),
+    );
+    expect(error).toMatch(/Block level counts disagree/i);
   });
 });
 
