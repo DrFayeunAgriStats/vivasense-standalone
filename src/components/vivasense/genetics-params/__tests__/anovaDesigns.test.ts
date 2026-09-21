@@ -263,7 +263,7 @@ describe("structural preview — descriptive only", () => {
   ];
 
   it("counts levels and blocks from the preview rows", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, rows.length);
     expect(preview.levelCounts.rep).toBe(2);
     expect(preview.levelCounts.main_plot).toBe(2);
     expect(preview.levelCounts.sub_plot).toBe(2);
@@ -277,7 +277,7 @@ describe("structural preview — descriptive only", () => {
   });
 
   it("shows the selected alpha", () => {
-    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows);
+    const preview = buildStructuralPreview("crd", fullMapping, 0.01, rows, rows.length);
     expect(preview.rows.find((r) => r.label === "Inferential α")?.value).toBe("0.01");
   });
 
@@ -287,8 +287,28 @@ describe("structural preview — descriptive only", () => {
     expect(preview.expectedCombinations).toBeNull();
   });
 
+  it("does not claim exact level counts from a partial upload preview", () => {
+    const partial = [
+      { Treatment: "T1", Block: "B1" },
+      { Treatment: "T1", Block: "B2" },
+      { Treatment: "T2", Block: "B1" },
+      { Treatment: "T2", Block: "B2" },
+      { Treatment: "T2", Block: "B3" },
+    ];
+    const preview = buildStructuralPreview(
+      "rcbd",
+      fullMapping,
+      0.05,
+      partial,
+      9,
+    );
+    expect(preview.levelCounts).toEqual({});
+    expect(preview.expectedCombinations).toBeNull();
+    expect(preview.rows.find((r) => r.label === "Treatment / Factor")?.value).toBe("Treatment");
+  });
+
   it("never reports an inferential decision", () => {
-    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows);
+    const preview = buildStructuralPreview("factorial_rcbd", fullMapping, 0.05, rows, rows.length);
     const text = preview.rows.map((r) => `${r.label} ${r.value}`).join(" ").toLowerCase();
     expect(text).not.toMatch(/significant|p-value|p =|reject/);
   });
