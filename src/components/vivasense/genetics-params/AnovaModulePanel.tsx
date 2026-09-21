@@ -49,7 +49,7 @@ import { isGovernedSplitPlot } from "./governedSplitPlot";
 import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
 import { explorationEligibility } from "./governedTransformation";
-import { runPersistentRcbdAnalysis } from "@/services/persistenceRcbdApi";
+import { exportPersistentRcbdReport, runPersistentRcbdAnalysis } from "@/services/persistenceRcbdApi";
 
 const MODULE = "anova" as const;
 
@@ -237,10 +237,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setIsDownloading(true);
     try {
       if (results.persistence) {
-        const message =
-          "This RCBD result is now backed by a durable AnalysisRun. Report export from that immutable result is not yet wired, so VivaSense will not generate a substitute report through the legacy cache pathway.";
-        setExportError(message);
-        sonnerToast.error("Persistent report export not yet wired");
+        await exportPersistentRcbdReport(
+          results.persistence.analysis_run_id,
+          `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`,
+        );
+        sonnerToast.success("ANOVA report downloaded from durable AnalysisResult");
         return;
       }
 
@@ -516,17 +517,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               </CardTitle>
               <Button
                 onClick={handleDownload}
-                disabled={isDownloading || !!results.persistence}
+                disabled={isDownloading}
                 size="sm"
                 className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
-                title={results.persistence ? "Persistent report export is not yet wired to the immutable AnalysisResult." : undefined}
               >
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {results.persistence
-                  ? "Persistent report export pending"
-                  : isDownloading
-                    ? "Downloading..."
-                    : "Download ANOVA Report"}
+                {isDownloading ? "Downloading..." : "Download ANOVA Report"}
               </Button>
             </CardHeader>
             <CardContent>
