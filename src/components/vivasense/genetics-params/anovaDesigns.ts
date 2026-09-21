@@ -241,7 +241,7 @@ export function buildStructuralPreview(
 ): StructuralPreview {
   const meta = designMeta(design);
   const active = activeMapping(design, mapping);
-  const canCount = previewRows.length > 0;
+  const canCount = previewRows.length > 0 && previewIsComplete;
 
   const levelCounts: Partial<Record<ColumnRole, number>> = {};
   for (const [role, column] of Object.entries(active) as [ColumnRole, string][]) {
@@ -257,13 +257,9 @@ export function buildStructuralPreview(
     const suffix =
       count === undefined
         ? ""
-        : previewIsComplete
-          ? role === "rep"
-            ? ` · ${count} block${count === 1 ? "" : "s"}`
-            : ` · ${count} level${count === 1 ? "" : "s"}`
-          : role === "rep"
-            ? ` · ≥${count} block${count === 1 ? "" : "s"} visible in preview`
-            : ` · ≥${count} level${count === 1 ? "" : "s"} visible in preview`;
+        : role === "rep"
+          ? ` · ${count} block${count === 1 ? "" : "s"}`
+          : ` · ${count} level${count === 1 ? "" : "s"}`;
     rows.push({ label: ROLE_LABELS[role], value: `${column}${suffix}` });
   }
 
@@ -278,9 +274,7 @@ export function buildStructuralPreview(
     expectedCombinations = counted.reduce((a, b) => a * b, 1);
     rows.push({
       label: "Treatment combinations",
-      value: previewIsComplete
-        ? `${expectedCombinations} (if complete)`
-        : `≥${expectedCombinations} visible in preview; full dataset checked by engine`,
+      value: `${expectedCombinations} (if complete)`,
     });
   }
 
