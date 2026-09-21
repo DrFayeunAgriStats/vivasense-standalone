@@ -39,6 +39,8 @@ export interface DatasetContext {
    * alone decides against the whole file.
    */
   dataPreview?: Record<string, unknown>[];
+  /** Full row count reported by upload-preview; used to avoid treating a sample preview as the full design. */
+  nRows?: number;
 }
 
 // ── Upload preview ──────────────────────────────────────────────────────────
