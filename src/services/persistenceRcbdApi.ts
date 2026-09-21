@@ -194,11 +194,6 @@ export function adaptPersistentRcbdResponse(
 export async function runPersistentRcbdAnalysis(
   input: PersistentRcbdRunInput,
 ): Promise<UploadAnalysisResponse> {
-  if (input.datasetContext.fileType !== "csv") {
-    throw new Error(
-      "Governed RCBD persistence currently accepts CSV input only. Export this dataset as CSV and upload it again; VivaSense will not silently convert an Excel workbook because that would change the raw-file provenance."
-    );
-  }
   if (!input.treatmentColumn || !input.repColumn) {
     throw new Error("Governed RCBD requires distinct treatment and block columns.");
   }
@@ -232,6 +227,7 @@ export async function runPersistentRcbdAnalysis(
         dataset_id: datasetId,
         idempotency_key: prepareKey,
         base64_content: input.datasetContext.base64Content,
+        file_type: input.datasetContext.fileType,
         original_filename: input.datasetContext.file.name,
       },
     },
