@@ -360,6 +360,8 @@ export function validateOneFactorResultCounts(
     if (dsBlocks !== null) blocks.push({ source: "analysis summary", value: dsBlocks });
   }
 
+  const unitIssues: string[] = [];
+
   for (const [trait, tr] of Object.entries(response.trait_results ?? {})) {
     if (tr.status !== "success") continue;
     const result = tr.analysis_result?.result;
@@ -381,6 +383,28 @@ export function validateOneFactorResultCounts(
       if (profileBlocks !== null) {
         blocks.push({ source: `${trait} RCBD profile`, value: profileBlocks });
       }
+
+      const profileUnits = recordCount(profile, "experimental_units");
+      const accounting = result.observation_accounting as Record<string, unknown> | null | undefined;
+      const effectiveN =
+        recordCount(accounting, "effective_n") ??
+        recordCount(accounting, "rows_fitted_by_r");
+
+      if (profileUnits !== null && effectiveN !== null && profileUnits !== effectiveN) {
+        unitIssues.push(
+          `${trait} experimental-unit identity disagrees: RCBD profile=${profileUnits}, effective N=${effectiveN}`
+        );
+      }
+      if (
+        profileTreatments !== null &&
+        profileBlocks !== null &&
+        profileUnits !== null &&
+        profileTreatments * profileBlocks !== profileUnits
+      ) {
+        unitIssues.push(
+          `${trait} complete-RCBD cell identity disagrees: ${profileTreatments} treatments × ${profileBlocks} blocks ≠ ${profileUnits} experimental units`
+        );
+      }
     }
   }
 
@@ -393,6 +417,7 @@ export function validateOneFactorResultCounts(
   const issues = [
     conflict("Treatment level", treatment),
     design === "rcbd" ? conflict("Block level", blocks) : null,
+    ...unitIssues,
   ].filter((value): value is string => Boolean(value));
 
   if (issues.length === 0) return null;
