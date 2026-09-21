@@ -359,6 +359,11 @@ describe("one-factor result count identity", () => {
             rcbd_design_profile: {
               treatment_count: overrides.profileTreatments ?? 3,
               block_count: overrides.profileBlocks ?? 3,
+              experimental_units: 9,
+            },
+            observation_accounting: {
+              effective_n: 9,
+              rows_fitted_by_r: 9,
             },
           },
         },
@@ -394,6 +399,19 @@ describe("one-factor result count identity", () => {
       response({ resultBlocks: 2 }),
     );
     expect(error).toMatch(/Block level counts disagree/i);
+  });
+
+  it("fails closed when RCBD profile experimental units disagree with effective N", () => {
+    const broken = response();
+    const result = broken.trait_results.Yield.analysis_result!.result!;
+    result.observation_accounting = { effective_n: 8, rows_fitted_by_r: 8 };
+    const error = validateOneFactorResultCounts(
+      "rcbd",
+      { treatment: "Treatment", rep: "Block" },
+      { Treatment: 3, Block: 3 },
+      broken,
+    );
+    expect(error).toMatch(/experimental-unit identity disagrees/i);
   });
 });
 
