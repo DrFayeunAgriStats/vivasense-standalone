@@ -49,7 +49,7 @@ import { isGovernedSplitPlot } from "./governedSplitPlot";
 import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
 import { explorationEligibility } from "./governedTransformation";
-import { runPersistentRcbdAnalysis } from "@/services/persistenceRcbdApi";
+import { runPersistentRcbdAnalysis, downloadPersistentRcbdReport } from "@/services/persistenceRcbdApi";
 
 const MODULE = "anova" as const;
 
@@ -142,11 +142,13 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const issue = validateMapping(design, mapping, selectedTraits);
   const validation = issue?.message ?? null;
 
+  const previewRows = (datasetContext.dataPreview ?? []) as Record<string, unknown>[];
   const preview = buildStructuralPreview(
     design,
     mapping,
     alpha,
-    (datasetContext.dataPreview ?? []) as Record<string, unknown>[]
+    previewRows,
+    typeof datasetContext.nRows === "number" && previewRows.length === datasetContext.nRows,
   );
 
   const isSplitPlot = design === "split_plot_rcbd";
@@ -236,10 +238,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setIsDownloading(true);
     try {
       if (results.persistence) {
-        const message =
-          "This RCBD result is now backed by a durable AnalysisRun. Report export from that immutable result is not yet wired, so VivaSense will not generate a substitute report through the legacy cache pathway.";
-        setExportError(message);
-        sonnerToast.error("Persistent report export not yet wired");
+        await downloadPersistentRcbdReport(
+          results.persistence.analysis_run_id,
+          `VivaSense_ANOVA_rcbd_${new Date().toISOString().slice(0, 10)}.docx`,
+        );
+        sonnerToast.success("Persistent ANOVA report downloaded");
         return;
       }
 
@@ -438,8 +441,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               ))}
             </dl>
             <p className="text-xs text-muted-foreground">
-              Describes the structure implied by your mapping and the preview rows. Whether the design is
-              actually balanced and complete is checked by the analysis engine against the full dataset.
+              Describes the structure implied by your mapping. When only a sample of rows is shown, level counts
+              are labelled as lower bounds rather than full-dataset facts. Balance and completeness are checked
+              by the analysis engine against the full dataset.
             </p>
           </div>
 
@@ -515,16 +519,16 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               </CardTitle>
               <Button
                 onClick={handleDownload}
-                disabled={isDownloading || !!results.persistence}
+                disabled={isDownloading}
                 size="sm"
                 className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
-                title={results.persistence ? "Persistent report export is not yet wired to the immutable AnalysisResult." : undefined}
+                title={results.persistence ? "Download report from the immutable AnalysisResult." : undefined}
               >
                 {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                {results.persistence
-                  ? "Persistent report export pending"
-                  : isDownloading
-                    ? "Downloading..."
+                {isDownloading
+                  ? "Downloading..."
+                  : results.persistence
+                    ? "Download Persistent ANOVA Report"
                     : "Download ANOVA Report"}
               </Button>
             </CardHeader>

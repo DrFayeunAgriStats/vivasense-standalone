@@ -194,9 +194,9 @@ export function adaptPersistentRcbdResponse(
 export async function runPersistentRcbdAnalysis(
   input: PersistentRcbdRunInput,
 ): Promise<UploadAnalysisResponse> {
-  if (input.datasetContext.fileType !== "csv") {
+  if (input.datasetContext.fileType === "xls") {
     throw new Error(
-      "Governed RCBD persistence currently accepts CSV input only. Export this dataset as CSV and upload it again; VivaSense will not silently convert an Excel workbook because that would change the raw-file provenance."
+      "Governed RCBD persistence accepts CSV and XLSX source files. Legacy .xls files must be resaved as .xlsx so VivaSense can preserve the original upload bytes and file type correctly."
     );
   }
   if (!input.treatmentColumn || !input.repColumn) {
@@ -232,6 +232,7 @@ export async function runPersistentRcbdAnalysis(
         dataset_id: datasetId,
         idempotency_key: prepareKey,
         base64_content: input.datasetContext.base64Content,
+        file_type: input.datasetContext.fileType,
         original_filename: input.datasetContext.file.name,
       },
     },
@@ -294,4 +295,32 @@ export async function runPersistentRcbdAnalysis(
   };
 
   return adaptPersistentRcbdResponse(executed.result_payload, input.selectedTraits, meta);
+}
+
+
+export async function downloadPersistentRcbdReport(
+  analysisRunId: string,
+  filename = "vivasense_rcbd_report.docx",
+  domain: "plant_breeding" | "agronomy" | "general" = "plant_breeding",
+): Promise<void> {
+  const session = await requireSession();
+  const blob = await vivaSenseRequest<Blob>(
+    `/persistence/analysis-runs/${analysisRunId}/report`,
+    {
+      method: "POST",
+      authToken: session.access_token,
+      responseType: "blob",
+      timeoutMs: 180000,
+      jsonBody: { domain },
+    },
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
 }
