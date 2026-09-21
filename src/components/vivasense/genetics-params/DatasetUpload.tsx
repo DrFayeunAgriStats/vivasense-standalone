@@ -108,6 +108,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         availableColumns: preview.column_names,
         // Sample rows for the descriptive structural preview only.
         dataPreview: preview.data_preview ?? [],
+        nRows: preview.n_rows,
       };
       onDatasetReady(ctx);
       toast({ title: "Dataset ready", description: "You can now run analysis in any module." });
