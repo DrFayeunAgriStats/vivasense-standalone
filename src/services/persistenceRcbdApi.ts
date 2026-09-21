@@ -291,3 +291,29 @@ export async function runPersistentRcbdAnalysis(
 
   return adaptPersistentRcbdResponse(executed.result_payload, input.selectedTraits, meta);
 }
+
+
+export async function exportPersistentRcbdReport(
+  analysisRunId: string,
+  filename = "VivaSense_ANOVA_rcbd.docx",
+): Promise<void> {
+  const session = await requireSession();
+  const blob = await vivaSenseRequest<Blob>(
+    `/persistence/analysis-runs/${analysisRunId}/report?domain=plant_breeding`,
+    {
+      method: "GET",
+      authToken: session.access_token,
+      timeoutMs: 180000,
+      responseType: "blob",
+    },
+  );
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
