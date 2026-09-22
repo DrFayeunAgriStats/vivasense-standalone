@@ -6,11 +6,20 @@
  * rows whose statistical headline metrics were never persisted simply show the
  * dataset-dimension metrics that ARE stored. Honest empty state, no sample rows.
  */
-import { ArrowRight, CheckCircle2, Clock, FileSpreadsheet, History as HistoryIcon } from "lucide-react";
+import { useState } from "react";
+import {
+  ArrowRight, CheckCircle2, Clock, Download, FileSpreadsheet,
+  History as HistoryIcon, Loader2,
+} from "lucide-react";
 import { pl } from "@/lib/utils";
 import { analysisLabel } from "@/services/history/historyMapper";
 import type { AnalysisHistoryRecord } from "@/services/history/historyTypes";
 import { resolveMetrics, MODULE_ACCENT, type MetricAccent } from "@/lib/workspace/metricsConfig";
+import {
+  downloadPersistentReportFromHistory,
+  hasPersistentRcbdReport,
+} from "@/services/history/persistentReport";
+import { toast } from "sonner";
 
 interface Props {
   rows: AnalysisHistoryRecord[];
@@ -37,6 +46,21 @@ function fmtDate(iso: string): string {
 }
 
 export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function handleDownload(record: AnalysisHistoryRecord) {
+    if (downloadingId) return;
+    setDownloadingId(record.id);
+    try {
+      await downloadPersistentReportFromHistory(record);
+      toast.success("Persistent ANOVA report downloaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Report download failed");
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
   return (
     <section>
       <div className="mb-2.5 flex items-center justify-between">
@@ -72,13 +96,9 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
             const rt = runtime(r.execution_time_ms);
             return (
               <li key={r.id}>
-                <button
-                  type="button"
-                  onClick={() => onOpen?.(r)}
-                  className="group w-full rounded-lg border border-border bg-card p-4 text-left shadow-sm outline-none transition-all hover:border-primary/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
-                >
+                <div className="group w-full rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
                   {/* Title row */}
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
                       <span className={`h-6 w-[3px] shrink-0 rounded ${accent.pip}`} aria-hidden />
                       <span className="truncate text-[13px] font-semibold text-foreground">
@@ -93,9 +113,31 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                         </span>
                       )}
                     </div>
-                    <span className="flex shrink-0 items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary">
-                      Open <ArrowRight className="h-3 w-3" />
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {hasPersistentRcbdReport(r) && (
+                        <button
+                          type="button"
+                          onClick={() => void handleDownload(r)}
+                          disabled={downloadingId !== null}
+                          className="flex items-center gap-1 rounded border border-primary/30 bg-primary/5 px-2 py-0.5 text-[11px] font-semibold text-primary outline-none transition-colors hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+                          title="Download the Word report from this exact durable AnalysisRun"
+                        >
+                          {downloadingId === r.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Download className="h-3 w-3" />
+                          )}
+                          {downloadingId === r.id ? "Downloading…" : "Report"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onOpen?.(r)}
+                        className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground outline-none transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        Open <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Metrics row (only real, present values) */}
@@ -131,7 +173,7 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                     <span className="text-border">·</span>
                     <span>{fmtDate(r.created_at)}</span>
                   </div>
-                </button>
+                </div>
               </li>
             );
           })}

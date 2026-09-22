@@ -5,9 +5,10 @@
  * single active action this phase; Re-run / Compare / Download / Favorite / Delete
  * are intentionally rendered disabled (implemented in a later phase).
  */
+import { useState } from "react";
 import {
   CalendarDays, Clock, Timer, FileSpreadsheet, FolderKanban, CheckCircle2,
-  Eye, RefreshCw, GitCompare, Download, Star, Trash2, Layers,
+  Eye, RefreshCw, GitCompare, Download, Star, Trash2, Layers, Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,11 @@ import {
   analysisLabel, formatDate, formatTime, formatDuration, formatDesign,
 } from "@/services/history/historyDashboard";
 import type { AnalysisHistoryRecord } from "@/services/history/historyTypes";
+import {
+  downloadPersistentReportFromHistory,
+  hasPersistentRcbdReport,
+} from "@/services/history/persistentReport";
+import { toast } from "sonner";
 
 interface Props {
   record: AnalysisHistoryRecord;
@@ -47,6 +53,21 @@ function Meta({ icon: Icon, children }: { icon: typeof Clock; children: React.Re
 
 export function AnalysisHistoryCard({ record: r, onViewDetails }: Props) {
   const traitCount = r.traits?.length ?? 0;
+  const canDownloadPersistentReport = hasPersistentRcbdReport(r);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  async function handlePersistentDownload() {
+    if (!canDownloadPersistentReport || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      await downloadPersistentReportFromHistory(r);
+      toast.success("Persistent ANOVA report downloaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Report download failed");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
 
   return (
     <div className="group rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:shadow-sm">
@@ -87,15 +108,36 @@ export function AnalysisHistoryCard({ record: r, onViewDetails }: Props) {
       </div>
 
       {/* Actions */}
-      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <Button size="sm" variant="outline" className="h-8" onClick={() => onViewDetails(r)}>
-          <Eye className="mr-1.5 h-3.5 w-3.5" /> View Details
-        </Button>
+      <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Button size="sm" variant="outline" className="h-8" onClick={() => onViewDetails(r)}>
+            <Eye className="mr-1.5 h-3.5 w-3.5" /> View Details
+          </Button>
+          {canDownloadPersistentReport && (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8"
+              onClick={handlePersistentDownload}
+              disabled={isDownloading}
+              title="Download the Word report from this exact durable AnalysisRun"
+            >
+              {isDownloading ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {isDownloading ? "Downloading…" : "Report"}
+            </Button>
+          )}
+        </div>
         <div className="flex items-center gap-0.5">
           {([
             { icon: RefreshCw, title: "Re-run (coming soon)" },
             { icon: GitCompare, title: "Compare (coming soon)" },
-            { icon: Download, title: "Download (coming soon)" },
+            ...(!canDownloadPersistentReport
+              ? [{ icon: Download, title: "Persistent report unavailable" } as const]
+              : []),
             { icon: Star, title: "Favorite (coming soon)" },
             { icon: Trash2, title: "Delete (coming soon)" },
           ] as const).map(({ icon: Icon, title }) => (
