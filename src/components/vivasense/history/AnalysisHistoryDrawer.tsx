@@ -3,13 +3,21 @@
  * analysis_history row. No editing this phase. Built on the Radix Dialog
  * primitive (already a dependency) styled as a right-side sheet.
  */
+import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { Download, Loader2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   analysisLabel, formatDate, formatTime, formatDuration, formatDesign,
 } from "@/services/history/historyDashboard";
 import type { AnalysisHistoryRecord } from "@/services/history/historyTypes";
+import {
+  downloadPersistentReportFromHistory,
+  hasPersistentRcbdReport,
+  persistentRcbdAnalysisRunId,
+} from "@/services/history/persistentReport";
+import { toast } from "sonner";
 
 interface Props {
   record: AnalysisHistoryRecord | null;
@@ -48,6 +56,23 @@ function Json({ value }: { value: Record<string, unknown> | null | undefined }) 
 }
 
 export function AnalysisHistoryDrawer({ record: r, open, onOpenChange }: Props) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const canDownloadPersistentReport = r ? hasPersistentRcbdReport(r) : false;
+  const analysisRunId = r ? persistentRcbdAnalysisRunId(r) : null;
+
+  async function handleDownload() {
+    if (!r || !canDownloadPersistentReport || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      await downloadPersistentReportFromHistory(r);
+      toast.success("Persistent ANOVA report downloaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Report download failed");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -79,6 +104,29 @@ export function AnalysisHistoryDrawer({ record: r, open, onOpenChange }: Props) 
                   <X className="h-4 w-4" />
                 </DialogPrimitive.Close>
               </div>
+
+              {canDownloadPersistentReport && (
+                <div className="border-b border-border bg-primary/5 px-5 py-3">
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="mr-2 h-4 w-4" />
+                    )}
+                    {isDownloading ? "Downloading persistent report…" : "Download Persistent ANOVA Report"}
+                  </Button>
+                  {analysisRunId && (
+                    <p className="mt-2 break-all text-[10px] text-muted-foreground">
+                      AnalysisRun {analysisRunId}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex-1 overflow-y-auto p-5">
                 <Section title="Analysis">
