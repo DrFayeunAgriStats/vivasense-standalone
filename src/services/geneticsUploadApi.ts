@@ -338,6 +338,16 @@ export interface UploadAnalysisResponse {
   breeding_summary?: string | null;
   evidence_level?: string;
   experimental_structure?: Record<string, unknown> | null;
+  /** Durable governed RCBD identity when the result came from the persistence pathway. */
+  persistence?: {
+    study_id: string;
+    dataset_id: string;
+    dataset_version_id: string;
+    analysis_run_id: string;
+    prepare_outcome: string;
+    run_outcome: string;
+    run_status: string;
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

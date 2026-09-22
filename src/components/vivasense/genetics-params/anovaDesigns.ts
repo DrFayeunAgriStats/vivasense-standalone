@@ -270,7 +270,8 @@ export function buildStructuralPreview(
   design: GovernedDesignType,
   mapping: ColumnMapping,
   alpha: number,
-  previewRows: Record<string, unknown>[] = []
+  previewRows: Record<string, unknown>[] = [],
+  previewIsComplete = false,
 ): StructuralPreview {
   const meta = designMeta(design);
   const active = activeMapping(design, mapping);
@@ -290,9 +291,13 @@ export function buildStructuralPreview(
     const suffix =
       count === undefined
         ? ""
-        : role === "rep"
-          ? ` · ${count} block${count === 1 ? "" : "s"}`
-          : ` · ${count} level${count === 1 ? "" : "s"}`;
+        : previewIsComplete
+          ? role === "rep"
+            ? ` · ${count} block${count === 1 ? "" : "s"}`
+            : ` · ${count} level${count === 1 ? "" : "s"}`
+          : role === "rep"
+            ? ` · ≥${count} block${count === 1 ? "" : "s"} visible in preview`
+            : ` · ≥${count} level${count === 1 ? "" : "s"} visible in preview`;
     rows.push({ label: ROLE_LABELS[role], value: `${column}${suffix}` });
   }
 
@@ -307,7 +312,9 @@ export function buildStructuralPreview(
     expectedCombinations = counted.reduce((a, b) => a * b, 1);
     rows.push({
       label: "Treatment combinations",
-      value: `${expectedCombinations} (if complete)`,
+      value: previewIsComplete
+        ? `${expectedCombinations} (if complete)`
+        : `≥${expectedCombinations} visible in preview; full dataset checked by engine`,
     });
   }
 
