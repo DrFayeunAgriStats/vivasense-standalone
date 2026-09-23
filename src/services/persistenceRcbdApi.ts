@@ -358,6 +358,18 @@ export async function readPersistentRcbdAnalysis(
     throw runMetaError ?? new Error("Saved AnalysisRun metadata is unavailable.");
   }
 
+  const requestedDesign = String(runMeta.requested_design ?? "").toLowerCase();
+  const requestedModule = String(runMeta.module ?? "").toLowerCase();
+  const requestedMode = String(runMeta.mode ?? "").toLowerCase();
+  if (requestedDesign !== "rcbd" || requestedModule !== "anova" || requestedMode !== "single") {
+    throw new Error(
+      "Saved AnalysisRun is not a supported single-environment RCBD ANOVA result."
+    );
+  }
+  if (restored.analysis_run_id !== analysisRunId) {
+    throw new Error("Saved AnalysisRun identity does not match the requested run.");
+  }
+
   const selectedTraits = Array.isArray(runMeta.selected_traits)
     ? runMeta.selected_traits.map(String)
     : payloadTraits;
@@ -387,7 +399,7 @@ export async function readPersistentRcbdAnalysis(
     prepare_outcome: "RESTORED",
     run_outcome: "RESTORED",
     run_status: restored.run_status,
-    requested_design: String(runMeta.requested_design ?? "rcbd"),
+    requested_design: requestedDesign,
     requested_roles: roles,
     selected_traits,
     alpha: Number.isFinite(alphaValue) ? alphaValue : undefined,
