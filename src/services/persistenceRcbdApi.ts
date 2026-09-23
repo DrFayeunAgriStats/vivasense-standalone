@@ -333,63 +333,19 @@ export async function readPersistentRcbdAnalysis(
     },
   );
 
+  if (restored.analysis_run_id !== analysisRunId) {
+    throw new Error("Saved AnalysisRun identity does not match the requested run.");
+  }
   if (restored.run_status !== "COMPLETE") {
     throw new Error(
       `Saved AnalysisRun is not complete (status=${restored.run_status}).`
     );
   }
 
-  const payloadTraits = Object.keys(restored.result_payload ?? {});
-  if (payloadTraits.length === 0) {
+  const selectedTraits = Object.keys(restored.result_payload ?? {});
+  if (selectedTraits.length === 0) {
     throw new Error("Saved AnalysisRun has no durable trait results to restore.");
   }
-
-  // Restore the immutable request metadata from the same AnalysisRun row under
-  // the researcher's RLS scope. This is presentation metadata only; the
-  // scientific result itself comes exclusively from the backend's coherent
-  // durable-result read above.
-  const { data: runMeta, error: runMetaError } = await supabase
-    .from("analysis_runs")
-    .select("requested_design,requested_roles,selected_traits,alpha,module,mode")
-    .eq("id", restored.analysis_run_id)
-    .maybeSingle();
-
-  if (runMetaError || !runMeta) {
-    throw runMetaError ?? new Error("Saved AnalysisRun metadata is unavailable.");
-  }
-
-  const requestedDesign = String(runMeta.requested_design ?? "").toLowerCase();
-  const requestedModule = String(runMeta.module ?? "").toLowerCase();
-  const requestedMode = String(runMeta.mode ?? "").toLowerCase();
-  if (requestedDesign !== "rcbd" || requestedModule !== "anova" || requestedMode !== "single") {
-    throw new Error(
-      "Saved AnalysisRun is not a supported single-environment RCBD ANOVA result."
-    );
-  }
-  if (restored.analysis_run_id !== analysisRunId) {
-    throw new Error("Saved AnalysisRun identity does not match the requested run.");
-  }
-
-  const selectedTraits = Array.isArray(runMeta.selected_traits)
-    ? runMeta.selected_traits.map(String)
-    : payloadTraits;
-
-  if (
-    selectedTraits.length !== payloadTraits.length ||
-    selectedTraits.some((trait) => !Object.prototype.hasOwnProperty.call(restored.result_payload, trait))
-  ) {
-    throw new Error("Saved AnalysisRun metadata does not match its durable AnalysisResult.");
-  }
-
-  const alphaValue = Number(runMeta.alpha);
-  const roles =
-    runMeta.requested_roles && typeof runMeta.requested_roles === "object"
-      ? Object.fromEntries(
-          Object.entries(runMeta.requested_roles as Record<string, unknown>)
-            .filter(([, value]) => typeof value === "string")
-            .map(([key, value]) => [key, String(value)])
-        )
-      : undefined;
 
   const meta: PersistentRcbdMetadata = {
     study_id: restored.study_id,
@@ -399,15 +355,10 @@ export async function readPersistentRcbdAnalysis(
     prepare_outcome: "RESTORED",
     run_outcome: "RESTORED",
     run_status: restored.run_status,
-    requested_design: requestedDesign,
-    requested_roles: roles,
-    selected_traits,
-    alpha: Number.isFinite(alphaValue) ? alphaValue : undefined,
   };
 
   return adaptPersistentRcbdResponse(restored.result_payload, selectedTraits, meta);
 }
-
 
 export async function downloadPersistentRcbdReport(
   analysisRunId: string,
