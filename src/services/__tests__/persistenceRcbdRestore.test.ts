@@ -1,20 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const vivaSenseRequestMock = vi.fn();
-const maybeSingleMock = vi.fn();
-const eqMock = vi.fn(() => ({ maybeSingle: maybeSingleMock }));
-const selectMock = vi.fn(() => ({ eq: eqMock }));
-const fromMock = vi.fn(() => ({ select: selectMock }));
-const getSessionMock = vi.fn();
+const mocks = vi.hoisted(() => ({
+  vivaSenseRequest: vi.fn(),
+  maybeSingle: vi.fn(),
+  eq: vi.fn(),
+  select: vi.fn(),
+  from: vi.fn(),
+  getSession: vi.fn(),
+}));
 
 vi.mock("@/services/vivasenseApiClient", () => ({
-  vivaSenseRequest: vivaSenseRequestMock,
+  vivaSenseRequest: mocks.vivaSenseRequest,
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    auth: { getSession: getSessionMock },
-    from: fromMock,
+    auth: { getSession: mocks.getSession },
+    from: mocks.from,
   },
 }));
 
@@ -23,7 +25,11 @@ import { readPersistentRcbdAnalysis } from "../persistenceRcbdApi";
 describe("readPersistentRcbdAnalysis", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionMock.mockResolvedValue({
+    mocks.from.mockReturnValue({ select: mocks.select });
+    mocks.select.mockReturnValue({ eq: mocks.eq });
+    mocks.eq.mockReturnValue({ maybeSingle: mocks.maybeSingle });
+
+    mocks.getSession.mockResolvedValue({
       data: {
         session: {
           access_token: "owner-token",
@@ -33,7 +39,7 @@ describe("readPersistentRcbdAnalysis", () => {
       error: null,
     });
 
-    maybeSingleMock.mockResolvedValue({
+    mocks.maybeSingle.mockResolvedValue({
       data: {
         requested_design: "rcbd",
         requested_roles: { treatment: "genotype", rep: "rep" },
@@ -45,7 +51,7 @@ describe("readPersistentRcbdAnalysis", () => {
       error: null,
     });
 
-    vivaSenseRequestMock.mockResolvedValue({
+    mocks.vivaSenseRequest.mockResolvedValue({
       analysis_run_id: "run-1",
       study_id: "study-1",
       dataset_id: "dataset-1",
@@ -84,8 +90,8 @@ describe("readPersistentRcbdAnalysis", () => {
   it("restores the durable result through GET and never calls the execute route", async () => {
     const restored = await readPersistentRcbdAnalysis("run-1");
 
-    expect(vivaSenseRequestMock).toHaveBeenCalledTimes(1);
-    expect(vivaSenseRequestMock).toHaveBeenCalledWith(
+    expect(mocks.vivaSenseRequest).toHaveBeenCalledTimes(1);
+    expect(mocks.vivaSenseRequest).toHaveBeenCalledWith(
       "/persistence/analysis-runs/run-1",
       expect.objectContaining({
         method: "GET",
@@ -93,10 +99,10 @@ describe("readPersistentRcbdAnalysis", () => {
       }),
     );
 
-    const requestedPaths = vivaSenseRequestMock.mock.calls.map(([path]) => String(path));
+    const requestedPaths = mocks.vivaSenseRequest.mock.calls.map(([path]) => String(path));
     expect(requestedPaths.some((path) => path.includes("/analysis-runs/execute"))).toBe(false);
 
-    expect(fromMock).toHaveBeenCalledWith("analysis_runs");
+    expect(mocks.from).toHaveBeenCalledWith("analysis_runs");
     expect(restored.persistence).toMatchObject({
       analysis_run_id: "run-1",
       dataset_version_id: "dv-1",
@@ -116,7 +122,7 @@ describe("readPersistentRcbdAnalysis", () => {
   });
 
   it("fails closed if immutable AnalysisRun metadata and durable payload traits disagree", async () => {
-    maybeSingleMock.mockResolvedValueOnce({
+    mocks.maybeSingle.mockResolvedValueOnce({
       data: {
         requested_design: "rcbd",
         requested_roles: { treatment: "genotype", rep: "rep" },
