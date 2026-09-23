@@ -13,6 +13,7 @@ import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/Advan
 import { DatasetUpload } from "@/components/vivasense/genetics-params/DatasetUpload";
 import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaModulePanel";
 import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
+import { RestoredRcbdResults } from "@/components/vivasense/genetics-params/RestoredRcbdResults";
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { analyzeUpload, type UploadAnalysisResponse } from "@/services/geneticsUploadApi";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,7 @@ import { FieldLayoutGenerator } from "@/components/vivasense/FieldLayoutGenerato
 import { CropProtectionDashboard } from "@/components/vivasense/crop-protection/CropProtectionDashboard";
 import { WorkspaceV3Dashboard } from "@/components/vivasense/workspace/v3/WorkspaceV3Dashboard";
 import type { DatasetContext } from "@/types/geneticsUpload";
+import { readPersistentRcbdAnalysis } from "@/services/persistenceRcbdApi";
 
 type ModuleType = "selection" | "anova" | "genetics" | "crop-protection" | "advanced" | "results" | "field-layout";
 type WorkspaceSection = "overview" | "anova" | "genetics" | "advanced";
@@ -43,7 +45,9 @@ export default function VivaSenseWorkspace() {
 
   // Open a module directly when linked from the sidebar (e.g. /workspace?module=genetics).
   useEffect(() => {
-    const m = new URLSearchParams(location.search).get("module");
+    const params = new URLSearchParams(location.search);
+    if (params.get("resume_run")) return;
+    const m = params.get("module");
     if (m === "anova" || m === "genetics" || m === "advanced") {
       setError(null);
       setActiveSection(m);
@@ -65,6 +69,43 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+
+  // PERSIST-OPEN-01: restore an already-complete governed RCBD AnalysisRun.
+  // This deliberately calls the read-only persistence endpoint; it never calls
+  // /analysis-runs/execute and therefore cannot rerun R or create a new result.
+  useEffect(() => {
+    const analysisRunId = new URLSearchParams(location.search).get("resume_run");
+    if (!analysisRunId) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+    setError(null);
+
+    readPersistentRcbdAnalysis(analysisRunId)
+      .then((results) => {
+        if (cancelled) return;
+        setAnalysisState({
+          type: "anova",
+          analysisType: "anova",
+          results,
+        });
+        setActiveSection("anova");
+        setCurrentModule("results");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setAnalysisState(null);
+        setError(err instanceof Error ? err.message : "Saved analysis could not be restored.");
+        setCurrentModule("selection");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search]);
 
   const resolveFileType = (file: File): "csv" | "xlsx" | "xls" => {
     const name = file.name.toLowerCase();
@@ -507,7 +548,11 @@ export default function VivaSenseWorkspace() {
             </div>
             <div className="rounded-xl border border-border bg-card p-6 md:p-8">
               {analysisState.type === "anova" ? (
-                <AnovaUploadResults results={analysisState.results as UploadAnalysisResponse} />
+                (analysisState.results as UploadAnalysisResponse).persistence?.run_outcome === "RESTORED" ? (
+                  <RestoredRcbdResults results={analysisState.results as UploadAnalysisResponse} />
+                ) : (
+                  <AnovaUploadResults results={analysisState.results as UploadAnalysisResponse} />
+                )
               ) : (
                 <VivaSenseResultsDisplay result={analysisState.results} />
               )}
