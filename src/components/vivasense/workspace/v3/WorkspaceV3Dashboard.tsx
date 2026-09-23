@@ -25,6 +25,7 @@ import { ActiveStudyPanel } from "./ActiveStudyPanel";
 import { OnboardingModules } from "./OnboardingModules";
 import { RecentAnalysesV3 } from "./RecentAnalysesV3";
 import { WorkspaceFooterMetrics } from "./WorkspaceFooterMetrics";
+import { persistentRcbdAnalysisRunId } from "@/services/history/persistentReport";
 
 /** Stepper stage key → the workspace action it triggers. */
 const STAGE_ACTION: Record<string, WorkspaceAction> = {
@@ -171,7 +172,14 @@ export function WorkspaceV3Dashboard() {
 
           <RecentAnalysesV3
             rows={recent}
-            onOpen={(r) => navigate(`/workspace?module=${moduleForType(r.analysis_type)}`)}
+            onOpen={(r) => {
+              const runId = persistentRcbdAnalysisRunId(r);
+              navigate(
+                runId
+                  ? `/workspace?resume_run=${encodeURIComponent(runId)}`
+                  : `/workspace?module=${moduleForType(r.analysis_type)}`
+              );
+            }}
             onViewAll={() => document.getElementById("research-dashboard")?.scrollIntoView({ behavior: "smooth" })}
           />
 
