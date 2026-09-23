@@ -15,6 +15,10 @@ export interface PersistentRcbdMetadata {
   prepare_outcome: string;
   run_outcome: string;
   run_status: string;
+  requested_design?: string;
+  requested_roles?: Record<string, string>;
+  selected_traits?: string[];
+  alpha?: number;
 }
 
 interface PrepareDatasetVersionResponse {
@@ -30,6 +34,16 @@ interface RunAnalysisResponse {
   analysis_run_id: string;
   run_status: string;
   result_payload?: Record<string, Record<string, unknown>> | null;
+}
+
+interface ReadAnalysisRunResponse {
+  analysis_run_id: string;
+  study_id: string;
+  dataset_id: string;
+  dataset_version_id: string;
+  run_status: string;
+  result_schema_version: string;
+  result_payload: Record<string, Record<string, unknown>>;
 }
 
 export interface PersistentRcbdRunInput {
@@ -297,6 +311,54 @@ export async function runPersistentRcbdAnalysis(
   return adaptPersistentRcbdResponse(executed.result_payload, input.selectedTraits, meta);
 }
 
+
+/**
+ * Restore an already-complete governed RCBD result from durable persistence.
+ *
+ * This path is intentionally read-only: it calls GET /persistence/analysis-runs/:id,
+ * never /analysis-runs/execute, and therefore cannot invoke R or create a new
+ * execution/AnalysisResult. The durable result payload is adapted into the same
+ * frontend response shape used by the original RCBD results renderer.
+ */
+export async function readPersistentRcbdAnalysis(
+  analysisRunId: string,
+): Promise<UploadAnalysisResponse> {
+  const session = await requireSession();
+  const restored = await vivaSenseRequest<ReadAnalysisRunResponse>(
+    `/persistence/analysis-runs/${analysisRunId}`,
+    {
+      method: "GET",
+      authToken: session.access_token,
+      timeoutMs: 120000,
+    },
+  );
+
+  if (restored.analysis_run_id !== analysisRunId) {
+    throw new Error("Saved AnalysisRun identity does not match the requested run.");
+  }
+  if (restored.run_status !== "COMPLETE") {
+    throw new Error(
+      `Saved AnalysisRun is not complete (status=${restored.run_status}).`
+    );
+  }
+
+  const selectedTraits = Object.keys(restored.result_payload ?? {});
+  if (selectedTraits.length === 0) {
+    throw new Error("Saved AnalysisRun has no durable trait results to restore.");
+  }
+
+  const meta: PersistentRcbdMetadata = {
+    study_id: restored.study_id,
+    dataset_id: restored.dataset_id,
+    dataset_version_id: restored.dataset_version_id,
+    analysis_run_id: restored.analysis_run_id,
+    prepare_outcome: "RESTORED",
+    run_outcome: "RESTORED",
+    run_status: restored.run_status,
+  };
+
+  return adaptPersistentRcbdResponse(restored.result_payload, selectedTraits, meta);
+}
 
 export async function downloadPersistentRcbdReport(
   analysisRunId: string,

@@ -347,6 +347,11 @@ export interface UploadAnalysisResponse {
     prepare_outcome: string;
     run_outcome: string;
     run_status: string;
+    /** Immutable request metadata restored from the durable AnalysisRun when reopening history. */
+    requested_design?: string;
+    requested_roles?: Record<string, string>;
+    selected_traits?: string[];
+    alpha?: number;
   };
 }
 
