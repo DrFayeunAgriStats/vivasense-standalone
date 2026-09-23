@@ -343,6 +343,9 @@ export default function VivaSenseWorkspace() {
     setCurrentModule("selection");
     setAnalysisState(null);
     setError(null);
+    if (new URLSearchParams(location.search).has("resume_run")) {
+      navigate("/workspace", { replace: true });
+    }
   };
 
   return (
