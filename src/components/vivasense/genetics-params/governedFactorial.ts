@@ -17,6 +17,10 @@ import type {
 } from "@/services/geneticsUploadApi";
 import type { GovernedDesignType } from "./anovaDesigns";
 import { formatAlpha, formatP } from "./governedOneFactor";
+import {
+  factorialAllCellAlphaWarning,
+  shouldHideFactorialAllCellGroups,
+} from "./releaseDisclosures";
 
 export const FACTORIAL_DESIGNS: GovernedDesignType[] = ["factorial_crd", "factorial_rcbd"];
 
@@ -499,6 +503,8 @@ export interface CellSeparationDisplay {
   alpha: number | null;
   /** True when the interaction governs, so this table is descriptive only. */
   supplementary: boolean;
+  /** False when release governance suppresses an all-cell compact-letter display. */
+  showGroups: boolean;
   scaleLabel: string;
   role: string | null;
   note: string;
@@ -514,7 +520,8 @@ export interface CellSeparationDisplay {
  */
 export function describeCellSeparation(
   result: GeneticsResult,
-  interactionGoverns: boolean
+  interactionGoverns: boolean,
+  inferentialAlpha = 0.05
 ): CellSeparationDisplay | null {
   const sep = result.interaction_separation as Record<string, unknown> | null | undefined;
   if (!isPopulated(sep)) return null;
@@ -523,6 +530,13 @@ export function describeCellSeparation(
   const means = Array.isArray(sep.mean) ? (sep.mean as unknown[]).map(Number) : [];
   const groups = asStringArray(sep.group);
   if (aLevels.length === 0) return null;
+
+  // OCT1-FS-02 Item 3: the frontend is a second safety boundary. Even if a
+  // legacy payload still carries 0.05 all-cell letters, never present them as
+  // inferential output when the researcher selected another alpha.
+  const alphaSafeguard = shouldHideFactorialAllCellGroups(inferentialAlpha);
+  const hasVisibleGroups = groups.some((g) => g.trim().length > 0 && g !== "—");
+  const showGroups = !alphaSafeguard && hasVisibleGroups;
 
   return {
     rows: aLevels.map((a, i) => ({
@@ -536,11 +550,14 @@ export function describeCellSeparation(
     test: typeof sep.test === "string" ? sep.test : "Tukey HSD",
     alpha: asNumber(sep.alpha),
     supplementary: interactionGoverns,
+    showGroups,
     scaleLabel: "Cell arithmetic mean",
     role: typeof sep.role === "string" ? sep.role : null,
-    note: interactionGoverns
-      ? "Supplementary and descriptive. All cells are compared in a single family, which is a different question from a simple effect — the governed simple-effects families above are the authoritative comparison."
-      : "Cell arithmetic means across all treatment combinations.",
+    note: alphaSafeguard
+      ? factorialAllCellAlphaWarning(inferentialAlpha)
+      : interactionGoverns
+        ? "Supplementary and descriptive. All cells are compared in a single family, which is a different question from a simple effect — the governed simple-effects families above are the authoritative comparison."
+        : "Cell arithmetic means across all treatment combinations.",
   };
 }
 
