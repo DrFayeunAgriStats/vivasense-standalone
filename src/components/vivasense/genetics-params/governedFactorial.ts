@@ -531,10 +531,12 @@ export function describeCellSeparation(
   const groups = asStringArray(sep.group);
   if (aLevels.length === 0) return null;
 
-  // OCT1-FS-02 Item 3: the frontend is a second safety boundary. Even if a
-  // legacy payload still carries 0.05 all-cell letters, never present them as
-  // inferential output when the researcher selected another alpha.
-  const alphaSafeguard = shouldHideFactorialAllCellGroups(inferentialAlpha);
+  // OCT1-FS-02 Item 3: the frontend is a second safety boundary. Letters are
+  // shown only when the payload states the alpha they were computed at and it
+  // matches the selected inferential alpha; a missing or different alpha (for
+  // example a legacy payload carrying 0.05 letters) hides them.
+  const payloadAlpha = asNumber(sep.alpha);
+  const alphaSafeguard = shouldHideFactorialAllCellGroups(inferentialAlpha, payloadAlpha);
   const hasVisibleGroups = groups.some((g) => g.trim().length > 0 && g !== "—");
   const showGroups = !alphaSafeguard && hasVisibleGroups;
 
@@ -548,13 +550,13 @@ export function describeCellSeparation(
     factorALabel: typeof sep.genotype_label === "string" ? sep.genotype_label : "Factor A",
     factorBLabel: typeof sep.factor_label === "string" ? sep.factor_label : "Factor B",
     test: typeof sep.test === "string" ? sep.test : "Tukey HSD",
-    alpha: asNumber(sep.alpha),
+    alpha: payloadAlpha,
     supplementary: interactionGoverns,
     showGroups,
     scaleLabel: "Cell arithmetic mean",
     role: typeof sep.role === "string" ? sep.role : null,
     note: alphaSafeguard
-      ? factorialAllCellAlphaWarning(inferentialAlpha)
+      ? factorialAllCellAlphaWarning(inferentialAlpha, payloadAlpha)
       : interactionGoverns
         ? "Supplementary and descriptive. All cells are compared in a single family, which is a different question from a simple effect — the governed simple-effects families above are the authoritative comparison."
         : "Cell arithmetic means across all treatment combinations.",

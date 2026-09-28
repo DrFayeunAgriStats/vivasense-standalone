@@ -5,10 +5,12 @@ import {
   SESSION_ONLY_PREVIEW_WARNING,
   factorialAllCellAlphaWarning,
   isSessionOnlyPreviewDesign,
+  isSessionOnlyPreviewWarning,
   shouldHideFactorialAllCellGroups,
 } from "../releaseDisclosures";
 
-const result = (): GeneticsResult =>
+/** `null` omits `alpha` from the payload entirely. */
+const result = (payloadAlpha: number | null): GeneticsResult =>
   ({
     environment_mode: "single",
     n_genotypes: 2,
@@ -25,7 +27,7 @@ const result = (): GeneticsResult =>
       se: [1, 1, 1, 1],
       group: ["b", "ab", "a", "a"],
       test: "Tukey HSD",
-      alpha: 0.05,
+      ...(payloadAlpha === null ? {} : { alpha: payloadAlpha }),
       genotype_label: "FactorA",
       factor_label: "FactorB",
     },
@@ -48,23 +50,58 @@ describe("OCT1 release disclosures", () => {
     expect(SESSION_ONLY_PREVIEW_WARNING.toLowerCase()).not.toContain("recoverable");
   });
 
-  it("hides legacy all-cell letters at non-0.05 inferential alpha", () => {
-    const display = describeCellSeparation(result(), false, 0.01);
-    expect(display).not.toBeNull();
+  it("recognises the backend's Preview wording so the disclosure is shown once", () => {
+    const backendWording =
+      "Preview: this analysis is session-only. Download your report before leaving.";
+    expect(isSessionOnlyPreviewWarning(backendWording)).toBe(true);
+    expect(isSessionOnlyPreviewWarning(SESSION_ONLY_PREVIEW_WARNING)).toBe(true);
+    expect(isSessionOnlyPreviewWarning("Unbalanced design: 2 missing cells.")).toBe(false);
+  });
+});
+
+describe("OCT1 all-cell Tukey payload-consistency guard", () => {
+  it.each([0.01, 0.05, 0.1])(
+    "shows letters when selected alpha %s matches the payload alpha",
+    (alpha) => {
+      const display = describeCellSeparation(result(alpha), false, alpha);
+      expect(display?.showGroups).toBe(true);
+      expect(display?.rows.map((row) => row.group)).toEqual(["b", "ab", "a", "a"]);
+      expect(display?.note).not.toMatch(/hidden/i);
+    }
+  );
+
+  it("hides letters with a warning when the payload alpha differs from the selected alpha", () => {
+    const display = describeCellSeparation(result(0.05), false, 0.01);
+    expect(display?.showGroups).toBe(false);
+    expect(display?.note).toBe(factorialAllCellAlphaWarning(0.01, 0.05));
+    expect(display?.note).toContain("0.05");
+    expect(display?.note).toContain("0.01");
+  });
+
+  it("fails safe when the payload does not state its alpha", () => {
+    const display = describeCellSeparation(result(null), false, 0.05);
+    expect(display?.showGroups).toBe(false);
+    expect(display?.note).toBe(factorialAllCellAlphaWarning(0.05, null));
+  });
+
+  it("keeps treatment-combination means visible when letters are hidden", () => {
+    const display = describeCellSeparation(result(0.05), false, 0.1);
     expect(display?.showGroups).toBe(false);
     expect(display?.rows.map((row) => row.mean)).toEqual([10, 12, 14, 16]);
-    expect(display?.note).toBe(factorialAllCellAlphaWarning(0.01));
   });
 
-  it("keeps the all-cell grouping column available at the 0.05 compatibility point", () => {
-    const display = describeCellSeparation(result(), false, 0.05);
+  it("keeps the all-cell table supplementary when the interaction governs", () => {
+    const display = describeCellSeparation(result(0.01), true, 0.01);
+    expect(display?.supplementary).toBe(true);
     expect(display?.showGroups).toBe(true);
-    expect(display?.rows.map((row) => row.group)).toEqual(["b", "ab", "a", "a"]);
+    expect(display?.note).toMatch(/simple-effects families above are the authoritative/);
   });
 
-  it("treats 0.01 and 0.10 as safeguard alphas, but not 0.05", () => {
-    expect(shouldHideFactorialAllCellGroups(0.01)).toBe(true);
-    expect(shouldHideFactorialAllCellGroups(0.05)).toBe(false);
-    expect(shouldHideFactorialAllCellGroups(0.1)).toBe(true);
+  it("compares alphas with a floating-point tolerance", () => {
+    expect(shouldHideFactorialAllCellGroups(0.1, 0.1 + 1e-12)).toBe(false);
+    expect(shouldHideFactorialAllCellGroups(0.1, 0.30000000000000004 - 0.2)).toBe(false);
+    expect(shouldHideFactorialAllCellGroups(0.01, 0.05)).toBe(true);
+    expect(shouldHideFactorialAllCellGroups(0.05, null)).toBe(true);
+    expect(shouldHideFactorialAllCellGroups(0.05, Number.NaN)).toBe(true);
   });
 });

@@ -53,6 +53,7 @@ import { runPersistentRcbdAnalysis, downloadPersistentRcbdReport } from "@/servi
 import {
   SESSION_ONLY_PREVIEW_WARNING,
   isSessionOnlyPreviewDesign,
+  isSessionOnlyPreviewWarning,
 } from "./releaseDisclosures";
 
 const MODULE = "anova" as const;
@@ -728,7 +729,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={(() => {
                     const warnings = (tr.data_warnings ?? []).filter(
-                      (w) => w !== SESSION_ONLY_PREVIEW_WARNING
+                      (w) => !isSessionOnlyPreviewWarning(w)
                     );
                     return warnings.length > 0
                       ? warnings.map((w) => ({ text: w }))

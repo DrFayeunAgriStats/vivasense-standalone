@@ -366,10 +366,16 @@ export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysis
   const usesBlock = requiresBlock(design);
 
   // `genotype_column` is the backend's one-factor treatment slot and is a
-  // required wire field. For designs with no single treatment factor it falls
-  // back to whatever the dataset detected, which the backend ignores in favour
-  // of the explicit factor/plot roles.
-  const treatment = active.treatment ?? ctx.genotypeColumn ?? "";
+  // required wire field. FAC-CRD-01: for factorial designs Factor A is
+  // authoritative and `genotype_column` is only its legacy alias, so it must
+  // equal Factor A — never the upload's auto-detected genotype column, which
+  // the backend rejects when it names a different column. Split-plot has no
+  // single treatment factor and keeps falling back to the detected column,
+  // which the backend ignores in favour of the explicit plot roles.
+  const treatment =
+    design === "factorial_crd" || design === "factorial_rcbd"
+      ? (active.factor_a ?? "")
+      : (active.treatment ?? ctx.genotypeColumn ?? "");
 
   return {
     base64_content: ctx.base64Content,
