@@ -1,0 +1,13 @@
+rep,irrigation,variety,yield_t_ha
+R1,I1,V1,3.1
+R1,I1,V2,3.4
+R1,I2,V1,4.0
+R1,I2,V2,4.5
+R2,I1,V1,3.2
+R2,I1,V2,3.5
+R2,I2,V1,4.1
+R2,I2,V2,4.6
+R3,I1,V1,3.0
+R3,I1,V2,3.3
+R3,I2,V1,4.2
+R3,I2,V2,4.7

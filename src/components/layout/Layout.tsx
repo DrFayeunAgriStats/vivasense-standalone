@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp } from "lucide-react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { analysisNav, workspaceNav } from "./navigation";
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,19 +11,7 @@ interface LayoutProps {
   showFooter?: boolean;
 }
 
-const nav = [
-  { to: "/workspace", label: "Research Workspace", icon: Leaf },
-  { to: "/data-capture", label: "Data Capture", icon: ClipboardList },
-  { to: "/help", label: "Help & Learning", icon: CircleHelp },
-] as const;
 
-// Early Access navigation exposes only workflows that have completed the
-// current verification gate. Hidden modules remain in code and can return to
-// navigation after their own validation; this is presentation hardening only.
-const modules = [
-  { module: "anova", label: "Experimental Design", icon: FlaskConical },
-  { module: "field-layout", label: "Field Layout", icon: LayoutGrid },
-] as const;
 
 export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
   const location = useLocation();
@@ -42,8 +30,8 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
               Workspace
             </p>
             <nav className="flex flex-col gap-0.5">
-              {nav.map((item) => {
-                const active = pathname === item.to;
+              {workspaceNav.map((item) => {
+                const active = item.matchPrefix ? pathname.startsWith(item.to) : pathname === item.to;
                 const Icon = item.icon;
                 return (
                   <Link
@@ -66,7 +54,7 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
               Analysis Modules
             </p>
             <nav className="flex flex-col gap-0.5">
-              {modules.map((item) => {
+              {analysisNav.map((item) => {
                 const active =
                   pathname === "/workspace" &&
                   activeModule === item.module;

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,11 +66,21 @@ const DEFAULT_ALPHA: AnovaAlpha = 0.05;
 
 interface Props {
   datasetContext: DatasetContext | null;
+  initialDesign?: GovernedDesignType;
 }
 
-export function AnovaModulePanel({ datasetContext }: Props) {
+const DESIGN_HELP_SLUG: Record<GovernedDesignType, string> = {
+  crd: "crd",
+  rcbd: "rcbd",
+  factorial_crd: "factorial-crd",
+  factorial_rcbd: "factorial-rcbd",
+  split_plot_rcbd: "split-plot-rcbd",
+};
+
+export function AnovaModulePanel({ datasetContext, initialDesign }: Props) {
   const { toast } = useToast();
-  const [design, setDesign] = useState<GovernedDesignType>("rcbd");
+  const preferredDesign = initialDesign ?? (datasetContext?.repColumn ? "rcbd" : "crd");
+  const [design, setDesign] = useState<GovernedDesignType>(preferredDesign);
   const [alpha, setAlpha] = useState<AnovaAlpha>(DEFAULT_ALPHA);
   const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
@@ -98,7 +109,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // that could otherwise leak from the previous file (the live-browser RCBD
   // failure showed a stale response trait and stale mappings crossing files).
   useEffect(() => {
-    setDesign("rcbd");
+    setDesign(initialDesign ?? (datasetContext?.repColumn ? "rcbd" : "crd"));
     setAlpha(DEFAULT_ALPHA);
     setTreatmentCol(datasetContext?.genotypeColumn ?? "");
     setRepColumn(datasetContext?.repColumn ?? "");
@@ -114,7 +125,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setAnalysisError(null);
     setTransformChoice("transformed");
     setShowTransformWhy(false);
-  }, [datasetContext]);
+  }, [datasetContext, initialDesign]);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
   const allColumns = useMemo(() => {
@@ -143,6 +154,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             <p className="text-muted-foreground font-medium">
               Upload a dataset first to run a domain-neutral ANOVA analysis.
             </p>
+            {initialDesign && (
+              <p className="text-sm text-primary">
+                Planned design: <span className="font-semibold">{designMeta(initialDesign).fullLabel}</span>.
+                It will remain selected after the dataset is prepared.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -426,6 +443,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 {isSessionOnlyPreviewDesign(design) ? "Preview · session-only" : "Early Access"}
               </Badge>
               <p>{designMeta(design).hint}</p>
+              <Link
+                to={`/help/${DESIGN_HELP_SLUG[design]}`}
+                className="inline-flex font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Read the {designMeta(design).label} guide
+              </Link>
               {isSessionOnlyPreviewDesign(design) && (
                 <p className="text-amber-800 dark:text-amber-300">
                   Download the Word report before leaving this session.
@@ -574,6 +597,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               <p className="text-muted-foreground">
                 Check the selected dataset, response variable, and design mappings, then run the analysis again.
               </p>
+              <Link to="/help/troubleshooting" className="inline-flex font-medium text-primary underline-offset-4 hover:underline">
+                Troubleshoot this error or report a problem
+              </Link>
             </div>
           )}
 

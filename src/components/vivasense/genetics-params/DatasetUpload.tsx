@@ -62,9 +62,10 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   };
 
   const handleConfirmMapping = async () => {
-    // repCol is optional: CRD (completely randomized) datasets have no replication
-    // column. The backend infers CRD when rep_column is empty/null.
-    if (!file || !preview || !genotypeCol) return;
+    // The upload-stage treatment field is only a convenience hint. Exact design
+    // roles are governed in the next step, so Factorial and Split-Plot users do
+    // not have to invent a generic treatment role here.
+    if (!file || !preview) return;
     try {
       const base64 = await fileToBase64(file);
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "csv";
@@ -195,13 +196,21 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Treatment / Factor Column</Label>
-                <Select value={genotypeCol} onValueChange={setGenotypeCol}>
-                  <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                <Label className="text-sm font-medium">Treatment / Factor Hint</Label>
+                <Select
+                  value={genotypeCol || "__none__"}
+                  onValueChange={(value) => setGenotypeCol(value === "__none__" ? "" : value)}
+                >
+                  <SelectTrigger><SelectValue placeholder="Map in the next step" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">None — map in the design step</SelectItem>
                     {preview.column_names.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] leading-4 text-muted-foreground">
+                  Optional. For CRD/RCBD you may select the treatment now. For Factorial and Split-Plot,
+                  leave this blank if you prefer; Factor A/B or whole-plot/subplot roles are mapped next.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Replication / Block Column</Label>
@@ -336,7 +345,6 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
 
             <Button
               onClick={handleConfirmMapping}
-              disabled={!genotypeCol}
               className="gap-2"
             >
               <CheckCircle2 className="h-4 w-4" />
