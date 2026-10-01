@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Info, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download, Info, Mail, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,25 +27,22 @@ export function TutorialDetail({ tutorial }: TutorialDetailProps) {
             </Link>
           </Button>
         )}
+        {tutorial.actionHref && tutorial.actionLabel && (
+          <Button asChild className="mt-5">
+            <a href={tutorial.actionHref}>
+              <Mail className="mr-1 h-4 w-4" aria-hidden="true" /> {tutorial.actionLabel}
+            </a>
+          </Button>
+        )}
       </header>
 
       <div className="mt-8 space-y-8">
         {tutorial.sections.map((section) => (
-          <section
-            key={section.title}
-            aria-labelledby={"section-" + section.title.replaceAll(" ", "-").toLowerCase()}
-          >
-            <h2
-              id={"section-" + section.title.replaceAll(" ", "-").toLowerCase()}
-              className="text-xl font-semibold"
-            >
-              {section.title}
-            </h2>
+          <section key={section.title}>
+            <h2 className="text-xl font-semibold">{section.title}</h2>
 
             {section.paragraphs?.map((paragraph) => (
-              <p key={paragraph} className="mt-3 leading-7 text-muted-foreground">
-                {paragraph}
-              </p>
+              <p key={paragraph} className="mt-3 leading-7 text-muted-foreground">{paragraph}</p>
             ))}
 
             {section.bullets && (
@@ -61,11 +58,32 @@ export function TutorialDetail({ tutorial }: TutorialDetailProps) {
                     <Info className="h-4 w-4 text-primary" aria-hidden="true" />
                     Example dataset shape
                   </div>
-                  <pre className="overflow-x-auto rounded-md border border-border bg-background p-3 text-xs leading-6 text-foreground">
+                  <pre className="max-w-full overflow-x-auto rounded-md border border-border bg-background p-3 text-xs leading-6 text-foreground">
                     {section.example.join("\n")}
                   </pre>
                 </CardContent>
               </Card>
+            )}
+
+            {section.resources && (
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {section.resources.map((resource) => (
+                  <a
+                    key={resource.href}
+                    href={resource.href}
+                    download={resource.download || undefined}
+                    className="min-w-0 rounded-md border border-border bg-background p-3 transition-colors hover:border-primary/50 hover:bg-primary-soft/30"
+                  >
+                    <span className="flex items-center gap-2 text-sm font-semibold text-primary">
+                      {resource.download ? <Download className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                      {resource.label}
+                    </span>
+                    {resource.description && (
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{resource.description}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
             )}
 
             {section.note && (

@@ -12,6 +12,7 @@ import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisp
 import { AdvancedAnalysisDashboard } from "@/components/vivasense/advanced/AdvancedAnalysisDashboard";
 import { DatasetUpload } from "@/components/vivasense/genetics-params/DatasetUpload";
 import { AnovaModulePanel } from "@/components/vivasense/genetics-params/AnovaModulePanel";
+import { GOVERNED_DESIGN_IDS, type GovernedDesignType } from "@/components/vivasense/genetics-params/anovaDesigns";
 import { AnovaUploadResults } from "@/components/vivasense/genetics-params/AnovaUploadResults";
 import { RestoredRcbdResults } from "@/components/vivasense/genetics-params/RestoredRcbdResults";
 import { computeCorrelation, computeGeneticParameters, computeRegression, fileToBase64 } from "@/lib/geneticsUploadApi";
@@ -69,6 +70,12 @@ export default function VivaSenseWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState | null>(null);
   const [datasetContext, setDatasetContext] = useState<DatasetContext | null>(null);
+
+  const requestedDesignParam = new URLSearchParams(location.search).get("design");
+  const requestedDesign: GovernedDesignType | undefined =
+    requestedDesignParam && GOVERNED_DESIGN_IDS.includes(requestedDesignParam as GovernedDesignType)
+      ? (requestedDesignParam as GovernedDesignType)
+      : undefined;
 
   // PERSIST-OPEN-01: restore an already-complete governed RCBD AnalysisRun.
   // This deliberately calls the read-only persistence endpoint; it never calls
@@ -374,7 +381,7 @@ export default function VivaSenseWorkspace() {
               <ChevronRight className="h-3.5 w-3.5" />
               <span>Modules</span>
               <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-foreground">ANOVA</span>
+              <span className="text-foreground">Experimental Design & ANOVA</span>
             </nav>
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
@@ -389,7 +396,9 @@ export default function VivaSenseWorkspace() {
                 </p>
               </div>
               <Button asChild variant="outline" size="sm" className="shrink-0">
-                <Link to="/help">View Guide</Link>
+                <Link to={requestedDesign ? `/help/${requestedDesign.replaceAll("_", "-")}` : "/help/run-analysis"}>
+                  {requestedDesign ? "Design Guide" : "Analysis Guide"}
+                </Link>
               </Button>
             </div>
             <div className="mt-8 space-y-6">
@@ -405,6 +414,7 @@ export default function VivaSenseWorkspace() {
               />
               <AnovaModulePanel
                 datasetContext={datasetContext}
+                initialDesign={requestedDesign}
               />
             </div>
           </div>

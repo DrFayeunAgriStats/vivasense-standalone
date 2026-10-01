@@ -46,7 +46,6 @@ export function VivaSenseUserMenu() {
   }
 
   const initial = (profile?.full_name?.[0] || user.email?.[0] || "?").toUpperCase();
-  const firstName = profile?.full_name?.split(" ")[0] || "Account";
 
   return (
     <div ref={ref} className="relative">
@@ -55,7 +54,7 @@ export function VivaSenseUserMenu() {
         <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
           {initial}
         </div>
-        <span className="text-sm font-medium text-foreground hidden sm:inline">{firstName}</span>
+        <span className="hidden text-sm font-medium text-foreground sm:inline">Account</span>
         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
       </button>
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FlaskConical, Mail } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 
 interface FooterProps {
   variant?: "default" | "minimal-vivasense";
@@ -21,13 +21,6 @@ export function Footer({ variant = "minimal-vivasense" }: FooterProps) {
               <p className="text-xs leading-relaxed text-primary-foreground/80">
                 Statistical analytics platform for agricultural research workflows.
               </p>
-              <a
-                href="mailto:info@fieldtoinsightacademy.com.ng"
-                className="inline-flex items-center gap-1.5 mt-3 text-xs text-primary-foreground/90 hover:text-primary-foreground transition-colors"
-              >
-                <Mail className="w-3 h-3" />
-                info@fieldtoinsightacademy.com.ng
-              </a>
             </div>
 
             <div>
@@ -55,7 +48,7 @@ export function Footer({ variant = "minimal-vivasense" }: FooterProps) {
                 </li>
                 <li>
                   <a href="mailto:support@vivasense.app" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                    Support
+                    VivaSense Support
                   </a>
                 </li>
               </ul>
