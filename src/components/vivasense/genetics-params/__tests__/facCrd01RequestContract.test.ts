@@ -86,7 +86,7 @@ describe("FAC-CRD-01 — non-factorial designs are unchanged", () => {
     expect(build("crd").rep_column).toBe("");
   });
 
-  it("split_plot_rcbd keeps the detected-column fallback and explicit plot roles", () => {
+  it("split_plot_rcbd sends no legacy genotype alias and keeps explicit plot roles", () => {
     const request = buildAnovaRequest({
       datasetContext: ctx,
       design: "split_plot_rcbd",
@@ -94,9 +94,12 @@ describe("FAC-CRD-01 — non-factorial designs are unchanged", () => {
       mapping,
       traits: ["Yield"],
     });
-    expect(request.genotype_column).toBe("Variety");
+    expect(request.genotype_column).toBe("");
+    expect(request.genotype_column).not.toBe(request.main_plot_column);
+    expect(request.genotype_column).not.toBe(request.sub_plot_column);
     expect(request.main_plot_column).toBe("Irrigation");
     expect(request.sub_plot_column).toBe("Nitrogen");
+    expect(request.rep_column).toBe("Block");
     expect(request.factor_a_column).toBeUndefined();
     expect(request.module).toBe("anova");
   });
