@@ -68,7 +68,7 @@ export const GOVERNED_DESIGNS: DesignMeta[] = [
     label: "Factorial CRD",
     fullLabel: "Factorial CRD",
     hint:
-      "Two crossed treatment factors (A × B), completely randomised. Analysed as A*B — no blocking term.",
+      "Two crossed treatment factors (A × B), completely randomised. Analysed as A*B — no blocking term. If either factor was assigned to whole plots, use Split-Plot RCBD instead.",
     requiredRoles: ["factor_a", "factor_b"],
   },
   {
@@ -76,7 +76,7 @@ export const GOVERNED_DESIGNS: DesignMeta[] = [
     label: "Factorial RCBD",
     fullLabel: "Factorial RCBD",
     hint:
-      "Two crossed treatment factors (A × B) within complete replication blocks. Analysed as block + A*B.",
+      "Two crossed treatment factors (A × B) within complete replication blocks. Analysed as block + A*B. If either factor was applied to whole plots before subplot randomisation, use Split-Plot RCBD instead.",
     requiredRoles: ["factor_a", "factor_b", "rep"],
   },
   {
@@ -365,17 +365,17 @@ export function buildAnovaRequest(input: BuildAnovaRequestInput): UploadAnalysis
   const active = activeMapping(design, mapping);
   const usesBlock = requiresBlock(design);
 
-  // `genotype_column` is the backend's one-factor treatment slot and is a
-  // required wire field. FAC-CRD-01: for factorial designs Factor A is
-  // authoritative and `genotype_column` is only its legacy alias, so it must
-  // equal Factor A — never the upload's auto-detected genotype column, which
-  // the backend rejects when it names a different column. Split-plot has no
-  // single treatment factor and keeps falling back to the detected column,
-  // which the backend ignores in favour of the explicit plot roles.
+  // `genotype_column` is the backend's legacy one-factor treatment slot.
+  // FAC-CRD-01: factorial requests mirror authoritative Factor A into that
+  // legacy alias. Generic split-plot has NO genotype/treatment role at all, so
+  // it must omit the field: falling back to upload auto-detection can duplicate
+  // the whole-plot or subplot column and correctly trip the backend identity guard.
   const treatment =
-    design === "factorial_crd" || design === "factorial_rcbd"
-      ? (active.factor_a ?? "")
-      : (active.treatment ?? ctx.genotypeColumn ?? "");
+    design === "split_plot_rcbd"
+      ? undefined
+      : design === "factorial_crd" || design === "factorial_rcbd"
+        ? (active.factor_a ?? "")
+        : (active.treatment ?? ctx.genotypeColumn ?? "");
 
   return {
     base64_content: ctx.base64Content,

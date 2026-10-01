@@ -404,6 +404,12 @@ export default function VivaSenseWorkspace() {
                 datasetContext={datasetContext}
               />
               <AnovaModulePanel
+                key={
+                  datasetContext
+                    ? datasetContext.datasetToken ??
+                      `${datasetContext.file.name}:${datasetContext.file.size}:${datasetContext.file.lastModified}`
+                    : "no-dataset"
+                }
                 datasetContext={datasetContext}
               />
             </div>

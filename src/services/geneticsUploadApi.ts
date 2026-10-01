@@ -72,8 +72,8 @@ export type AnovaDesignTypeWire = GovernedDesignType | "factorial";
 export interface UploadAnalysisRequest {
   base64_content: string;
   file_type: "csv" | "xlsx" | "xls";
-  genotype_column: string;
-  rep_column: string;
+  genotype_column?: string | null;
+  rep_column?: string | null;
   environment_column: string | null;
   /**
    * Ordered columns whose interaction defines the environment, e.g.

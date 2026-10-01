@@ -6,6 +6,8 @@ import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
 import DataCapture from "@/pages/DataCapture";
 import HelpLearning from "@/pages/HelpLearning";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,8 @@ function App() {
             <Route path="/" element={<Navigate to="/workspace" replace />} />
           </Routes>
         </BrowserRouter>
+        <Toaster />
+        <SonnerToaster richColors position="top-right" />
       </AuthProvider>
     </QueryClientProvider>
   );

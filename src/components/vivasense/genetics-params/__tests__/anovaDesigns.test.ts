@@ -83,6 +83,11 @@ describe("design vocabulary", () => {
   it("does not expose three-factor factorial as a design", () => {
     expect(GOVERNED_DESIGNS.some((d) => /three|factor c/i.test(d.label + d.hint))).toBe(false);
   });
+
+  it("warns factorial users to choose Split-Plot when randomisation happened at whole-plot level", () => {
+    expect(designMeta("factorial_crd").hint).toMatch(/Split-Plot RCBD/i);
+    expect(designMeta("factorial_rcbd").hint).toMatch(/Split-Plot RCBD/i);
+  });
 });
 
 describe("column requirements", () => {
@@ -143,13 +148,28 @@ describe("request construction — only the design's own roles are sent", () => 
     expect(request.treatment_column).toBe("Treatment");
   });
 
-  it("Split-Plot sends block, whole plot and subplot and no factor A/B", () => {
+  it("Split-Plot sends only its block/plot roles and omits the legacy genotype slot", () => {
     const request = build("split_plot_rcbd");
     expect(request.rep_column).toBe("Block");
     expect(request.main_plot_column).toBe("Main");
     expect(request.sub_plot_column).toBe("Sub");
+    expect(request.genotype_column).toBeUndefined();
     expect(request.factor_a_column).toBeUndefined();
     expect(request.factor_b_column).toBeUndefined();
+    expect(JSON.stringify(request)).not.toContain("genotype_column");
+  });
+
+  it("Split-Plot never reuses an auto-detected whole-plot column as genotype_column", () => {
+    const splitCtx = { ...ctx, genotypeColumn: "Main" };
+    const request = buildAnovaRequest({
+      datasetContext: splitCtx,
+      design: "split_plot_rcbd",
+      alpha: 0.01,
+      mapping: { rep: "Block", main_plot: "Main", sub_plot: "Sub" },
+      traits: ["Yield"],
+    });
+    expect(request.main_plot_column).toBe("Main");
+    expect(request.genotype_column).toBeUndefined();
   });
 
   it("never sends factor_c_column — three-factor stays outside the governed path", () => {

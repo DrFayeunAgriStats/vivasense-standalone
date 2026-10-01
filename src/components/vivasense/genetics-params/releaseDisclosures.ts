@@ -8,7 +8,7 @@
 import type { GovernedDesignType } from "./anovaDesigns";
 
 export const SESSION_ONLY_PREVIEW_WARNING =
-  "Preview: this analysis is session-only. The full analysis result cannot currently be reopened after the session ends. Download the Word report now if you need to retain the output.";
+  "Preview: This analysis is session-only. The full analysis result cannot currently be reopened after the session ends. Download the Word report now if you need to retain the output.";
 
 export function isSessionOnlyPreviewDesign(
   design: GovernedDesignType | "factorial" | string | null | undefined
