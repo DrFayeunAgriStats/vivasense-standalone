@@ -191,7 +191,7 @@ export function GovernedFactorialPanel({ design, result, mapping, inferentialAlp
   const marginalB = describeMarginalSeparation(
     info.factorB, result.factor_b_mean_separation_status, result.mean_separation_b, interactionGoverns
   );
-  const cells = describeCellSeparation(result, interactionGoverns);
+  const cells = describeCellSeparation(result, interactionGoverns, inferentialAlpha);
   const plot = readInteractionPlot(result);
   const policy = describeDiagnosticsPolicy(result, inferentialAlpha);
 
@@ -369,6 +369,9 @@ export function GovernedFactorialPanel({ design, result, mapping, inferentialAlp
               {cells.supplementary && (
                 <Badge variant="secondary" className="text-[10px]">supplementary</Badge>
               )}
+              {!cells.showGroups && (
+                <Badge variant="outline" className="text-[10px]">grouping letters hidden</Badge>
+              )}
             </div>
             <p className="text-[11px] text-muted-foreground">{cells.note}</p>
             <div className="overflow-x-auto">
@@ -378,7 +381,9 @@ export function GovernedFactorialPanel({ design, result, mapping, inferentialAlp
                     <th className="py-1 text-left font-medium">{cells.factorALabel}</th>
                     <th className="py-1 text-left font-medium">{cells.factorBLabel}</th>
                     <th className="py-1 text-right font-medium">{cells.scaleLabel}</th>
-                    <th className="py-1 text-right font-medium">Group</th>
+                    {cells.showGroups && (
+                      <th className="py-1 text-right font-medium">Group</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -387,7 +392,9 @@ export function GovernedFactorialPanel({ design, result, mapping, inferentialAlp
                       <td className="py-1">{row.factorALevel}</td>
                       <td className="py-1">{row.factorBLevel}</td>
                       <td className="py-1 text-right tabular-nums">{row.mean?.toFixed(4) ?? "—"}</td>
-                      <td className="py-1 text-right font-semibold">{row.group}</td>
+                      {cells.showGroups && (
+                        <td className="py-1 text-right font-semibold">{row.group}</td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

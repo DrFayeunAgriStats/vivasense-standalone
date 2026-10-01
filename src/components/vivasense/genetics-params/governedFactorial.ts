@@ -17,6 +17,10 @@ import type {
 } from "@/services/geneticsUploadApi";
 import type { GovernedDesignType } from "./anovaDesigns";
 import { formatAlpha, formatP } from "./governedOneFactor";
+import {
+  factorialAllCellAlphaWarning,
+  shouldHideFactorialAllCellGroups,
+} from "./releaseDisclosures";
 
 export const FACTORIAL_DESIGNS: GovernedDesignType[] = ["factorial_crd", "factorial_rcbd"];
 
@@ -499,6 +503,8 @@ export interface CellSeparationDisplay {
   alpha: number | null;
   /** True when the interaction governs, so this table is descriptive only. */
   supplementary: boolean;
+  /** False when release governance suppresses an all-cell compact-letter display. */
+  showGroups: boolean;
   scaleLabel: string;
   role: string | null;
   note: string;
@@ -514,7 +520,8 @@ export interface CellSeparationDisplay {
  */
 export function describeCellSeparation(
   result: GeneticsResult,
-  interactionGoverns: boolean
+  interactionGoverns: boolean,
+  inferentialAlpha = 0.05
 ): CellSeparationDisplay | null {
   const sep = result.interaction_separation as Record<string, unknown> | null | undefined;
   if (!isPopulated(sep)) return null;
@@ -523,6 +530,15 @@ export function describeCellSeparation(
   const means = Array.isArray(sep.mean) ? (sep.mean as unknown[]).map(Number) : [];
   const groups = asStringArray(sep.group);
   if (aLevels.length === 0) return null;
+
+  // OCT1-FS-02 Item 3: the frontend is a second safety boundary. Letters are
+  // shown only when the payload states the alpha they were computed at and it
+  // matches the selected inferential alpha; a missing or different alpha (for
+  // example a legacy payload carrying 0.05 letters) hides them.
+  const payloadAlpha = asNumber(sep.alpha);
+  const alphaSafeguard = shouldHideFactorialAllCellGroups(inferentialAlpha, payloadAlpha);
+  const hasVisibleGroups = groups.some((g) => g.trim().length > 0 && g !== "—");
+  const showGroups = !alphaSafeguard && hasVisibleGroups;
 
   return {
     rows: aLevels.map((a, i) => ({
@@ -534,13 +550,16 @@ export function describeCellSeparation(
     factorALabel: typeof sep.genotype_label === "string" ? sep.genotype_label : "Factor A",
     factorBLabel: typeof sep.factor_label === "string" ? sep.factor_label : "Factor B",
     test: typeof sep.test === "string" ? sep.test : "Tukey HSD",
-    alpha: asNumber(sep.alpha),
+    alpha: payloadAlpha,
     supplementary: interactionGoverns,
+    showGroups,
     scaleLabel: "Cell arithmetic mean",
     role: typeof sep.role === "string" ? sep.role : null,
-    note: interactionGoverns
-      ? "Supplementary and descriptive. All cells are compared in a single family, which is a different question from a simple effect — the governed simple-effects families above are the authoritative comparison."
-      : "Cell arithmetic means across all treatment combinations.",
+    note: alphaSafeguard
+      ? factorialAllCellAlphaWarning(inferentialAlpha, payloadAlpha)
+      : interactionGoverns
+        ? "Supplementary and descriptive. All cells are compared in a single family, which is a different question from a simple effect — the governed simple-effects families above are the authoritative comparison."
+        : "Cell arithmetic means across all treatment combinations.",
   };
 }
 

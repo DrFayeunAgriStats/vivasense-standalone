@@ -50,6 +50,11 @@ import { GovernedSplitPlotPanel } from "./GovernedSplitPlotPanel";
 import { RcbdTransformationPanel } from "./RcbdTransformationPanel";
 import { explorationEligibility } from "./governedTransformation";
 import { runPersistentRcbdAnalysis, downloadPersistentRcbdReport } from "@/services/persistenceRcbdApi";
+import {
+  SESSION_ONLY_PREVIEW_WARNING,
+  isSessionOnlyPreviewDesign,
+  isSessionOnlyPreviewWarning,
+} from "./releaseDisclosures";
 
 const MODULE = "anova" as const;
 
@@ -551,6 +556,19 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </CardContent>
           </Card>
 
+          {isSessionOnlyPreviewDesign(design) && (
+            <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-800">
+              <CardContent className="py-4 px-5 space-y-1">
+                <p className="text-sm font-semibold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                  <AlertTriangle className="h-4 w-4" /> Preview — session-only
+                </p>
+                <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
+                  {SESSION_ONLY_PREVIEW_WARNING.replace("Preview: ", "")}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {(() => {
             type TA = {
               triggered?: boolean; recommended_transform?: string; formula_used?: string;
@@ -709,11 +727,14 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   domainNeutral
                   insightSummary={describeResultScale(r)}
                   interpretation={tr.analysis_result.interpretation || ""}
-                  statisticalNotes={
-                    tr.data_warnings.length > 0
-                      ? tr.data_warnings.map((w) => ({ text: w }))
-                      : undefined
-                  }
+                  statisticalNotes={(() => {
+                    const warnings = (tr.data_warnings ?? []).filter(
+                      (w) => !isSessionOnlyPreviewWarning(w)
+                    );
+                    return warnings.length > 0
+                      ? warnings.map((w) => ({ text: w }))
+                      : undefined;
+                  })()}
                   inferentialAlpha={alpha}
                   anovaTable={r.anova_table}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
