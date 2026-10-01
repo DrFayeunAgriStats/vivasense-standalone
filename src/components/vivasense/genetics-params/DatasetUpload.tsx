@@ -55,7 +55,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
       setEnvCol(res.detected_columns.environment?.column ?? "");
       setMode(res.mode_suggestion);
     } catch (err: any) {
-      toast({ title: "Preview failed", description: err.message, variant: "destructive" });
+      toast({ title: "Dataset preview failed", description: err.message, variant: "destructive" });
     } finally {
       setIsPreviewing(false);
     }
@@ -111,7 +111,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         dataPreview: preview.data_preview ?? [],
       };
       onDatasetReady(ctx);
-      toast({ title: "Dataset ready", description: "You can now run analysis in any module." });
+      toast({ title: "Dataset ready", description: "Choose the experimental design and response variable(s) to run ANOVA." });
     } catch (err: any) {
       toast({ title: "Error preparing dataset", description: err.message, variant: "destructive" });
     }
@@ -163,7 +163,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
             <Input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} className="flex-1" />
             <Button onClick={handlePreview} disabled={!file || isPreviewing} className="gap-2">
               {isPreviewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
-              Preview
+              Preview Dataset
             </Button>
           </div>
           {file && <p className="text-xs text-muted-foreground">Selected: <span className="font-medium">{file.name}</span></p>}

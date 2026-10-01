@@ -24,9 +24,6 @@ export interface RecommendedAction {
   action: WorkspaceAction;
 }
 
-const TRAIT_REL_TYPES = ["correlation", "trait_association", "path_analysis", "regression"];
-const ADVANCED_TYPES = ["pca", "cluster", "blup", "stability", "selection_index"];
-
 /** The canonical research pipeline (labels only; ordering is fixed). */
 const PIPELINE: { key: string; label: string }[] = [
   { key: "study", label: "Study" },
@@ -36,8 +33,6 @@ const PIPELINE: { key: string; label: string }[] = [
   { key: "dataset-upload", label: "Dataset Upload" },
   { key: "descriptive", label: "Descriptive Stats" },
   { key: "anova", label: "ANOVA" },
-  { key: "trait-rel", label: "Trait Relationships" },
-  { key: "advanced", label: "Advanced Analysis" },
   { key: "interpretation", label: "Interpretation" },
   { key: "report", label: "Report" },
 ];
@@ -58,7 +53,6 @@ export function deriveWorkspaceState(
 ): WorkspaceState {
   const types = new Set(analyses.map((a) => a.analysis_type));
   const has = (t: string) => types.has(t);
-  const hasAny = (list: string[]) => list.some((t) => types.has(t));
 
   const hasStudies = studies.length > 0;
   const hasAnalyses = analyses.length > 0;
@@ -69,11 +63,9 @@ export function deriveWorkspaceState(
   if (hasStudies) done.add("study");
   if (hasAnalyses) done.add("dataset-upload");
   if (has("anova")) { done.add("descriptive"); done.add("anova"); }
-  if (hasAny(TRAIT_REL_TYPES)) done.add("trait-rel");
-  if (hasAny(ADVANCED_TYPES)) done.add("advanced");
 
   // Recommended next action — first unmet step, in pipeline order.
-  const recommended = recommend(hasStudies, hasAnalyses, has, hasAny);
+  const recommended = recommend(hasStudies, hasAnalyses, has);
   const currentKey = recommendedStageKey(recommended.action);
 
   const stages: WorkflowStage[] = PIPELINE.map((s) => ({
@@ -96,7 +88,6 @@ function recommend(
   hasStudies: boolean,
   hasAnalyses: boolean,
   has: (t: string) => boolean,
-  hasAny: (l: string[]) => boolean,
 ): RecommendedAction {
   if (!hasStudies) {
     return { title: "Create your first study", description: "Organize your research before collecting or analyzing data.", cta: "Create Study", action: "create-study" };
@@ -106,12 +97,6 @@ function recommend(
   }
   if (!has("anova")) {
     return { title: "Run an ANOVA", description: "Test treatment effects and get mean separation on your trial.", cta: "Open ANOVA", action: "start-analysis" };
-  }
-  if (!hasAny(TRAIT_REL_TYPES)) {
-    return { title: "Explore trait relationships", description: "Quantify correlations and trait associations across your data.", cta: "Open Advanced", action: "advanced" };
-  }
-  if (!hasAny(ADVANCED_TYPES)) {
-    return { title: "Go deeper with advanced analysis", description: "Run PCA, clustering, BLUP or stability for multivariate insight.", cta: "Open Advanced", action: "advanced" };
   }
   return { title: "Review and report", description: "Your analyses look comprehensive — revisit results and export reports.", cta: "View Dashboard", action: "dashboard" };
 }

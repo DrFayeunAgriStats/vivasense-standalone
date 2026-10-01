@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, Dna, Sparkles, Leaf, ClipboardList, CircleHelp, Bug } from "lucide-react";
+import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp } from "lucide-react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -17,36 +17,18 @@ const nav = [
   { to: "/help", label: "Help & Learning", icon: CircleHelp },
 ] as const;
 
-// `to` overrides the default /workspace?module=<module> target.
-//
-// Genetics & Breeding is retired from the sidebar: its four-option module
-// routes entirely through the legacy Python path, so the R engine's genetics
-// computation was never reachable from it. Rather than drop the entry and lose
-// the signal that researchers were looking for it, the link now lands on
-// Experimental Design carrying intent=genetics, so the destination can pick up
-// the genetics workflow once Variance Components & Heritability is wired
-// through the validated analyze-upload route.
-//
-// The /workspace?module=genetics page entry point itself is untouched here —
-// only the navigation into it is retired.
+// Early Access navigation exposes only workflows that have completed the
+// current verification gate. Hidden modules remain in code and can return to
+// navigation after their own validation; this is presentation hardening only.
 const modules = [
   { module: "anova", label: "Experimental Design", icon: FlaskConical },
-  {
-    module: "anova",
-    key: "genetics",
-    to: "/workspace?module=anova&intent=genetics",
-    label: "Genetics & Breeding",
-    icon: Dna,
-  },
-  { module: "crop-protection", label: "Crop Protection", icon: Bug },
-  { module: "advanced", label: "Advanced Analytics", icon: Sparkles },
+  { module: "field-layout", label: "Field Layout", icon: LayoutGrid },
 ] as const;
 
 export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
   const location = useLocation();
   const pathname = location.pathname;
   const activeModule = new URLSearchParams(location.search).get("module");
-  const activeIntent = new URLSearchParams(location.search).get("intent");
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -85,18 +67,14 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
             </p>
             <nav className="flex flex-col gap-0.5">
               {modules.map((item) => {
-                const itemKey = "key" in item ? item.key : item.module;
-                // Retired entries share a module with their destination, so
-                // highlight on the intent param rather than the module alone.
                 const active =
                   pathname === "/workspace" &&
-                  activeModule === item.module &&
-                  (activeIntent ?? item.module) === itemKey;
+                  activeModule === item.module;
                 const Icon = item.icon;
                 return (
                   <Link
-                    key={itemKey}
-                    to={"to" in item ? item.to : `/workspace?module=${item.module}`}
+                    key={item.module}
+                    to={`/workspace?module=${item.module}`}
                     className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"
