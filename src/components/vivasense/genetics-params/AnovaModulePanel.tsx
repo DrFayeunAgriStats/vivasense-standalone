@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ import {
   GOVERNED_DESIGNS,
   type GovernedDesignType,
   type ColumnMapping,
+  type ColumnRole,
   designMeta,
   requiredRoles,
   validateMapping,
@@ -73,6 +74,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // Mappings (per-design)
   const [treatmentCol, setTreatmentCol] = useState<string>("");
@@ -91,6 +93,28 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // untransformed results (report then prints the caution disclosure).
   const [transformChoice, setTransformChoice] = useState<"transformed" | "raw">("transformed");
   const [showTransformWhy, setShowTransformWhy] = useState(false);
+
+  // A newly uploaded dataset is a new analysis context. Reset every selection
+  // that could otherwise leak from the previous file (the live-browser RCBD
+  // failure showed a stale response trait and stale mappings crossing files).
+  useEffect(() => {
+    setDesign("rcbd");
+    setAlpha(DEFAULT_ALPHA);
+    setTreatmentCol(datasetContext?.genotypeColumn ?? "");
+    setRepColumn(datasetContext?.repColumn ?? "");
+    setFactorA("");
+    setFactorB("");
+    setMainPlot("");
+    setSubPlot("");
+    setSelectedTraits([]);
+    setResults(null);
+    setStructuralError(null);
+    setShowErrorDetail(false);
+    setExportError(null);
+    setAnalysisError(null);
+    setTransformChoice("transformed");
+    setShowTransformWhy(false);
+  }, [datasetContext]);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
   const allColumns = useMemo(() => {
@@ -125,8 +149,18 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     );
   }
 
-  const factorAColumns = allColumns.filter((col: string) => col !== factorB);
-  const factorBColumns = allColumns.filter((col: string) => col !== factorA);
+  const roleOptions = (role: ColumnRole): string[] => {
+    const activeRoles = requiredRoles(design);
+    const claimedElsewhere = new Set(
+      activeRoles
+        .filter((other) => other !== role)
+        .map((other) => mapping[other])
+        .filter((value): value is string => !!value),
+    );
+    return allColumns.filter(
+      (column: string) => column === mapping[role] || !claimedElsewhere.has(column),
+    );
+  };
 
   const toggleTrait = (t: string) =>
     setSelectedTraits((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
@@ -165,6 +199,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     if (validation) return;
     setIsAnalyzing(true);
     setResults(null);
+    setStructuralError(null);
+    setAnalysisError(null);
     // Hoisted so the failure path reports the same fields and elapsed time.
     const startedAt = performance.now();
     const historyBase = {
@@ -230,7 +266,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       });
     } catch (err: any) {
       void recordAnalysisFailure(historyBase, err);
-      toast({ title: "ANOVA failed", description: err.message, variant: "destructive" });
+      const message = err instanceof Error ? err.message : String(err ?? "Analysis failed.");
+      setAnalysisError(message);
+      toast({ title: "ANOVA failed", description: message, variant: "destructive" });
+      sonnerToast.error("ANOVA failed", { description: message });
     } finally {
       setIsAnalyzing(false);
     }
@@ -366,7 +405,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         </CardHeader>
         <CardContent className="space-y-5">
           <Tabs value={design} onValueChange={(v) => setDesign(v as GovernedDesignType)}>
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-5">
               {GOVERNED_DESIGNS.map((d) => (
                 <TabsTrigger key={d.id} value={d.id} className="text-xs sm:text-sm">{d.label}</TabsTrigger>
               ))}
@@ -398,22 +437,22 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {/* Field mapping — driven by the design's required roles */}
           <div className="grid gap-4 sm:grid-cols-2">
             {roles.includes("treatment") && (
-              <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} />
+              <ColumnSelect label="Treatment / Factor Column" value={treatmentCol} onChange={setTreatmentCol} options={roleOptions("treatment")} />
             )}
             {roles.includes("factor_a") && (
-              <ColumnSelect label="Factor A Column" value={factorA} onChange={setFactorA} options={factorAColumns} />
+              <ColumnSelect label="Factor A Column" value={factorA} onChange={setFactorA} options={roleOptions("factor_a")} />
             )}
             {roles.includes("factor_b") && (
-              <ColumnSelect label="Factor B Column" value={factorB} onChange={setFactorB} options={factorBColumns} />
+              <ColumnSelect label="Factor B Column" value={factorB} onChange={setFactorB} options={roleOptions("factor_b")} />
             )}
             {roles.includes("main_plot") && (
-              <ColumnSelect label="Whole-Plot Factor Column" value={mainPlot} onChange={setMainPlot} />
+              <ColumnSelect label="Whole-Plot Factor Column" value={mainPlot} onChange={setMainPlot} options={roleOptions("main_plot")} />
             )}
             {roles.includes("sub_plot") && (
-              <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={setSubPlot} />
+              <ColumnSelect label="Subplot Factor Column" value={subPlot} onChange={setSubPlot} options={roleOptions("sub_plot")} />
             )}
             {roles.includes("rep") && (
-              <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} />
+              <ColumnSelect label="Replication / Block Column" value={repColumn} onChange={setRepColumn} options={roleOptions("rep")} />
             )}
             {isFactorialFamily && (
               <p className="sm:col-span-2 text-xs text-muted-foreground">
@@ -523,6 +562,21 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </div>
           )}
 
+          {analysisError && (
+            <div
+              role="alert"
+              className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs space-y-1.5"
+            >
+              <p className="font-semibold text-destructive flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" /> Analysis failed
+              </p>
+              <p className="text-foreground whitespace-pre-wrap break-words">{analysisError}</p>
+              <p className="text-muted-foreground">
+                Check the selected dataset, response variable, and design mappings, then run the analysis again.
+              </p>
+            </div>
+          )}
+
           <Button onClick={handleAnalyze} disabled={isAnalyzing || !!validation} className="gap-2">
             {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Run Analysis
@@ -556,8 +610,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes ?? 0, "treatment level")}</Badge>
-                <Badge variant="secondary">{pl(results.dataset_summary.n_reps ?? 0, "replication")}</Badge>
+                {!isFactorialFamily && !isSplitPlot && (results.dataset_summary.n_genotypes ?? 0) > 0 && (
+                  <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes, "treatment level")}</Badge>
+                )}
+                {(results.dataset_summary.n_reps ?? 0) > 0 && (
+                  <Badge variant="secondary">{pl(results.dataset_summary.n_reps, "replication")}</Badge>
+                )}
                 <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
                 {results.persistence && (
                   <Badge variant="outline" className="border-emerald-300 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">
@@ -580,7 +638,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   <AlertTriangle className="h-4 w-4" /> Preview — session-only
                 </p>
                 <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
-                  {SESSION_ONLY_PREVIEW_WARNING.replace("Preview: ", "")}
+                  {(() => {
+                    const message = SESSION_ONLY_PREVIEW_WARNING.replace("Preview: ", "");
+                    return message.charAt(0).toUpperCase() + message.slice(1);
+                  })()}
                 </p>
               </CardContent>
             </Card>
@@ -742,7 +803,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 <AcademicResultsPanel
                   moduleLabel="ANOVA"
                   domainNeutral
-                  insightSummary={describeResultScale(r)}
+                  insightSummary={governedFactorial || governedSplitPlot ? undefined : describeResultScale(r)}
                   interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={(() => {
                     const warnings = (tr.data_warnings ?? []).filter(
@@ -755,7 +816,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   inferentialAlpha={alpha}
                   anovaTable={r.anova_table}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
-                  descriptiveStats={buildDescriptiveStats(r)}
+                  descriptiveStats={governedFactorial || governedSplitPlot ? undefined : buildDescriptiveStats(r)}
                 />
               </div>
             );
