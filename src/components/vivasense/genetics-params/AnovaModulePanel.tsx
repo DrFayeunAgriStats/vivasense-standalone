@@ -373,9 +373,26 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </TabsList>
           </Tabs>
 
-          <div className="rounded-md border bg-muted/30 p-3 flex gap-2 text-xs text-muted-foreground">
+          <div className="rounded-md border bg-muted/30 p-3 flex items-start gap-2 text-xs text-muted-foreground">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{designMeta(design).hint}</span>
+            <div className="space-y-1.5">
+              <Badge
+                variant={isSessionOnlyPreviewDesign(design) ? "outline" : "secondary"}
+                className={
+                  isSessionOnlyPreviewDesign(design)
+                    ? "border-amber-300 text-amber-800 dark:border-amber-700 dark:text-amber-300"
+                    : "text-emerald-700 dark:text-emerald-300"
+                }
+              >
+                {isSessionOnlyPreviewDesign(design) ? "Preview · session-only" : "Early Access"}
+              </Badge>
+              <p>{designMeta(design).hint}</p>
+              {isSessionOnlyPreviewDesign(design) && (
+                <p className="text-amber-800 dark:text-amber-300">
+                  Download the Word report before leaving this session.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Field mapping — driven by the design's required roles */}
