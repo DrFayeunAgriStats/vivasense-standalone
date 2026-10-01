@@ -29,7 +29,6 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
   const location = useLocation();
   const pathname = location.pathname;
   const activeModule = new URLSearchParams(location.search).get("module");
-  const activeIntent = new URLSearchParams(location.search).get("intent");
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -68,18 +67,14 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
             </p>
             <nav className="flex flex-col gap-0.5">
               {modules.map((item) => {
-                const itemKey = "key" in item ? item.key : item.module;
-                // Retired entries share a module with their destination, so
-                // highlight on the intent param rather than the module alone.
                 const active =
                   pathname === "/workspace" &&
-                  activeModule === item.module &&
-                  (activeIntent ?? item.module) === itemKey;
+                  activeModule === item.module;
                 const Icon = item.icon;
                 return (
                   <Link
-                    key={itemKey}
-                    to={"to" in item ? item.to : `/workspace?module=${item.module}`}
+                    key={item.module}
+                    to={`/workspace?module=${item.module}`}
                     className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"
