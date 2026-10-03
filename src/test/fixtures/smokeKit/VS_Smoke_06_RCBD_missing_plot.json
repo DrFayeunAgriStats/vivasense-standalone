@@ -1,0 +1,98 @@
+{
+ "summary_table": [
+  {
+   "trait": "fresh_leaf_yield",
+   "grand_mean": null,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "failed",
+   "error": "Incomplete or duplicated RCBD structure for trait 'fresh_leaf_yield': missing cell(s): Treatment TOC-03 × Block R2. A conventional RCBD requires every treatment to occur exactly once in every block."
+  }
+ ],
+ "trait_results": {
+  "fresh_leaf_yield": {
+   "status": "failed",
+   "analysis_result": null,
+   "error": "Incomplete or duplicated RCBD structure for trait 'fresh_leaf_yield': missing cell(s): Treatment TOC-03 × Block R2. A conventional RCBD requires every treatment to occur exactly once in every block.",
+   "data_warnings": [],
+   "observation_accounting": {
+    "input_rows": 19,
+    "missing_response_rows": 0,
+    "nonnumeric_response_rows": 0,
+    "rows_submitted_to_r": 0,
+    "rows_fitted_by_r": 0,
+    "effective_n": 0
+   },
+   "experimental_unit_profile": null,
+   "rcbd_design_profile": null,
+   "structural_validation": {
+    "code": "rcbd_missing_cells",
+    "severity": "error",
+    "message": "Incomplete or duplicated RCBD structure for trait 'fresh_leaf_yield': missing cell(s): Treatment TOC-03 × Block R2. A conventional RCBD requires every treatment to occur exactly once in every block.",
+    "treatment_levels": [
+     "TOC-01",
+     "TOC-02",
+     "TOC-03",
+     "TOC-04",
+     "TOC-05"
+    ],
+    "block_levels": [
+     "R1",
+     "R2",
+     "R3",
+     "R4"
+    ],
+    "missing_cells": [
+     {
+      "treatment": "TOC-03",
+      "block": "R2",
+      "count": 0
+     }
+    ],
+    "duplicate_cells": []
+   }
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": 5,
+  "n_reps": 4,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": "rep",
+  "original_rep_column": "rep",
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [
+  "fresh_leaf_yield"
+ ],
+ "anova_type_warning": null,
+ "breeding_summary": "",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.05,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "early_access",
+  "reopenable": true,
+  "persistence": "durable_saved_run",
+  "disclosure": "Early Access: RCBD runs saved through the governed workflow can be reopened."
+ },
+ "report_renderer_version": "rcbd-word-v1.5-20261003"
+}

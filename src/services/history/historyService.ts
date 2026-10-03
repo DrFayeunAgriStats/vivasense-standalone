@@ -16,6 +16,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { insertHistoryRow, listHistoryByUser } from "./analysisHistoryApi";
 import { buildHistoryRow } from "./historyMapper";
+import { dedupeHistoryByRunId } from "@/components/vivasense/genetics-params/feBeta02";
 import type {
   AnalysisHistoryRecord,
   ProfileSnapshot,
@@ -66,7 +67,11 @@ async function resolveIdentity(): Promise<{ userId: string; snapshot: ProfileSna
 }
 
 function dedupeKey(i: RecordAnalysisInput): string {
+  // A durable run is identified by its analysis_run_id: a RECOVERED_COMPLETE
+  // re-record of the same run must collapse into the original entry.
+  const runId = i.parameters?.persistence_analysis_run_id;
   return [
+    typeof runId === "string" ? `run:${runId}` : "",
     i.analysisType,
     i.datasetToken ?? i.datasetName ?? "",
     (i.traits ?? []).join(","),
@@ -136,7 +141,7 @@ export async function listRecentAnalyses(limit = 25): Promise<AnalysisHistoryRec
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user) return [];
-    return await listHistoryByUser(user.id, limit);
+    return dedupeHistoryByRunId(await listHistoryByUser(user.id, limit));
   } catch (err) {
     console.warn("[history] listRecentAnalyses returning empty:", err);
     return [];
@@ -164,7 +169,7 @@ export async function fetchAnalysesForDashboard(limit = 200): Promise<DashboardF
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user) return { rows: [], error: null, signedOut: true };
-    const rows = await listHistoryByUser(user.id, limit);
+    const rows = dedupeHistoryByRunId(await listHistoryByUser(user.id, limit));
     return { rows, error: null, signedOut: false };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to load analyses.";

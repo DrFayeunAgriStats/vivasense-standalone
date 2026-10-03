@@ -19,6 +19,7 @@ import type {
 } from "@/services/geneticsUploadApi";
 import type { GovernedDesignType } from "./anovaDesigns";
 import { formatAlpha, formatP } from "./governedOneFactor";
+import { orderByLevelOrder, readLevelOrder } from "./feBeta02";
 
 /** A non-empty plain object. jsonlite serialises an R NULL as `{}`. */
 export function isPopulated(value: unknown): value is Record<string, unknown> {
@@ -118,12 +119,14 @@ export function readSplitPlotProfile(
       (typeof profile.whole_plot_factor === "string" && profile.whole_plot_factor) ||
       mapping.mainPlot ||
       "Whole-plot factor",
-    wholePlotLevels: asStringArray(profile.whole_plot_levels),
+    wholePlotLevels: orderByLevelOrder(
+      asStringArray(profile.whole_plot_levels), (l) => l, readLevelOrder(result).main_plot),
     subPlotFactor:
       (typeof profile.sub_plot_factor === "string" && profile.sub_plot_factor) ||
       mapping.subPlot ||
       "Subplot factor",
-    subPlotLevels: asStringArray(profile.sub_plot_levels),
+    subPlotLevels: orderByLevelOrder(
+      asStringArray(profile.sub_plot_levels), (l) => l, readLevelOrder(result).sub_plot),
     wholePlots: asNumber(profile.whole_plots),
     subPlots: asNumber(profile.sub_plots),
     expectedObservations: asNumber(profile.expected_observations),
@@ -575,12 +578,23 @@ export function readSplitPlotInteractionPlot(
   const means = readInteractionMeans(result);
   if (!means) return null;
 
-  const xLevels = means.wholePlotLevels.length
-    ? means.wholePlotLevels
-    : Array.from(new Set(means.rows.map((r) => r.wholePlotLevel)));
-  const lineLevels = means.subPlotLevels.length
-    ? means.subPlotLevels
-    : Array.from(new Set(means.rows.map((r) => r.subPlotLevel)));
+  // Axis and line order follow level_order; the series means are looked up by
+  // level below, so reordering the axes cannot misalign a point.
+  const order = readLevelOrder(result);
+  const xLevels = orderByLevelOrder(
+    means.wholePlotLevels.length
+      ? means.wholePlotLevels
+      : Array.from(new Set(means.rows.map((r) => r.wholePlotLevel))),
+    (l) => l,
+    order.main_plot,
+  );
+  const lineLevels = orderByLevelOrder(
+    means.subPlotLevels.length
+      ? means.subPlotLevels
+      : Array.from(new Set(means.rows.map((r) => r.subPlotLevel))),
+    (l) => l,
+    order.sub_plot,
+  );
   if (xLevels.length === 0 || lineLevels.length === 0) return null;
 
   const lookup = new Map(means.rows.map((r) => [`${r.wholePlotLevel}|${r.subPlotLevel}`, r.mean]));

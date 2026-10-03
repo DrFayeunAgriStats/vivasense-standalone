@@ -13,6 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { anovaSourceLabel, extractRows, fmtNum, formatP } from "./GeneticsResultsDashboard";
+import { anovaSourceLabelMap, emphasiseAnovaRow } from "./feBeta02";
 
 /* ── Types ─────────────────────────────────────────── */
 
@@ -61,6 +62,12 @@ interface AcademicResultsProps {
    * Omitted by legacy callers, which keep the previous 0.05 behaviour.
    */
   inferentialAlpha?: number;
+  /**
+   * Experimental CV% exactly as the backend supplied it. Never computed here;
+   * when absent nothing is shown. Descriptive only — it is not used to grade
+   * the experiment.
+   */
+  cvPercent?: number | null;
 }
 
 /** Mean-separation objects carry their own method and alpha; prefer them. */
@@ -120,10 +127,17 @@ export function AcademicResultsPanel({
   anovaTable,
   meanSeparation,
   extraTables,
-  descriptiveStats,
+  descriptiveStats: descriptiveStatsProp,
   inferentialAlpha,
+  cvPercent,
 }: AcademicResultsProps) {
   const anovaRows = extractRows(anovaTable);
+  // Backend `display_source` is authoritative for researcher-facing row labels.
+  const sourceLabels = anovaSourceLabelMap(anovaTable as { source?: unknown; display_source?: unknown } | null);
+  const descriptiveStats =
+    typeof cvPercent === "number" && Number.isFinite(cvPercent)
+      ? [...(descriptiveStatsProp ?? []), { label: "Experimental CV (%)", value: cvPercent.toFixed(2) }]
+      : descriptiveStatsProp;
   const msRows = extractRows(meanSeparation);
 
   // Significance level actually used by this analysis. Governed callers pass
@@ -246,7 +260,7 @@ export function AcademicResultsPanel({
               <CollapsibleTrigger className="w-full flex items-center justify-between group">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <FlaskConical className="h-5 w-5 text-muted-foreground" />
-                  Show Detailed Statistics
+                  {domainNeutral ? "View ANOVA Table & Mean Separation" : "Show Detailed Statistics"}
                 </CardTitle>
                 <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
@@ -290,11 +304,18 @@ export function AcademicResultsPanel({
                         <TableBody>
                           {anovaRows.map((row, i) => {
                             const pVal = row.p_value ?? row.pvalue ?? row["Pr(>F)"] ?? row["PR(>F)"];
-                            const pNum = pVal != null ? Number(pVal) : NaN;
-                            const isSig = !isNaN(pNum) && pNum <= effectiveAlpha;
+                            const rawSource = row.source ?? row.Source ?? row.term;
+                            // Treatment / factor rows only: a replication or block row is a
+                            // nuisance term and is never styled as a treatment finding. The
+                            // p-value itself is always printed.
+                            const isSig = emphasiseAnovaRow(rawSource, pVal, effectiveAlpha);
+                            const label =
+                              domainNeutral
+                                ? sourceLabels.get(String(rawSource ?? "")) ?? anovaSourceLabel(rawSource)
+                                : anovaSourceLabel(rawSource);
                             return (
                               <TableRow key={i}>
-                                <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term)}</TableCell>
+                                <TableCell className="font-medium">{label}</TableCell>
                                 <TableCell className="text-right font-mono">{String(row.df ?? row.DF ?? "—")}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ss ?? row.SS ?? row.sum_sq)}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ms ?? row.MS ?? row.mean_sq)}</TableCell>
@@ -309,7 +330,9 @@ export function AcademicResultsPanel({
                       </Table>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 italic">
-                      Highlighted p-values meet the selected significance level (p &le; {alphaText}).
+                      Highlighted p-values meet the selected significance level (p &le; {alphaText}). Only treatment
+                      or factor effects are highlighted; replication / block rows are never highlighted and their
+                      p-values are shown for completeness only.
                     </p>
                   </div>
                 )}

@@ -91,6 +91,50 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
         )}
 
         <main className="min-w-0 flex-1 flex flex-col">
+          {/* Narrow screens: the sidebar is hidden below md, which used to leave
+              Data Capture and Field Layout unreachable. Same destinations, shown
+              as a horizontally scrollable bar — the desktop navigation is unchanged. */}
+          {!hideSidebar && (
+            <nav
+              aria-label="Workspace navigation"
+              className="sticky top-14 z-20 flex gap-1 overflow-x-auto border-b border-border bg-background/95 px-3 py-2 backdrop-blur md:hidden"
+            >
+              {nav.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+                      active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+              {modules.map((item) => {
+                const Icon = item.icon;
+                const active = pathname === "/workspace" && activeModule === item.module;
+                return (
+                  <Link
+                    key={item.module}
+                    to={`/workspace?module=${item.module}`}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+                      active ? "bg-primary-soft text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
           {children}
           {!hideSidebar && showFooter && <Footer variant={footerVariant} />}
         </main>

@@ -20,6 +20,7 @@ import {
   hasPersistentRcbdReport,
 } from "@/services/history/persistentReport";
 import { toast } from "sonner";
+import { canOpenHistoryRow, historyReleaseStatus } from "@/components/vivasense/genetics-params/feBeta02";
 
 interface Props {
   rows: AnalysisHistoryRecord[];
@@ -130,13 +131,17 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                           {downloadingId === r.id ? "Downloading…" : "Report"}
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => onOpen?.(r)}
-                        className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground outline-none transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        Open <ArrowRight className="h-3 w-3" />
-                      </button>
+                      {/* Open / Reopen only where the backend says a saved run can be
+                          reopened (reopenable); Preview and CRD rows get none. */}
+                      {canOpenHistoryRow(r) && (
+                        <button
+                          type="button"
+                          onClick={() => onOpen?.(r)}
+                          className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground outline-none transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          Open <ArrowRight className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -172,6 +177,17 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                     )}
                     <span className="text-border">·</span>
                     <span>{fmtDate(r.created_at)}</span>
+                    {(() => {
+                      const release = historyReleaseStatus(r);
+                      return release.label ? (
+                        <>
+                          <span className="text-border">·</span>
+                          <span className={release.maturity === "preview" ? "font-medium text-amber-700 dark:text-amber-400" : ""}>
+                            {release.label}
+                          </span>
+                        </>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </li>

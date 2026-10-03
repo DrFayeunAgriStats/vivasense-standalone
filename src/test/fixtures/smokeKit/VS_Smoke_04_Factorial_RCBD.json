@@ -1,0 +1,911 @@
+{
+ "summary_table": [
+  {
+   "trait": "yield_t_ha",
+   "grand_mean": 3.1783333333,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "success",
+   "error": null
+  }
+ ],
+ "trait_results": {
+  "yield_t_ha": {
+   "status": "success",
+   "analysis_result": {
+    "status": "SUCCESS",
+    "mode": "single",
+    "data_validation": {},
+    "variance_warnings": {},
+    "result": {
+     "environment_mode": "single_environment",
+     "n_genotypes": 3,
+     "n_reps": 3,
+     "n_environments": null,
+     "grand_mean": 3.1783333333,
+     "variance_components": {
+      "sigma2_genotype": 0.88246444444,
+      "sigma2_error": 0.019263333333,
+      "sigma2_phenotypic": 0.88888555556,
+      "heritability_basis": "single_environment_model"
+     },
+     "heritability": {},
+     "genetic_parameters": {},
+     "anova_table": {
+      "source": [
+       "rep",
+       "nitrogen",
+       "variety",
+       "nitrogen×variety",
+       "Residuals"
+      ],
+      "df": [
+       2,
+       2,
+       1,
+       2,
+       10
+      ],
+      "ss": [
+       1.3008333333,
+       10.6281,
+       2.5013388889,
+       0.60314444444,
+       0.19263333333
+      ],
+      "ms": [
+       0.65041666667,
+       5.31405,
+       2.5013388889,
+       0.30157222222,
+       0.019263333333
+      ],
+      "f_value": [
+       33.7644921267,
+       275.8634711888,
+       129.8497433235,
+       15.6552460057,
+       null
+      ],
+      "p_value": [
+       0.000035700930001,
+       1.7880255763e-9,
+       4.7440752698e-7,
+       0.00083118589079,
+       null
+      ],
+      "display_source": [
+       "rep",
+       "nitrogen",
+       "variety",
+       "nitrogen×variety",
+       "Residuals"
+      ]
+     },
+     "mean_separation": {
+      "genotype": [
+       "N120",
+       "N60",
+       "N0"
+      ],
+      "mean": [
+       4.0683333333,
+       3.2733333333,
+       2.1933333333
+      ],
+      "se": [
+       0.056661764494,
+       0.056661764494,
+       0.056661764494
+      ],
+      "group": [
+       "a",
+       "b",
+       "c"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "treatment_label": "nitrogen",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "treatment_decision": null,
+     "mean_separation_status": null,
+     "mean_separation_b": {
+      "genotype": [
+       "V2",
+       "V1"
+      ],
+      "mean": [
+       3.5511111111,
+       2.8055555556
+      ],
+      "se": [
+       0.046264136979,
+       0.046264136979
+      ],
+      "group": [
+       "a",
+       "b"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "treatment_label": "variety",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "interaction_separation": {
+      "genotype": [
+       "N120",
+       "N60",
+       "N120",
+       "N60",
+       "N0",
+       "N0"
+      ],
+      "factor": [
+       "V2",
+       "V2",
+       "V1",
+       "V1",
+       "V2",
+       "V1"
+      ],
+      "mean": [
+       4.6633333333,
+       3.65,
+       3.4733333333,
+       2.8966666667,
+       2.34,
+       2.0466666667
+      ],
+      "se": [
+       0.080131835815,
+       0.080131835815,
+       0.080131835815,
+       0.080131835815,
+       0.080131835815,
+       0.080131835815
+      ],
+      "group": [
+       "a",
+       "b",
+       "b",
+       "c",
+       "d",
+       "d"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "genotype_label": "nitrogen",
+      "factor_label": "variety"
+     },
+     "mean_separation_c": null,
+     "mean_separation_basis": {
+      "selected": "interaction_simple_effects",
+      "significant_terms": "genotype:factor",
+      "alpha": 0.05,
+      "rationale": "The two-way interaction is significant at the selected alpha, so the effect of each factor depends on the level of the other. Simple effects are the governing comparison; marginal means average over that dependence and are secondary."
+     },
+     "two_way_interaction_means": {},
+     "n_treatment_factors": 2,
+     "design": "factorial_rcbd",
+     "main_plot_mean_separation": null,
+     "interaction_means": {},
+     "descriptive_stats": null,
+     "assumption_tests": {
+      "overall": {
+       "passed": true,
+       "interpretation": "No strong formal normality concern was detected in the fitted factorial RCBD residuals at the 0.05 diagnostic threshold. Influence screening is reported below. Graphical residual diagnostics are not included in this version.",
+       "reviewer_summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 3 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      },
+      "normality": {
+       "test": "Shapiro-Wilk",
+       "statistic": 0.98080684915,
+       "p_value": 0.95795205369,
+       "passed": true,
+       "interpretation": "The Shapiro-Wilk test did not provide strong evidence against residual normality at the 0.05 diagnostic threshold (W = 0.9808, p = 0.9580). Formal normality testing is supplementary and should not be read as proof of normality."
+      },
+      "homogeneity": {
+       "test": "Levene",
+       "statistic": 1.6313023504,
+       "p_value": 0.22854096245,
+       "interpretation": "This raw-response-by-factor formal variance test is supplementary and is not an authoritative pass/fail assessment of constant error variance for the fitted factorial model.",
+       "provenance": "raw_response_by_factor_a",
+       "role": "supplementary_not_authoritative_for_factorial_model_diagnostics",
+       "authoritative": false
+      },
+      "diagnostic_policy": {
+       "design": "two_factor_factorial_rcbd",
+       "diagnostic_alpha": 0.05,
+       "residual_model": "trait_value ~ rep + genotype * factor",
+       "variance_assessment": "residuals_vs_fitted_primary",
+       "normality_assessment": "qq_plot_primary_shapiro_supplementary",
+       "independence": {
+        "statistically_tested": false,
+        "message": "Independence is primarily supported by the experimental design, correct identification of experimental units, and random allocation of treatment combinations. VivaSense cannot verify independence from the uploaded dataset alone."
+       },
+       "influence": {
+        "automatic_removal": false,
+        "message": "Cook's distance and standardized residuals are influence evidence. Flagged observations are never removed automatically and the model is never automatically refitted."
+       },
+       "formal_variance_test": {
+        "test": "Levene",
+        "provenance": "raw_response_by_factor_a",
+        "role": "supplementary_not_authoritative_for_factorial_model_diagnostics",
+        "authoritative": false
+       }
+      },
+      "outlier_detection": {
+       "standardized_residual_threshold": 3,
+       "cooks_distance_screening_rule": "D > 4/n",
+       "cooks_distance_screening_threshold": 0.22222222222,
+       "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+       "n_extreme_outliers": 0,
+       "n_cooks_distance_review_flags": 3,
+       "flagged_observations": [
+        {
+         "observation": 3,
+         "treatment": "N60 × V1",
+         "block": "B1",
+         "observed": 2.36,
+         "fitted": 2.5633333333,
+         "residual": -0.20333333333,
+         "standardized_residual": -1.9655274479,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 4,
+         "treatment": "N60 × V2",
+         "block": "B1",
+         "observed": 3.55,
+         "fitted": 3.3166666667,
+         "residual": 0.23333333333,
+         "standardized_residual": 2.2555233009,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 15,
+         "treatment": "N60 × V1",
+         "block": "B3",
+         "observed": 3.38,
+         "fitted": 3.2216666667,
+         "residual": 0.15833333333,
+         "standardized_residual": 1.5305336685,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        }
+       ],
+       "interpretation": "One or more observations crossed a diagnostic screening rule and warrant examination. For Cook's D, D > 4/n is only a review heuristic; exceeding it does not by itself establish that an observation is influential, erroneous, or suitable for exclusion. Flagged observations remain in the reported analysis, are not automatically removed, and the model is not automatically refitted."
+      },
+      "reviewer_mode": {
+       "status": "PASS",
+       "no_cooks_distance_review_flags": false,
+       "summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 3 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      }
+     },
+     "transformation_analysis": {},
+     "diagnostic_observations": [
+      {
+       "observation": 1,
+       "treatment": "N0 × V1",
+       "block": "B1",
+       "observed": 1.66,
+       "fitted": 1.7133333333,
+       "residual": -0.053333333333,
+       "standardized_residual": -0.51554818306,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 2,
+       "treatment": "N0 × V2",
+       "block": "B1",
+       "observed": 2.04,
+       "fitted": 2.0066666667,
+       "residual": 0.033333333333,
+       "standardized_residual": 0.32221761441,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 3,
+       "treatment": "N60 × V1",
+       "block": "B1",
+       "observed": 2.36,
+       "fitted": 2.5633333333,
+       "residual": -0.20333333333,
+       "standardized_residual": -1.9655274479,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 4,
+       "treatment": "N60 × V2",
+       "block": "B1",
+       "observed": 3.55,
+       "fitted": 3.3166666667,
+       "residual": 0.23333333333,
+       "standardized_residual": 2.2555233009,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 5,
+       "treatment": "N120 × V1",
+       "block": "B1",
+       "observed": 3.21,
+       "fitted": 3.14,
+       "residual": 0.07,
+       "standardized_residual": 0.67665699026,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 6,
+       "treatment": "N120 × V2",
+       "block": "B1",
+       "observed": 4.25,
+       "fitted": 4.33,
+       "residual": -0.08,
+       "standardized_residual": -0.77332227459,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 7,
+       "treatment": "N0 × V1",
+       "block": "B2",
+       "observed": 2.04,
+       "fitted": 2.055,
+       "residual": -0.015,
+       "standardized_residual": -0.14499792648,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 8,
+       "treatment": "N0 × V2",
+       "block": "B2",
+       "observed": 2.35,
+       "fitted": 2.3483333333,
+       "residual": 0.0016666666667,
+       "standardized_residual": 0.016110880721,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 9,
+       "treatment": "N60 × V1",
+       "block": "B2",
+       "observed": 2.95,
+       "fitted": 2.905,
+       "residual": 0.045,
+       "standardized_residual": 0.43499377945,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 10,
+       "treatment": "N60 × V2",
+       "block": "B2",
+       "observed": 3.56,
+       "fitted": 3.6583333333,
+       "residual": -0.098333333333,
+       "standardized_residual": -0.95054196251,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 11,
+       "treatment": "N120 × V1",
+       "block": "B2",
+       "observed": 3.53,
+       "fitted": 3.4816666667,
+       "residual": 0.048333333333,
+       "standardized_residual": 0.4672155409,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 12,
+       "treatment": "N120 × V2",
+       "block": "B2",
+       "observed": 4.69,
+       "fitted": 4.6716666667,
+       "residual": 0.018333333333,
+       "standardized_residual": 0.17721968793,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 13,
+       "treatment": "N0 × V1",
+       "block": "B3",
+       "observed": 2.44,
+       "fitted": 2.3716666667,
+       "residual": 0.068333333333,
+       "standardized_residual": 0.66054610954,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 14,
+       "treatment": "N0 × V2",
+       "block": "B3",
+       "observed": 2.63,
+       "fitted": 2.665,
+       "residual": -0.035,
+       "standardized_residual": -0.33832849513,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 15,
+       "treatment": "N60 × V1",
+       "block": "B3",
+       "observed": 3.38,
+       "fitted": 3.2216666667,
+       "residual": 0.15833333333,
+       "standardized_residual": 1.5305336685,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 16,
+       "treatment": "N60 × V2",
+       "block": "B3",
+       "observed": 3.84,
+       "fitted": 3.975,
+       "residual": -0.135,
+       "standardized_residual": -1.3049813384,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 17,
+       "treatment": "N120 × V1",
+       "block": "B3",
+       "observed": 3.68,
+       "fitted": 3.7983333333,
+       "residual": -0.11833333333,
+       "standardized_residual": -1.1438725312,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 18,
+       "treatment": "N120 × V2",
+       "block": "B3",
+       "observed": 5.05,
+       "fitted": 4.9883333333,
+       "residual": 0.061666666667,
+       "standardized_residual": 0.59610258666,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      }
+     ],
+     "outlier_summary": {
+      "standardized_residual_threshold": 3,
+      "cooks_distance_screening_rule": "D > 4/n",
+      "cooks_distance_screening_threshold": 0.22222222222,
+      "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+      "n_extreme_outliers": 0,
+      "n_cooks_distance_review_flags": 3,
+      "flagged_observations": [
+       {
+        "observation": 3,
+        "treatment": "N60 × V1",
+        "block": "B1",
+        "observed": 2.36,
+        "fitted": 2.5633333333,
+        "residual": -0.20333333333,
+        "standardized_residual": -1.9655274479,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 4,
+        "treatment": "N60 × V2",
+        "block": "B1",
+        "observed": 3.55,
+        "fitted": 3.3166666667,
+        "residual": 0.23333333333,
+        "standardized_residual": 2.2555233009,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 15,
+        "treatment": "N60 × V1",
+        "block": "B3",
+        "observed": 3.38,
+        "fitted": 3.2216666667,
+        "residual": 0.15833333333,
+        "standardized_residual": 1.5305336685,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       }
+      ]
+     },
+     "breeding_implication": null,
+     "observation_accounting": {},
+     "experimental_unit_profile": {},
+     "rcbd_design_profile": {},
+     "factorial_profile": {
+      "design": "factorial_rcbd",
+      "factor_a": "nitrogen",
+      "factor_b": "variety",
+      "factor_a_levels": [
+       "N0",
+       "N60",
+       "N120"
+      ],
+      "factor_b_levels": [
+       "V1",
+       "V2"
+      ],
+      "treatment_combinations": 6,
+      "replications": 3,
+      "model_formula": "response ~ block + A * B",
+      "balanced_complete_required": true,
+      "sum_of_squares": {
+       "convention": "type_iii",
+       "contrasts": "sum_to_zero",
+       "balanced_complete_required": true,
+       "contrast_configuration_source": "governed_python_r_wrapper",
+       "equivalence_note": "VivaSense currently accepts balanced complete factorial data for this pathway. With this balanced structure and the governed sum-to-zero contrast coding, the factorial treatment terms are orthogonally represented, so the reported Type III tests are consistent with the corresponding balanced-design decomposition. Unbalanced factorial modelling is future work and is rejected rather than approximated."
+      }
+     },
+     "factor_a_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 1.7880255763e-9,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "factor_b_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 4.7440752698e-7,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "interaction_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 0.00083118589079,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "factor_a_mean_separation_status": {
+      "method": "Tukey HSD",
+      "scope": "marginal_main_effect",
+      "factor": "nitrogen",
+      "alpha": 0.05,
+      "omnibus_p_value": 1.7880255763e-9,
+      "residual_df": 10,
+      "residual_ms": 0.019263333333,
+      "means_provenance": "Marginal arithmetic mean of nitrogen, averaged over the other factor, from the balanced complete factorial model frame.",
+      "status": "success",
+      "reason_code": "tukey_hsd_success",
+      "message": "Tukey HSD was performed for nitrogen at α = 0.05."
+     },
+     "factor_b_mean_separation_status": {
+      "method": "Tukey HSD",
+      "scope": "marginal_main_effect",
+      "factor": "variety",
+      "alpha": 0.05,
+      "omnibus_p_value": 4.7440752698e-7,
+      "residual_df": 10,
+      "residual_ms": 0.019263333333,
+      "means_provenance": "Marginal arithmetic mean of variety, averaged over the other factor, from the balanced complete factorial model frame.",
+      "status": "success",
+      "reason_code": "tukey_hsd_success",
+      "message": "Tukey HSD was performed for variety at α = 0.05."
+     },
+     "simple_effects": {
+      "moving_a_within_b": [
+       {
+        "fixed_factor": "variety",
+        "fixed_level": "V1",
+        "moving_factor": "nitrogen",
+        "alpha": 0.05,
+        "residual_df": 10,
+        "residual_ms": 0.019263333333,
+        "comparison_family": "nitrogen compared within variety = V1",
+        "means_provenance": "Cell arithmetic means from the balanced complete factorial model frame.",
+        "multiplicity": "Tukey HSD controlled within this family of 3 nitrogen levels; families are not pooled.",
+        "scale_label": "Cell arithmetic mean",
+        "status": "success",
+        "reason_code": "simple_effect_tukey_success",
+        "message": "Tukey HSD compared nitrogen within variety = V1 at alpha = 0.05 using the full-model error term.",
+        "levels": [
+         "N120",
+         "N60",
+         "N0"
+        ],
+        "mean": [
+         3.4733333333,
+         2.8966666667,
+         2.0466666667
+        ],
+        "group": [
+         "a",
+         "b",
+         "c"
+        ],
+        "observations_per_cell": 3,
+        "honest_significant_difference": 0.31065323796
+       },
+       {
+        "fixed_factor": "variety",
+        "fixed_level": "V2",
+        "moving_factor": "nitrogen",
+        "alpha": 0.05,
+        "residual_df": 10,
+        "residual_ms": 0.019263333333,
+        "comparison_family": "nitrogen compared within variety = V2",
+        "means_provenance": "Cell arithmetic means from the balanced complete factorial model frame.",
+        "multiplicity": "Tukey HSD controlled within this family of 3 nitrogen levels; families are not pooled.",
+        "scale_label": "Cell arithmetic mean",
+        "status": "success",
+        "reason_code": "simple_effect_tukey_success",
+        "message": "Tukey HSD compared nitrogen within variety = V2 at alpha = 0.05 using the full-model error term.",
+        "levels": [
+         "N120",
+         "N60",
+         "N0"
+        ],
+        "mean": [
+         4.6633333333,
+         3.65,
+         2.34
+        ],
+        "group": [
+         "a",
+         "b",
+         "c"
+        ],
+        "observations_per_cell": 3,
+        "honest_significant_difference": 0.31065323796
+       }
+      ],
+      "moving_b_within_a": [
+       {
+        "fixed_factor": "nitrogen",
+        "fixed_level": "N0",
+        "moving_factor": "variety",
+        "alpha": 0.05,
+        "residual_df": 10,
+        "residual_ms": 0.019263333333,
+        "comparison_family": "variety compared within nitrogen = N0",
+        "means_provenance": "Cell arithmetic means from the balanced complete factorial model frame.",
+        "multiplicity": "Tukey HSD controlled within this family of 2 variety levels; families are not pooled.",
+        "scale_label": "Cell arithmetic mean",
+        "status": "success",
+        "reason_code": "simple_effect_tukey_success",
+        "message": "Tukey HSD compared variety within nitrogen = N0 at alpha = 0.05 using the full-model error term.",
+        "levels": [
+         "V2",
+         "V1"
+        ],
+        "mean": [
+         2.34,
+         2.0466666667
+        ],
+        "group": [
+         "a",
+         "b"
+        ],
+        "observations_per_cell": 3,
+        "honest_significant_difference": 0.25250055726
+       },
+       {
+        "fixed_factor": "nitrogen",
+        "fixed_level": "N60",
+        "moving_factor": "variety",
+        "alpha": 0.05,
+        "residual_df": 10,
+        "residual_ms": 0.019263333333,
+        "comparison_family": "variety compared within nitrogen = N60",
+        "means_provenance": "Cell arithmetic means from the balanced complete factorial model frame.",
+        "multiplicity": "Tukey HSD controlled within this family of 2 variety levels; families are not pooled.",
+        "scale_label": "Cell arithmetic mean",
+        "status": "success",
+        "reason_code": "simple_effect_tukey_success",
+        "message": "Tukey HSD compared variety within nitrogen = N60 at alpha = 0.05 using the full-model error term.",
+        "levels": [
+         "V2",
+         "V1"
+        ],
+        "mean": [
+         3.65,
+         2.8966666667
+        ],
+        "group": [
+         "a",
+         "b"
+        ],
+        "observations_per_cell": 3,
+        "honest_significant_difference": 0.25250055726
+       },
+       {
+        "fixed_factor": "nitrogen",
+        "fixed_level": "N120",
+        "moving_factor": "variety",
+        "alpha": 0.05,
+        "residual_df": 10,
+        "residual_ms": 0.019263333333,
+        "comparison_family": "variety compared within nitrogen = N120",
+        "means_provenance": "Cell arithmetic means from the balanced complete factorial model frame.",
+        "multiplicity": "Tukey HSD controlled within this family of 2 variety levels; families are not pooled.",
+        "scale_label": "Cell arithmetic mean",
+        "status": "success",
+        "reason_code": "simple_effect_tukey_success",
+        "message": "Tukey HSD compared variety within nitrogen = N120 at alpha = 0.05 using the full-model error term.",
+        "levels": [
+         "V2",
+         "V1"
+        ],
+        "mean": [
+         4.6633333333,
+         3.4733333333
+        ],
+        "group": [
+         "a",
+         "b"
+        ],
+        "observations_per_cell": 3,
+        "honest_significant_difference": 0.25250055726
+       }
+      ]
+     },
+     "simple_effects_status": {
+      "status": "success",
+      "scope": "simple_effects_within_significant_interaction",
+      "alpha": 0.05,
+      "residual_df": 10,
+      "residual_ms": 0.019263333333,
+      "message": "The nitrogen x variety interaction was significant at alpha = 0.05, so simple effects are the governing comparison.",
+      "multiplicity": "Tukey HSD controlled within each simple-effect family; families are not pooled.",
+      "error_term": "Pooled residual mean square and residual degrees of freedom from the full factorial model."
+     },
+     "interaction_plot": {
+      "x_axis_factor": "nitrogen",
+      "line_factor": "variety",
+      "y_axis_label": "yield_t_ha (cell arithmetic mean)",
+      "x_axis_levels": [
+       "N0",
+       "N60",
+       "N120"
+      ],
+      "series": [
+       {
+        "factor_b_level": "V1",
+        "factor_a_levels": [
+         "N0",
+         "N60",
+         "N120"
+        ],
+        "mean": [
+         2.0466666667,
+         2.8966666667,
+         3.4733333333
+        ],
+        "n": [
+         3,
+         3,
+         3
+        ]
+       },
+       {
+        "factor_b_level": "V2",
+        "factor_a_levels": [
+         "N0",
+         "N60",
+         "N120"
+        ],
+        "mean": [
+         2.34,
+         3.65,
+         4.6633333333
+        ],
+        "n": [
+         3,
+         3,
+         3
+        ]
+       }
+      ],
+      "scale_label": "Cell arithmetic mean",
+      "role": "descriptive_visualisation_not_a_significance_test",
+      "note": "Non-parallel lines suggest the effect of one factor depends on the level of the other. Read this alongside the interaction F-test; the plot alone establishes nothing."
+     },
+     "split_plot_profile": null,
+     "whole_plot_decision": null,
+     "sub_plot_decision": null,
+     "split_plot_interaction_decision": null,
+     "main_plot_separation_status": null,
+     "sub_plot_separation_status": null,
+     "level_order": {
+      "block": [
+       "B1",
+       "B2",
+       "B3"
+      ],
+      "factor_a": [
+       "N0",
+       "N60",
+       "N120"
+      ],
+      "factor_b": [
+       "V1",
+       "V2"
+      ]
+     },
+     "response_exclusion": null
+    },
+    "interpretation": null,
+    "anova_type_warning": null,
+    "analysis_context": {
+     "is_single_environment": true,
+     "environment_count": 1,
+     "design_type": "single"
+    },
+    "analysis_settings": {
+     "inferential_alpha": 0.05,
+     "diagnostic_alpha": 0.05
+    }
+   },
+   "error": null,
+   "data_warnings": [
+    "Preview: this analysis is session-only. Download your report before leaving."
+   ],
+   "observation_accounting": null,
+   "experimental_unit_profile": {},
+   "rcbd_design_profile": {},
+   "structural_validation": null
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": null,
+  "n_reps": 3,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": "rep",
+  "original_rep_column": "rep",
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [],
+ "anova_type_warning": null,
+ "breeding_summary": "These conclusions are based on data from this specific experiment and should be interpreted within that context. Findings should be validated across additional environments and seasons before applied decisions are finalised.",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.05,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "preview",
+  "reopenable": false,
+  "persistence": "session_only",
+  "disclosure": "Preview: this analysis is session-only. Download your report before leaving."
+ },
+ "report_renderer_version": "factorial-word-v1.0-20261002"
+}

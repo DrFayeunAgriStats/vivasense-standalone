@@ -1,0 +1,865 @@
+{
+ "summary_table": [
+  {
+   "trait": "fresh_leaf_yield",
+   "grand_mean": 14.818,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "success",
+   "error": null
+  }
+ ],
+ "trait_results": {
+  "fresh_leaf_yield": {
+   "status": "success",
+   "analysis_result": {
+    "status": "SUCCESS",
+    "mode": "single",
+    "data_validation": {},
+    "variance_warnings": {},
+    "result": {
+     "environment_mode": "single_environment",
+     "n_genotypes": 5,
+     "n_reps": 4,
+     "n_environments": null,
+     "grand_mean": 14.818,
+     "variance_components": {
+      "sigma2_genotype": 1.7846908333,
+      "sigma2_error": 0.31242916667,
+      "sigma2_phenotypic": 1.862798125,
+      "heritability_basis": "single_environment_model"
+     },
+     "heritability": {},
+     "genetic_parameters": {},
+     "anova_table": {
+      "source": [
+       "rep",
+       "genotype",
+       "Residuals"
+      ],
+      "df": [
+       3,
+       4,
+       12
+      ],
+      "ss": [
+       6.695,
+       29.80477,
+       3.74915
+      ],
+      "ms": [
+       2.2316666667,
+       7.4511925,
+       0.31242916667
+      ],
+      "f_value": [
+       7.1429524025,
+       23.8492218236,
+       null
+      ],
+      "p_value": [
+       0.0052185354473,
+       0.000012317224472,
+       null
+      ],
+      "display_source": [
+       "rep",
+       "genotype",
+       "Residuals"
+      ]
+     },
+     "mean_separation": {
+      "genotype": [
+       "TOC-04",
+       "TOC-02",
+       "TOC-05",
+       "TOC-01",
+       "TOC-03"
+      ],
+      "mean": [
+       16.7375,
+       15.315,
+       14.695,
+       14.3325,
+       13.01
+      ],
+      "se": [
+       0.27947681776,
+       0.27947681776,
+       0.27947681776,
+       0.27947681776,
+       0.27947681776
+      ],
+      "group": [
+       "a",
+       "b",
+       "b",
+       "b",
+       "c"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "treatment_label": null,
+      "scale_label": null
+     },
+     "treatment_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 0.000012317224472,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "mean_separation_status": {
+      "status": "success",
+      "method": "Tukey HSD",
+      "alpha": 0.05,
+      "omnibus_p_value": 0.000012317224472,
+      "reason_code": "tukey_hsd_success",
+      "message": "Tukey HSD was performed at α = 0.05.",
+      "residual_df": 12,
+      "residual_ms": 0.31242916667,
+      "means_provenance": "Arithmetic treatment means from the complete RCBD fitted model frame; each treatment is represented once in every block."
+     },
+     "mean_separation_b": null,
+     "interaction_separation": null,
+     "mean_separation_c": null,
+     "mean_separation_basis": {},
+     "two_way_interaction_means": {},
+     "n_treatment_factors": 1,
+     "design": "rcbd",
+     "main_plot_mean_separation": null,
+     "interaction_means": {},
+     "descriptive_stats": null,
+     "assumption_tests": {
+      "overall": {
+       "passed": true,
+       "interpretation": "No strong formal normality concern was detected in the fitted RCBD residuals at the 0.05 diagnostic threshold. Influence screening is reported below. Graphical residual diagnostics are not included in this version.",
+       "reviewer_summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 3 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      },
+      "normality": {
+       "test": "Shapiro-Wilk",
+       "statistic": 0.94445960965,
+       "p_value": 0.29069454232,
+       "passed": true,
+       "interpretation": "The Shapiro-Wilk test did not provide strong evidence against residual normality at the 0.05 diagnostic threshold (W = 0.9445, p = 0.2907). Formal normality testing is supplementary and should not be read as proof of normality."
+      },
+      "homogeneity": {
+       "test": "Levene",
+       "statistic": 0.5376635495,
+       "p_value": 0.71037751708,
+       "interpretation": "This raw-response-by-treatment formal variance test is supplementary and is not an authoritative pass/fail assessment of constant error variance for the fitted complete RCBD model.",
+       "provenance": "raw_response_by_treatment",
+       "role": "supplementary_not_authoritative_for_complete_rcbd_model_diagnostics",
+       "authoritative": false
+      },
+      "diagnostic_policy": {
+       "design": "one_factor_complete_rcbd",
+       "diagnostic_alpha": 0.05,
+       "residual_model": "trait_value ~ rep + genotype",
+       "variance_assessment": "residuals_vs_fitted_primary",
+       "normality_assessment": "qq_plot_primary_shapiro_supplementary",
+       "independence": {
+        "statistically_tested": false,
+        "message": "Independence is primarily supported by the experimental design, correct identification of experimental units, and random allocation of treatments. VivaSense cannot verify independence from the uploaded dataset alone."
+       },
+       "formal_variance_test": {
+        "test": "Levene",
+        "provenance": "raw_response_by_treatment",
+        "role": "supplementary_not_authoritative_for_complete_rcbd_model_diagnostics",
+        "authoritative": false
+       }
+      },
+      "outlier_detection": {
+       "standardized_residual_threshold": 3,
+       "cooks_distance_screening_rule": "D > 4/n",
+       "cooks_distance_screening_threshold": 0.2,
+       "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+       "n_extreme_outliers": 0,
+       "n_cooks_distance_review_flags": 3,
+       "flagged_observations": [
+        {
+         "observation": 3,
+         "treatment": "TOC-03",
+         "block": "R1",
+         "observed": 11.44,
+         "fitted": 12.12,
+         "residual": -0.68,
+         "standardized_residual": -1.5705707403,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 9,
+         "treatment": "TOC-04",
+         "block": "R2",
+         "observed": 18.1,
+         "fitted": 17.3175,
+         "residual": 0.7825,
+         "standardized_residual": 1.8073111828,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 19,
+         "treatment": "TOC-04",
+         "block": "R4",
+         "observed": 15.75,
+         "fitted": 16.6075,
+         "residual": -0.8575,
+         "standardized_residual": -1.9805358968,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        }
+       ],
+       "interpretation": "One or more observations crossed a diagnostic screening rule and warrant examination. For Cook's D, D > 4/n is only a review heuristic; exceeding it does not by itself establish that an observation is influential, erroneous, or suitable for exclusion. Flagged observations remain in the reported analysis, are not automatically removed, and the model is not automatically refitted."
+      },
+      "reviewer_mode": {
+       "status": "PASS",
+       "no_cooks_distance_review_flags": false,
+       "summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 3 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      }
+     },
+     "transformation_analysis": {
+      "triggered": false,
+      "recommendation_state": "not_required",
+      "response_semantic": "unknown",
+      "raw_diagnostics": {
+       "shapiro": {
+        "statistic": 0.94445960965,
+        "p_value": 0.29069454232
+       },
+       "levene": {
+        "test": "Levene (median-centered)",
+        "statistic": 0.5376635495,
+        "p_value": 0.71037751708
+       },
+       "assumptions_met": true
+      },
+      "disclosure_text": "Residual diagnostics met ANOVA assumptions (Shapiro-Wilk W = 0.944, p = 0.291; Levene p = 0.710); no transformation was required."
+     },
+     "diagnostic_observations": [
+      {
+       "observation": 1,
+       "treatment": "TOC-01",
+       "block": "R1",
+       "observed": 13.83,
+       "fitted": 13.4425,
+       "residual": 0.3875,
+       "standardized_residual": 0.89499435569,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 2,
+       "treatment": "TOC-02",
+       "block": "R1",
+       "observed": 14.78,
+       "fitted": 14.425,
+       "residual": 0.355,
+       "standardized_residual": 0.81993031295,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 3,
+       "treatment": "TOC-03",
+       "block": "R1",
+       "observed": 11.44,
+       "fitted": 12.12,
+       "residual": -0.68,
+       "standardized_residual": -1.5705707403,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 4,
+       "treatment": "TOC-04",
+       "block": "R1",
+       "observed": 16.2,
+       "fitted": 15.8475,
+       "residual": 0.3525,
+       "standardized_residual": 0.81415615582,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 5,
+       "treatment": "TOC-05",
+       "block": "R1",
+       "observed": 13.39,
+       "fitted": 13.805,
+       "residual": -0.415,
+       "standardized_residual": -0.95851008415,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 6,
+       "treatment": "TOC-01",
+       "block": "R2",
+       "observed": 14.38,
+       "fitted": 14.9125,
+       "residual": -0.5325,
+       "standardized_residual": -1.2298954694,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 7,
+       "treatment": "TOC-02",
+       "block": "R2",
+       "observed": 15.7,
+       "fitted": 15.895,
+       "residual": -0.195,
+       "standardized_residual": -0.45038425641,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 8,
+       "treatment": "TOC-03",
+       "block": "R2",
+       "observed": 13.8,
+       "fitted": 13.59,
+       "residual": 0.21,
+       "standardized_residual": 0.48502919921,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 9,
+       "treatment": "TOC-04",
+       "block": "R2",
+       "observed": 18.1,
+       "fitted": 17.3175,
+       "residual": 0.7825,
+       "standardized_residual": 1.8073111828,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 10,
+       "treatment": "TOC-05",
+       "block": "R2",
+       "observed": 15.01,
+       "fitted": 15.275,
+       "residual": -0.265,
+       "standardized_residual": -0.61206065615,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 11,
+       "treatment": "TOC-01",
+       "block": "R3",
+       "observed": 14.41,
+       "fitted": 14.7725,
+       "residual": -0.3625,
+       "standardized_residual": -0.83725278435,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 12,
+       "treatment": "TOC-02",
+       "block": "R3",
+       "observed": 15.9,
+       "fitted": 15.755,
+       "residual": 0.145,
+       "standardized_residual": 0.33490111374,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 13,
+       "treatment": "TOC-03",
+       "block": "R3",
+       "observed": 13.62,
+       "fitted": 13.45,
+       "residual": 0.17,
+       "standardized_residual": 0.39264268508,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 14,
+       "treatment": "TOC-04",
+       "block": "R3",
+       "observed": 16.9,
+       "fitted": 17.1775,
+       "residual": -0.2775,
+       "standardized_residual": -0.64093144181,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 15,
+       "treatment": "TOC-05",
+       "block": "R3",
+       "observed": 15.46,
+       "fitted": 15.135,
+       "residual": 0.325,
+       "standardized_residual": 0.75064042735,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 16,
+       "treatment": "TOC-01",
+       "block": "R4",
+       "observed": 14.71,
+       "fitted": 14.2025,
+       "residual": 0.5075,
+       "standardized_residual": 1.1721538981,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 17,
+       "treatment": "TOC-02",
+       "block": "R4",
+       "observed": 14.88,
+       "fitted": 15.185,
+       "residual": -0.305,
+       "standardized_residual": -0.70444717028,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 18,
+       "treatment": "TOC-03",
+       "block": "R4",
+       "observed": 13.18,
+       "fitted": 12.88,
+       "residual": 0.3,
+       "standardized_residual": 0.69289885602,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 19,
+       "treatment": "TOC-04",
+       "block": "R4",
+       "observed": 15.75,
+       "fitted": 16.6075,
+       "residual": -0.8575,
+       "standardized_residual": -1.9805358968,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 20,
+       "treatment": "TOC-05",
+       "block": "R4",
+       "observed": 14.92,
+       "fitted": 14.565,
+       "residual": 0.355,
+       "standardized_residual": 0.81993031295,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      }
+     ],
+     "outlier_summary": {
+      "standardized_residual_threshold": 3,
+      "cooks_distance_screening_rule": "D > 4/n",
+      "cooks_distance_screening_threshold": 0.2,
+      "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+      "n_extreme_outliers": 0,
+      "n_cooks_distance_review_flags": 3,
+      "flagged_observations": [
+       {
+        "observation": 3,
+        "treatment": "TOC-03",
+        "block": "R1",
+        "observed": 11.44,
+        "fitted": 12.12,
+        "residual": -0.68,
+        "standardized_residual": -1.5705707403,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 9,
+        "treatment": "TOC-04",
+        "block": "R2",
+        "observed": 18.1,
+        "fitted": 17.3175,
+        "residual": 0.7825,
+        "standardized_residual": 1.8073111828,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 19,
+        "treatment": "TOC-04",
+        "block": "R4",
+        "observed": 15.75,
+        "fitted": 16.6075,
+        "residual": -0.8575,
+        "standardized_residual": -1.9805358968,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       }
+      ]
+     },
+     "breeding_implication": null,
+     "observation_accounting": {
+      "input_rows": 20,
+      "missing_response_rows": 0,
+      "nonnumeric_response_rows": 0,
+      "rows_submitted_to_r": 20,
+      "rows_fitted_by_r": 20,
+      "effective_n": 20
+     },
+     "experimental_unit_profile": {},
+     "rcbd_design_profile": {
+      "complete": true,
+      "treatment_count": 5,
+      "block_count": 4,
+      "expected_cells": 20,
+      "observed_cells": 20,
+      "experimental_units": 20,
+      "observations_per_treatment": 4,
+      "observations_per_block": 5,
+      "counts_by_treatment": {
+       "TOC-01": 4,
+       "TOC-02": 4,
+       "TOC-03": 4,
+       "TOC-04": 4,
+       "TOC-05": 4
+      },
+      "counts_by_block": {
+       "R1": 5,
+       "R2": 5,
+       "R3": 5,
+       "R4": 5
+      },
+      "treatment_block_counts": [
+       {
+        "treatment": "TOC-01",
+        "block": "R1",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-01",
+        "block": "R2",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-01",
+        "block": "R3",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-01",
+        "block": "R4",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-02",
+        "block": "R1",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-02",
+        "block": "R2",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-02",
+        "block": "R3",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-02",
+        "block": "R4",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-03",
+        "block": "R1",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-03",
+        "block": "R2",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-03",
+        "block": "R3",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-03",
+        "block": "R4",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-04",
+        "block": "R1",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-04",
+        "block": "R2",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-04",
+        "block": "R3",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-04",
+        "block": "R4",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-05",
+        "block": "R1",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-05",
+        "block": "R2",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-05",
+        "block": "R3",
+        "count": 1
+       },
+       {
+        "treatment": "TOC-05",
+        "block": "R4",
+        "count": 1
+       }
+      ],
+      "summary": "5 treatments × 4 blocks; 20 experimental units; each treatment occurs once in every block."
+     },
+     "factorial_profile": null,
+     "factor_a_decision": null,
+     "factor_b_decision": null,
+     "interaction_decision": null,
+     "factor_a_mean_separation_status": null,
+     "factor_b_mean_separation_status": null,
+     "simple_effects": null,
+     "simple_effects_status": null,
+     "interaction_plot": null,
+     "split_plot_profile": null,
+     "whole_plot_decision": null,
+     "sub_plot_decision": null,
+     "split_plot_interaction_decision": null,
+     "main_plot_separation_status": null,
+     "sub_plot_separation_status": null,
+     "level_order": {
+      "treatment": [
+       "TOC-01",
+       "TOC-02",
+       "TOC-03",
+       "TOC-04",
+       "TOC-05"
+      ],
+      "block": [
+       "R1",
+       "R2",
+       "R3",
+       "R4"
+      ]
+     },
+     "response_exclusion": null
+    },
+    "interpretation": "The treatment omnibus test was significant at the selected inferential alpha of 0.05 (p < 0.001; decision rule: p-value <= alpha). Tukey HSD was performed at α = 0.05.",
+    "anova_type_warning": null,
+    "analysis_context": {
+     "is_single_environment": true,
+     "environment_count": 1,
+     "design_type": "single"
+    },
+    "analysis_settings": {
+     "inferential_alpha": 0.05,
+     "diagnostic_alpha": 0.05
+    }
+   },
+   "error": null,
+   "data_warnings": [],
+   "observation_accounting": {
+    "input_rows": 20,
+    "missing_response_rows": 0,
+    "nonnumeric_response_rows": 0,
+    "rows_submitted_to_r": 20,
+    "rows_fitted_by_r": 20,
+    "effective_n": 20
+   },
+   "experimental_unit_profile": {},
+   "rcbd_design_profile": {
+    "complete": true,
+    "treatment_count": 5,
+    "block_count": 4,
+    "expected_cells": 20,
+    "observed_cells": 20,
+    "experimental_units": 20,
+    "observations_per_treatment": 4,
+    "observations_per_block": 5,
+    "counts_by_treatment": {
+     "TOC-01": 4,
+     "TOC-02": 4,
+     "TOC-03": 4,
+     "TOC-04": 4,
+     "TOC-05": 4
+    },
+    "counts_by_block": {
+     "R1": 5,
+     "R2": 5,
+     "R3": 5,
+     "R4": 5
+    },
+    "treatment_block_counts": [
+     {
+      "treatment": "TOC-01",
+      "block": "R1",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-01",
+      "block": "R2",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-01",
+      "block": "R3",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-01",
+      "block": "R4",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-02",
+      "block": "R1",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-02",
+      "block": "R2",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-02",
+      "block": "R3",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-02",
+      "block": "R4",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-03",
+      "block": "R1",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-03",
+      "block": "R2",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-03",
+      "block": "R3",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-03",
+      "block": "R4",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-04",
+      "block": "R1",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-04",
+      "block": "R2",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-04",
+      "block": "R3",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-04",
+      "block": "R4",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-05",
+      "block": "R1",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-05",
+      "block": "R2",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-05",
+      "block": "R3",
+      "count": 1
+     },
+     {
+      "treatment": "TOC-05",
+      "block": "R4",
+      "count": 1
+     }
+    ],
+    "summary": "5 treatments × 4 blocks; 20 experimental units; each treatment occurs once in every block."
+   },
+   "structural_validation": null
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": 5,
+  "n_reps": 4,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": "rep",
+  "original_rep_column": "rep",
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [],
+ "anova_type_warning": null,
+ "breeding_summary": "These conclusions are based on data from this specific experiment and should be interpreted within that context. Findings should be validated across additional environments and seasons before applied decisions are finalised.",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.05,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "early_access",
+  "reopenable": true,
+  "persistence": "durable_saved_run",
+  "disclosure": "Early Access: RCBD runs saved through the governed workflow can be reopened."
+ },
+ "report_renderer_version": "rcbd-word-v1.5-20261003"
+}

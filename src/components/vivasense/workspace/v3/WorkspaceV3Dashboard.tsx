@@ -26,6 +26,7 @@ import { OnboardingModules } from "./OnboardingModules";
 import { RecentAnalysesV3 } from "./RecentAnalysesV3";
 import { WorkspaceFooterMetrics } from "./WorkspaceFooterMetrics";
 import { persistentRcbdAnalysisRunId } from "@/services/history/persistentReport";
+import { countPublicationReady } from "@/components/vivasense/genetics-params/feBeta02";
 
 /** Stepper stage key → the workspace action it triggers. */
 const STAGE_ACTION: Record<string, WorkspaceAction> = {
@@ -88,9 +89,11 @@ export function WorkspaceV3Dashboard() {
     const runtimes = analyses.map((a) => a.execution_time_ms).filter((n): n is number => n != null && Number.isFinite(n));
     const avgRuntimeMs = runtimes.length ? runtimes.reduce((s, n) => s + n, 0) / runtimes.length : null;
 
-    // publication-ready = successful analyses (all rows are 'success' today).
-    const publicationReady = analyses.filter((a) => a.analysis_status === "success").length;
-    const pending = analyses.length - publicationReady;
+    // publication-ready = successful analyses that are not Preview. A Preview
+    // (session-only) Factorial / Split-Plot analysis is never counted as ready;
+    // it is reported separately so it is neither hidden nor over-claimed.
+    const { publicationReady, preview, notSuccessful } = countPublicationReady(analyses);
+    const pending = notSuccessful;
 
     return {
       state,
@@ -99,6 +102,7 @@ export function WorkspaceV3Dashboard() {
       stageDates: deriveStageDates(analyses),
       avgRuntimeMs,
       publicationReady,
+      preview,
       pending,
     };
   }, [studies, analyses]);
@@ -185,6 +189,7 @@ export function WorkspaceV3Dashboard() {
 
           <WorkspaceFooterMetrics
             publicationReady={derived.publicationReady}
+            previewCount={derived.preview}
             pending={derived.pending}
             studyCount={derived.state.studyCount}
             avgRuntimeMs={derived.avgRuntimeMs}

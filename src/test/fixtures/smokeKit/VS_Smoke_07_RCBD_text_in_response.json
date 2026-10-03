@@ -1,0 +1,106 @@
+{
+ "summary_table": [
+  {
+   "trait": "fresh_leaf_yield",
+   "grand_mean": null,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "failed",
+   "error": "Non-numeric value 'dead' in fresh_leaf_yield at TOC-03 × R3. Response values must be numbers; correct or clear these cells in the source file and resubmit."
+  }
+ ],
+ "trait_results": {
+  "fresh_leaf_yield": {
+   "status": "failed",
+   "analysis_result": null,
+   "error": "Non-numeric value 'dead' in fresh_leaf_yield at TOC-03 × R3. Response values must be numbers; correct or clear these cells in the source file and resubmit.",
+   "data_warnings": [],
+   "observation_accounting": {
+    "input_rows": 20,
+    "missing_response_rows": 0,
+    "nonnumeric_response_rows": 1,
+    "rows_submitted_to_r": 0,
+    "rows_fitted_by_r": 0,
+    "effective_n": 0
+   },
+   "experimental_unit_profile": null,
+   "rcbd_design_profile": null,
+   "structural_validation": {
+    "code": "rcbd_non_numeric_response",
+    "severity": "error",
+    "message": "Non-numeric value 'dead' in fresh_leaf_yield at TOC-03 × R3. Response values must be numbers; correct or clear these cells in the source file and resubmit.",
+    "treatment_levels": [
+     "TOC-01",
+     "TOC-02",
+     "TOC-03",
+     "TOC-04",
+     "TOC-05"
+    ],
+    "block_levels": [
+     "R1",
+     "R2",
+     "R3",
+     "R4"
+    ],
+    "non_numeric_cells": [
+     {
+      "row": 14,
+      "value": "dead",
+      "labels": [
+       "TOC-03",
+       "R3"
+      ],
+      "label_columns": [
+       "genotype",
+       "rep"
+      ]
+     }
+    ],
+    "missing_cells": [],
+    "duplicate_cells": []
+   }
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": 5,
+  "n_reps": 4,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": "rep",
+  "original_rep_column": "rep",
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [
+  "fresh_leaf_yield"
+ ],
+ "anova_type_warning": null,
+ "breeding_summary": "",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.05,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "early_access",
+  "reopenable": true,
+  "persistence": "durable_saved_run",
+  "disclosure": "Early Access: RCBD runs saved through the governed workflow can be reopened."
+ },
+ "report_renderer_version": "rcbd-word-v1.5-20261003"
+}

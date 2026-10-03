@@ -1,6 +1,7 @@
 import { API_BASE } from "./apiConfig";
 import { buildModeHeaders } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
+import { messageFromErrorBody } from "@/components/vivasense/genetics-params/feBeta02";
 
 export type ResponseType = "json" | "blob" | "text";
 
@@ -32,16 +33,15 @@ function buildHeaders(options: VivaSenseRequestOptions, isJsonBody: boolean): He
 }
 
 async function extractErrorDetail(response: Response): Promise<string> {
+  // Structured bodies (detail.message, 422 arrays) become readable text; raw
+  // JSON is never shown to the researcher.
   try {
     const body = await response.json();
-    if (typeof body?.detail === "string") return body.detail;
-    if (typeof body?.error === "string") return body.error;
-    if (typeof body?.message === "string") return body.message;
-    return JSON.stringify(body);
+    return messageFromErrorBody(body, response.status);
   } catch {
     try {
       const text = await response.text();
-      if (text) return text;
+      if (text) return messageFromErrorBody(text, response.status);
     } catch {
       // ignore
     }

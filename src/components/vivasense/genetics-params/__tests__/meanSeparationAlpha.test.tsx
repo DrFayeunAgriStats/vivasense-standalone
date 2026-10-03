@@ -30,9 +30,13 @@ const separation = (alpha: number, test = "Tukey HSD") => ({
   alpha,
 });
 
-/** The detailed tables live behind "Show Detailed Statistics"; open it. */
+/**
+ * The detailed tables live behind a collapsed control; open it. The domain-neutral
+ * ANOVA screen names it "View ANOVA Table & Mean Separation"; legacy callers that
+ * do not pass `domainNeutral` keep "Show Detailed Statistics".
+ */
 function openDetails() {
-  fireEvent.click(screen.getByText(/Show Detailed Statistics/i));
+  fireEvent.click(screen.getByText(/View ANOVA Table & Mean Separation|Show Detailed Statistics/i));
 }
 
 function renderPanel(alpha: number, sepAlpha = alpha, test = "Tukey HSD") {

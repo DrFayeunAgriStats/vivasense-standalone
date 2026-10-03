@@ -12,14 +12,17 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadPreview, fileToBase64 } from "@/lib/geneticsUploadApi";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
 import type { DatasetContext, UploadPreviewResponse } from "@/types/geneticsUpload";
+import { rewriteMappingWarning } from "./feBeta02";
 
 interface Props {
   onDatasetReady: (ctx: DatasetContext) => void;
   datasetContext: DatasetContext | null;
 }
 
+// The backend's generic hint tells users to "toggle it to Treatment Factor", a
+// control this screen does not have; rewrite it to name the selector that exists.
 const domainNeutralWarning = (warning: string) =>
-  warning.replace(/genotype/gi, "treatment / factor");
+  rewriteMappingWarning(warning).replace(/genotype/gi, "treatment / factor");
 
 export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   const { toast } = useToast();

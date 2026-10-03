@@ -21,6 +21,7 @@ import {
   factorialAllCellAlphaWarning,
   shouldHideFactorialAllCellGroups,
 } from "./releaseDisclosures";
+import { levelOrderPermutation, orderByLevelOrder, readLevelOrder } from "./feBeta02";
 
 export const FACTORIAL_DESIGNS: GovernedDesignType[] = ["factorial_crd", "factorial_rcbd"];
 
@@ -124,8 +125,11 @@ export function readFactorialProfile(
     designLabel: isRcbd ? "Factorial RCBD" : "Factorial CRD",
     factorA: typeof profile.factor_a === "string" ? profile.factor_a : "Factor A",
     factorB: typeof profile.factor_b === "string" ? profile.factor_b : "Factor B",
-    factorALevels: asStringArray(profile.factor_a_levels),
-    factorBLevels: asStringArray(profile.factor_b_levels),
+    // Unranked structural lists follow the backend's file-level order.
+    factorALevels: orderByLevelOrder(
+      asStringArray(profile.factor_a_levels), (l) => l, readLevelOrder(result).factor_a),
+    factorBLevels: orderByLevelOrder(
+      asStringArray(profile.factor_b_levels), (l) => l, readLevelOrder(result).factor_b),
     treatmentCombinations: asNumber(profile.treatment_combinations),
     replications: asNumber(profile.replications),
     blockFactor: isRcbd ? blockFactor : null,
@@ -607,12 +611,29 @@ export function readInteractionPlot(result: GeneticsResult): InteractionPlotDisp
     .filter((s): s is InteractionPlotSeries => s !== null && s.means.length > 0);
   if (series.length === 0) return null;
 
+  // Axis and line order follow level_order. Each series' (levels, means, n) are
+  // permuted together so a point can never detach from its level.
+  const order = readLevelOrder(result);
+  const alignedSeries = orderByLevelOrder(
+    series.map((s) => {
+      const perm = levelOrderPermutation(s.xLevels, order.factor_a);
+      return {
+        ...s,
+        xLevels: perm.map((i) => s.xLevels[i]),
+        means: perm.map((i) => s.means[i]),
+        n: s.n.length === s.xLevels.length ? perm.map((i) => s.n[i]) : s.n,
+      };
+    }),
+    (s) => s.label,
+    order.factor_b,
+  );
+
   return {
     xAxisFactor: typeof plot.x_axis_factor === "string" ? plot.x_axis_factor : "Factor A",
     lineFactor: typeof plot.line_factor === "string" ? plot.line_factor : "Factor B",
     yAxisLabel: typeof plot.y_axis_label === "string" ? plot.y_axis_label : "Mean",
-    xLevels: asStringArray(plot.x_axis_levels),
-    series,
+    xLevels: orderByLevelOrder(asStringArray(plot.x_axis_levels), (l) => l, order.factor_a),
+    series: alignedSeries,
     scaleLabel: typeof plot.scale_label === "string" ? plot.scale_label : "Cell arithmetic mean",
     note:
       typeof plot.note === "string"

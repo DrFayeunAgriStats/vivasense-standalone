@@ -11,6 +11,7 @@ import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { isGovernedOneFactor } from "./governedOneFactor";
 import { buildDescriptiveStats, describeResultScale } from "./resultCounts";
 import { pl } from "@/lib/utils";
+import { readBackendCvPercent } from "./feBeta02";
 
 interface Props {
   results: UploadAnalysisResponse;
@@ -114,6 +115,7 @@ export function RestoredRcbdResults({ results }: Props) {
               }
               inferentialAlpha={alpha}
               anovaTable={result.anova_table}
+              cvPercent={readBackendCvPercent(result)}
               meanSeparation={result.mean_separation}
               descriptiveStats={buildDescriptiveStats(result)}
             />

@@ -18,6 +18,7 @@ import type {
   UploadAnalysisResponse,
 } from "@/services/geneticsUploadApi";
 import type { GovernedDesignType } from "./anovaDesigns";
+import { describeCooksReview, readCooksReview } from "./feBeta02";
 
 /**
  * Diagnostic reference alpha.
@@ -355,6 +356,10 @@ export function describeDiagnosticsPolicy(
   const policy = result?.diagnostic_policy;
   const governed =
     !!policy && typeof policy === "object" && Object.keys(policy).length > 0;
+  // Cook's-D screening result as the backend reported it (new field names first,
+  // one-release fallback to the legacy ones). Worded as a review prompt, never as
+  // proof that an observation is influential.
+  const cooksSentence = describeCooksReview(readCooksReview(result?.outlier_summary));
   return {
     diagnosticAlpha: DIAGNOSTIC_ALPHA,
     inferentialAlpha,
@@ -364,6 +369,7 @@ export function describeDiagnosticsPolicy(
       "Residual-versus-fitted patterns are evidence about variance behaviour across the fitted range.",
       "The Q-Q plot is the primary graphical evidence about the normality of residuals; the Shapiro-Wilk test is supplementary and is sensitive to sample size.",
       "Influence measures such as Cook's distance flag observations worth inspecting; they are evidence, not grounds for removal.",
+      ...(cooksSentence ? [cooksSentence] : []),
       "Independence follows from how the experiment was randomised and cannot be established from residuals alone.",
       "No observation is deleted and no transformation is applied automatically. Diagnostics should be considered with the design context.",
     ],

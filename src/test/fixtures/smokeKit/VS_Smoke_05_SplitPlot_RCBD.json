@@ -1,0 +1,826 @@
+{
+ "summary_table": [
+  {
+   "trait": "yield_t_ha",
+   "grand_mean": 4.1404166667,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "success",
+   "error": null
+  }
+ ],
+ "trait_results": {
+  "yield_t_ha": {
+   "status": "success",
+   "analysis_result": {
+    "status": "SUCCESS",
+    "mode": "single",
+    "data_validation": {},
+    "variance_warnings": {},
+    "result": {
+     "environment_mode": "single_environment",
+     "n_genotypes": null,
+     "n_reps": 4,
+     "n_environments": null,
+     "grand_mean": 4.1404166667,
+     "variance_components": {
+      "sigma2_subplot_error": 0.017508333333,
+      "sigma2_whole_plot_error": 0.41668194444,
+      "cv_A": 15.5904371551,
+      "cv_B": 3.1957908949,
+      "n_main_plot_levels": 2,
+      "n_sub_plot_levels": 3
+     },
+     "heritability": {},
+     "genetic_parameters": {},
+     "anova_table": {
+      "source": [
+       "Replication",
+       "irrigation",
+       "Error A",
+       "variety",
+       "irrigation×variety",
+       "Error B"
+      ],
+      "df": [
+       3,
+       1,
+       3,
+       2,
+       2,
+       12
+      ],
+      "ss": [
+       4.1914791667,
+       18.6737041667,
+       1.2500458333,
+       5.3285333333,
+       0.31603333333,
+       0.2101
+      ],
+      "ms": [
+       1.3971597222,
+       18.6737041667,
+       0.41668194444,
+       2.6642666667,
+       0.15801666667,
+       0.017508333333
+      ],
+      "f_value": [
+       null,
+       44.8152467743,
+       null,
+       152.1713469776,
+       9.0252260828,
+       null
+      ],
+      "p_value": [
+       null,
+       0.006799871771,
+       null,
+       2.9794810248e-9,
+       0.0040549117734,
+       null
+      ],
+      "display_source": [
+       "Replication",
+       "irrigation",
+       "Error A",
+       "variety",
+       "irrigation×variety",
+       "Error B"
+      ]
+     },
+     "mean_separation": {
+      "genotype": [
+       "V3",
+       "V2",
+       "V1"
+      ],
+      "mean": [
+       4.74375,
+       4.08375,
+       3.59375
+      ],
+      "se": [
+       0.046781851894,
+       0.046781851894,
+       0.046781851894
+      ],
+      "group": [
+       "a",
+       "b",
+       "c"
+      ],
+      "test": "Protected Fisher's LSD",
+      "alpha": 0.01,
+      "treatment_label": "variety",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "treatment_decision": null,
+     "mean_separation_status": null,
+     "mean_separation_b": null,
+     "interaction_separation": null,
+     "mean_separation_c": null,
+     "mean_separation_basis": {
+      "selected": "interaction_primary_no_formal_simple_effects",
+      "significant_terms": "main_plot:sub_plot",
+      "alpha": 0.01,
+      "rationale": "The whole-plot x subplot interaction is significant at the selected alpha, so the effect of each factor depends on the level of the other and the interaction is the primary inferential result. Marginal means average over that dependence and are secondary. Split-Plot v1 does not provide formal simple-effects inference: comparing subplot levels within a whole-plot level uses the subplot error, but comparing whole-plot levels within a subplot level requires a combined whole-plot/subplot variance with approximate degrees of freedom, which is outside this version. Treatment-combination means below are descriptive.",
+      "simple_effects_available": false
+     },
+     "two_way_interaction_means": {},
+     "n_treatment_factors": 0,
+     "design": "split_plot_rcbd",
+     "main_plot_mean_separation": {
+      "genotype": [
+       "Irrigated",
+       "Rainfed"
+      ],
+      "mean": [
+       5.0225,
+       3.2583333333
+      ],
+      "se": [
+       0.18634241431,
+       0.18634241431
+      ],
+      "group": [
+       "a",
+       "b"
+      ],
+      "test": "Protected Fisher's LSD",
+      "alpha": 0.01,
+      "treatment_label": "irrigation",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "interaction_means": {
+      "main_plot_levels": [
+       "Rainfed",
+       "Irrigated"
+      ],
+      "sub_plot_levels": [
+       "V1",
+       "V2",
+       "V3"
+      ],
+      "cell_means": {
+       "main_plot": [
+        "Rainfed",
+        "Rainfed",
+        "Rainfed",
+        "Irrigated",
+        "Irrigated",
+        "Irrigated"
+       ],
+       "sub_plot": [
+        "V1",
+        "V2",
+        "V3",
+        "V1",
+        "V2",
+        "V3"
+       ],
+       "trait_value": [
+        2.8375,
+        3.2275,
+        3.71,
+        4.35,
+        4.94,
+        5.7775
+       ]
+      },
+      "means_matrix": {
+       "main_plot": [
+        "Rainfed",
+        "Irrigated"
+       ],
+       "V1": [
+        2.8375,
+        4.35
+       ],
+       "V2": [
+        3.2275,
+        4.94
+       ],
+       "V3": [
+        3.71,
+        5.7775
+       ]
+      },
+      "alpha": 0.01,
+      "scale_label": "Cell arithmetic mean",
+      "role": "descriptive_interaction_significant_no_formal_simple_effects"
+     },
+     "descriptive_stats": null,
+     "assumption_tests": {
+      "overall": {
+       "passed": true,
+       "interpretation": "No strong formal normality concern was detected in the fitted split-plot residuals at the 0.05 diagnostic threshold. Influence screening is reported below. Graphical residual diagnostics are not included in this version.",
+       "reviewer_summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 4 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      },
+      "normality": {
+       "test": "Shapiro-Wilk",
+       "statistic": 0.96890952078,
+       "p_value": 0.64013015522,
+       "passed": true,
+       "interpretation": "The Shapiro-Wilk test did not provide strong evidence against residual normality at the 0.05 diagnostic threshold (W = 0.9689, p = 0.6401). Formal normality testing is supplementary and should not be read as proof of normality."
+      },
+      "homogeneity": {
+       "test": "Levene",
+       "statistic": 4.2136822584,
+       "p_value": 0.052181677625,
+       "interpretation": "This raw-response-by-whole-plot-factor variance test is supplementary and is not an authoritative pass/fail assessment. A split-plot has two error strata with separate variance assumptions.",
+       "provenance": "raw_response_by_whole_plot_factor",
+       "role": "supplementary_not_authoritative_for_split_plot_model_diagnostics",
+       "authoritative": false
+      },
+      "diagnostic_policy": {
+       "design": "split_plot_rcbd",
+       "diagnostic_alpha": 0.05,
+       "residual_model": "trait_value ~ main_plot * sub_plot + Error(rep/main_plot)",
+       "residual_stratum": "Error B (subplot / Within) residuals",
+       "variance_assessment": "residuals_vs_fitted_primary",
+       "normality_assessment": "qq_plot_primary_shapiro_supplementary",
+       "stratum_disclosure": "Residual diagnostics shown here are computed from the subplot (Error B) stratum. The whole-plot stratum (Error A) has its own distributional assumptions and typically few degrees of freedom, so formal stratum-specific testing there has very low power. These diagnostics are evidence about the subplot stratum, not certification of the whole model.",
+       "independence": {
+        "statistically_tested": false,
+        "message": "Independence is primarily supported by the experimental design: randomisation of whole-plot treatments within blocks and of subplot treatments within whole plots. VivaSense cannot verify independence from the uploaded dataset alone."
+       },
+       "influence": {
+        "automatic_removal": false,
+        "message": "Cook's distance and standardized residuals are influence evidence. Flagged observations are never removed automatically and the model is never automatically refitted."
+       },
+       "formal_variance_test": {
+        "test": "Levene",
+        "provenance": "raw_response_by_whole_plot_factor",
+        "role": "supplementary_not_authoritative_for_split_plot_model_diagnostics",
+        "authoritative": false
+       }
+      },
+      "outlier_detection": {
+       "standardized_residual_threshold": 3,
+       "cooks_distance_screening_rule": "D > 4/n",
+       "cooks_distance_screening_threshold": 0.16666666667,
+       "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+       "n_extreme_outliers": 0,
+       "n_cooks_distance_review_flags": 4,
+       "flagged_observations": [
+        {
+         "observation": 1,
+         "treatment": "Rainfed × V1",
+         "block": "B1",
+         "observed": 2.39,
+         "fitted": 2.5525,
+         "residual": -0.1625,
+         "standardized_residual": -1.7367846015,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 16,
+         "treatment": "Irrigated × V1",
+         "block": "B3",
+         "observed": 4.48,
+         "fitted": 4.3208333333,
+         "residual": 0.15916666667,
+         "standardized_residual": 1.7011582507,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 18,
+         "treatment": "Irrigated × V3",
+         "block": "B3",
+         "observed": 5.6,
+         "fitted": 5.7483333333,
+         "residual": -0.14833333333,
+         "standardized_residual": -1.5853726106,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 22,
+         "treatment": "Irrigated × V1",
+         "block": "B4",
+         "observed": 5.17,
+         "fitted": 5.3875,
+         "residual": -0.2175,
+         "standardized_residual": -2.3246193897,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        }
+       ],
+       "interpretation": "One or more observations crossed a diagnostic screening rule and warrant examination. For Cook's D, D > 4/n is only a review heuristic; exceeding it does not by itself establish that an observation is influential, erroneous, or suitable for exclusion. Flagged observations remain in the reported analysis, are not automatically removed, and the model is not automatically refitted."
+      },
+      "reviewer_mode": {
+       "status": "PASS",
+       "no_cooks_distance_review_flags": false,
+       "summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 4 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      },
+      "stratification_note": "Assumption tests are based on pooled model residuals. In a split-plot design, Error A (whole-plot) and Error B (sub-plot) residuals have separate distributional assumptions. With only 3 Error A degrees of freedom, stratum-specific normality testing has very low power."
+     },
+     "transformation_analysis": {},
+     "diagnostic_observations": [
+      {
+       "observation": 1,
+       "treatment": "Rainfed × V1",
+       "block": "B1",
+       "observed": 2.39,
+       "fitted": 2.5525,
+       "residual": -0.1625,
+       "standardized_residual": -1.7367846015,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 2,
+       "treatment": "Rainfed × V2",
+       "block": "B1",
+       "observed": 3,
+       "fitted": 2.9425,
+       "residual": 0.0575,
+       "standardized_residual": 0.6145545513,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 3,
+       "treatment": "Rainfed × V3",
+       "block": "B1",
+       "observed": 3.53,
+       "fitted": 3.425,
+       "residual": 0.105,
+       "standardized_residual": 1.1222300502,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 4,
+       "treatment": "Irrigated × V1",
+       "block": "B1",
+       "observed": 3.7,
+       "fitted": 3.7408333333,
+       "residual": -0.040833333333,
+       "standardized_residual": -0.4364227973,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 5,
+       "treatment": "Irrigated × V2",
+       "block": "B1",
+       "observed": 4.3,
+       "fitted": 4.3308333333,
+       "residual": -0.030833333333,
+       "standardized_residual": -0.3295437449,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 6,
+       "treatment": "Irrigated × V3",
+       "block": "B1",
+       "observed": 5.24,
+       "fitted": 5.1683333333,
+       "residual": 0.071666666667,
+       "standardized_residual": 0.7659665422,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 7,
+       "treatment": "Rainfed × V1",
+       "block": "B2",
+       "observed": 3.01,
+       "fitted": 2.9058333333,
+       "residual": 0.10416666667,
+       "standardized_residual": 1.1133234625,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 8,
+       "treatment": "Rainfed × V2",
+       "block": "B2",
+       "observed": 3.2,
+       "fitted": 3.2958333333,
+       "residual": -0.095833333333,
+       "standardized_residual": -1.0242575855,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 9,
+       "treatment": "Rainfed × V3",
+       "block": "B2",
+       "observed": 3.77,
+       "fitted": 3.7783333333,
+       "residual": -0.0083333333333,
+       "standardized_residual": -0.089065877,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 10,
+       "treatment": "Irrigated × V1",
+       "block": "B2",
+       "observed": 4.05,
+       "fitted": 3.9508333333,
+       "residual": 0.099166666667,
+       "standardized_residual": 1.0598839363,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 11,
+       "treatment": "Irrigated × V2",
+       "block": "B2",
+       "observed": 4.49,
+       "fitted": 4.5408333333,
+       "residual": -0.050833333333,
+       "standardized_residual": -0.5433018497,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 12,
+       "treatment": "Irrigated × V3",
+       "block": "B2",
+       "observed": 5.33,
+       "fitted": 5.3783333333,
+       "residual": -0.048333333333,
+       "standardized_residual": -0.5165820866,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 13,
+       "treatment": "Rainfed × V1",
+       "block": "B3",
+       "observed": 2.77,
+       "fitted": 2.7258333333,
+       "residual": 0.044166666667,
+       "standardized_residual": 0.4720491481,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 14,
+       "treatment": "Rainfed × V2",
+       "block": "B3",
+       "observed": 3.13,
+       "fitted": 3.1158333333,
+       "residual": 0.014166666667,
+       "standardized_residual": 0.1514119909,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 15,
+       "treatment": "Rainfed × V3",
+       "block": "B3",
+       "observed": 3.54,
+       "fitted": 3.5983333333,
+       "residual": -0.058333333333,
+       "standardized_residual": -0.623461139,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 16,
+       "treatment": "Irrigated × V1",
+       "block": "B3",
+       "observed": 4.48,
+       "fitted": 4.3208333333,
+       "residual": 0.15916666667,
+       "standardized_residual": 1.7011582507,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 17,
+       "treatment": "Irrigated × V2",
+       "block": "B3",
+       "observed": 4.9,
+       "fitted": 4.9108333333,
+       "residual": -0.010833333333,
+       "standardized_residual": -0.1157856401,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 18,
+       "treatment": "Irrigated × V3",
+       "block": "B3",
+       "observed": 5.6,
+       "fitted": 5.7483333333,
+       "residual": -0.14833333333,
+       "standardized_residual": -1.5853726106,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 19,
+       "treatment": "Rainfed × V1",
+       "block": "B4",
+       "observed": 3.18,
+       "fitted": 3.1658333333,
+       "residual": 0.014166666667,
+       "standardized_residual": 0.1514119909,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 20,
+       "treatment": "Rainfed × V2",
+       "block": "B4",
+       "observed": 3.58,
+       "fitted": 3.5558333333,
+       "residual": 0.024166666667,
+       "standardized_residual": 0.2582910433,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 21,
+       "treatment": "Rainfed × V3",
+       "block": "B4",
+       "observed": 4,
+       "fitted": 4.0383333333,
+       "residual": -0.038333333333,
+       "standardized_residual": -0.4097030342,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 22,
+       "treatment": "Irrigated × V1",
+       "block": "B4",
+       "observed": 5.17,
+       "fitted": 5.3875,
+       "residual": -0.2175,
+       "standardized_residual": -2.3246193897,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 23,
+       "treatment": "Irrigated × V2",
+       "block": "B4",
+       "observed": 6.07,
+       "fitted": 5.9775,
+       "residual": 0.0925,
+       "standardized_residual": 0.9886312347,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 24,
+       "treatment": "Irrigated × V3",
+       "block": "B4",
+       "observed": 6.94,
+       "fitted": 6.815,
+       "residual": 0.125,
+       "standardized_residual": 1.335988155,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      }
+     ],
+     "outlier_summary": {
+      "standardized_residual_threshold": 3,
+      "cooks_distance_screening_rule": "D > 4/n",
+      "cooks_distance_screening_threshold": 0.16666666667,
+      "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+      "n_extreme_outliers": 0,
+      "n_cooks_distance_review_flags": 4,
+      "flagged_observations": [
+       {
+        "observation": 1,
+        "treatment": "Rainfed × V1",
+        "block": "B1",
+        "observed": 2.39,
+        "fitted": 2.5525,
+        "residual": -0.1625,
+        "standardized_residual": -1.7367846015,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 16,
+        "treatment": "Irrigated × V1",
+        "block": "B3",
+        "observed": 4.48,
+        "fitted": 4.3208333333,
+        "residual": 0.15916666667,
+        "standardized_residual": 1.7011582507,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 18,
+        "treatment": "Irrigated × V3",
+        "block": "B3",
+        "observed": 5.6,
+        "fitted": 5.7483333333,
+        "residual": -0.14833333333,
+        "standardized_residual": -1.5853726106,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 22,
+        "treatment": "Irrigated × V1",
+        "block": "B4",
+        "observed": 5.17,
+        "fitted": 5.3875,
+        "residual": -0.2175,
+        "standardized_residual": -2.3246193897,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       }
+      ]
+     },
+     "breeding_implication": null,
+     "observation_accounting": {},
+     "experimental_unit_profile": {},
+     "rcbd_design_profile": {},
+     "factorial_profile": null,
+     "factor_a_decision": null,
+     "factor_b_decision": null,
+     "interaction_decision": null,
+     "factor_a_mean_separation_status": null,
+     "factor_b_mean_separation_status": null,
+     "simple_effects": null,
+     "simple_effects_status": null,
+     "interaction_plot": null,
+     "split_plot_profile": {
+      "design": "split_plot_rcbd",
+      "block_factor": "rep",
+      "block_count": 4,
+      "whole_plot_factor": "irrigation",
+      "whole_plot_levels": [
+       "Rainfed",
+       "Irrigated"
+      ],
+      "sub_plot_factor": "variety",
+      "sub_plot_levels": [
+       "V1",
+       "V2",
+       "V3"
+      ],
+      "whole_plots": 8,
+      "sub_plots": 24,
+      "whole_plot_replication": 4,
+      "sub_plot_replication": 8,
+      "expected_observations": 24,
+      "analysed_observations": 24,
+      "balanced_complete": true,
+      "model_formula": "response ~ A * B + Error(block/A)",
+      "denominators": {
+       "whole_plot_factor": "Error A (whole-plot, Block x A)",
+       "sub_plot_factor": "Error B (subplot)",
+       "interaction": "Error B (subplot)"
+      },
+      "replication_note": "The whole-plot factor is replicated once per block, so it is tested on the whole-plot error with few degrees of freedom. Subplot observations are NOT independent replicates of the whole-plot factor."
+     },
+     "whole_plot_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 0.006799871771,
+      "alpha": 0.01,
+      "rule": "p_value <= alpha",
+      "error_stratum": "Error A (whole-plot, Block x A)",
+      "denominator_df": 3,
+      "denominator_ms": 0.41668194444
+     },
+     "sub_plot_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 2.9794810248e-9,
+      "alpha": 0.01,
+      "rule": "p_value <= alpha",
+      "error_stratum": "Error B (subplot)",
+      "denominator_df": 12,
+      "denominator_ms": 0.017508333333
+     },
+     "split_plot_interaction_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 0.0040549117734,
+      "alpha": 0.01,
+      "rule": "p_value <= alpha",
+      "error_stratum": "Error B (subplot)",
+      "denominator_df": 12,
+      "denominator_ms": 0.017508333333
+     },
+     "main_plot_separation_status": {
+      "method": "Protected Fisher's LSD",
+      "factor": "irrigation",
+      "alpha": 0.01,
+      "omnibus_p_value": 0.006799871771,
+      "error_stratum": "Error A (whole-plot, Block x A)",
+      "error_df": 3,
+      "error_ms": 0.41668194444,
+      "means_provenance": "Marginal arithmetic mean of irrigation over subplots, compared on the whole-plot error stratum.",
+      "protection": "Fisher's LSD is protected by the irrigation omnibus F-test; it is not run unless that test is significant at the selected alpha.",
+      "status": "success",
+      "reason_code": "protected_lsd_success",
+      "message": "Protected LSD compared irrigation at alpha = 0.01 using Error A (whole-plot, Block x A) (MS = 0.416682, df = 3)."
+     },
+     "sub_plot_separation_status": {
+      "method": "Protected Fisher's LSD",
+      "factor": "variety",
+      "alpha": 0.01,
+      "omnibus_p_value": 2.9794810248e-9,
+      "error_stratum": "Error B (subplot)",
+      "error_df": 12,
+      "error_ms": 0.017508333333,
+      "means_provenance": "Marginal arithmetic mean of variety over whole plots, compared on the subplot error stratum.",
+      "protection": "Fisher's LSD is protected by the variety omnibus F-test; it is not run unless that test is significant at the selected alpha.",
+      "status": "success",
+      "reason_code": "protected_lsd_success",
+      "message": "Protected LSD compared variety at alpha = 0.01 using Error B (subplot) (MS = 0.0175083, df = 12)."
+     },
+     "level_order": {
+      "block": [
+       "B1",
+       "B2",
+       "B3",
+       "B4"
+      ],
+      "main_plot": [
+       "Rainfed",
+       "Irrigated"
+      ],
+      "sub_plot": [
+       "V1",
+       "V2",
+       "V3"
+      ]
+     },
+     "response_exclusion": null
+    },
+    "interpretation": null,
+    "anova_type_warning": null,
+    "analysis_context": {
+     "is_single_environment": true,
+     "environment_count": 1,
+     "design_type": "single"
+    },
+    "analysis_settings": {
+     "inferential_alpha": 0.01,
+     "diagnostic_alpha": 0.05
+    }
+   },
+   "error": null,
+   "data_warnings": [
+    "Preview: this analysis is session-only. Download your report before leaving."
+   ],
+   "observation_accounting": null,
+   "experimental_unit_profile": {},
+   "rcbd_design_profile": {},
+   "structural_validation": null
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": null,
+  "n_reps": 4,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": "rep",
+  "original_rep_column": "rep",
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [],
+ "anova_type_warning": null,
+ "breeding_summary": "These conclusions are based on data from this specific experiment and should be interpreted within that context. Findings should be validated across additional environments and seasons before applied decisions are finalised.",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.01,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "preview",
+  "reopenable": false,
+  "persistence": "session_only",
+  "disclosure": "Preview: this analysis is session-only. Download your report before leaving."
+ },
+ "report_renderer_version": "splitplot-word-v1.0-20261002"
+}

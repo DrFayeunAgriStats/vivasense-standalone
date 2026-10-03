@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,14 @@ import {
   isSessionOnlyPreviewDesign,
   isSessionOnlyPreviewWarning,
 } from "./releaseDisclosures";
+import {
+  defaultDesignForBlockMapping,
+  describeResponseExclusion,
+  describeTraitFailure,
+  readBackendCvPercent,
+  resolveReleaseStatus,
+  type FailureDisplay,
+} from "./feBeta02";
 
 const MODULE = "anova" as const;
 
@@ -71,7 +79,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const { toast } = useToast();
   const [design, setDesign] = useState<GovernedDesignType>("rcbd");
   const [alpha, setAlpha] = useState<AnovaAlpha>(DEFAULT_ALPHA);
-  const [structuralError, setStructuralError] = useState<ReturnType<typeof describeStructuralError> | null>(null);
+  const [structuralError, setStructuralError] = useState<FailureDisplay | null>(null);
+  // CardTitle forwards its ref typed as HTMLParagraphElement (it renders an h3).
+  const resultsHeadingRef = useRef<HTMLParagraphElement | null>(null);
   const [showErrorDetail, setShowErrorDetail] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -98,7 +108,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // that could otherwise leak from the previous file (the live-browser RCBD
   // failure showed a stale response trait and stale mappings crossing files).
   useEffect(() => {
-    setDesign("rcbd");
+    // A dataset mapped with no Replication / Block is a CRD; keeping a stale
+    // RCBD selection there is the "CRD chosen, RCBD analysed" confusion.
+    setDesign(defaultDesignForBlockMapping(datasetContext?.repColumn));
     setAlpha(DEFAULT_ALPHA);
     setTreatmentCol(datasetContext?.genotypeColumn ?? "");
     setRepColumn(datasetContext?.repColumn ?? "");
@@ -115,6 +127,22 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setTransformChoice("transformed");
     setShowTransformWhy(false);
   }, [datasetContext]);
+
+  // Bring a newly rendered result into view. The results render below a long
+  // setup form, so without this a beginner can finish a run and see nothing
+  // change. Focus moves to the results heading (keyboard / screen-reader users)
+  // and the scroll is instant when the user prefers reduced motion.
+  useEffect(() => {
+    if (!results) return;
+    const heading = resultsHeadingRef.current;
+    if (!heading) return;
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    heading.scrollIntoView?.({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    heading.focus({ preventScroll: true });
+  }, [results]);
 
   // All available columns for selectors — computed safely even when no dataset (returns []).
   const allColumns = useMemo(() => {
@@ -237,15 +265,39 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           })
         : await analyzeUpload(request);
 
-      setResults(res);
       // A trait can fail structurally while the HTTP call succeeds — the
       // backend rejects invalid structures before fitting rather than
       // returning a partial model, so surface the reason here.
+      // structural_validation.message is authoritative: it names the offending
+      // value, row and treatment / block, which the generic code translation
+      // cannot. The translation is only the fallback for older payloads.
       const firstFailure = Object.values(res.trait_results ?? {}).find(
-        (tr) => tr.status === "failed" && tr.error
+        (tr) => tr.status === "failed" && (tr.error || tr.structural_validation?.message)
       );
-      setStructuralError(firstFailure?.error ? describeStructuralError(firstFailure.error) : null);
+      let shownFailure: FailureDisplay | null = null;
+      if (firstFailure) {
+        const failure = describeTraitFailure(firstFailure);
+        shownFailure = firstFailure.structural_validation?.message
+          ? failure
+          : { ...failure, message: describeStructuralError(failure.raw).message };
+      }
+      setStructuralError(shownFailure);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
+      if (successCount === 0) {
+        // Every response was refused: this is not a completed analysis, so it is
+        // neither announced as one nor recorded as a successful run.
+        toast({
+          title: "Analysis could not be completed",
+          description: "No response variable was analysed. See the explanation above the Run button.",
+          variant: "destructive",
+        });
+        void recordAnalysisFailure(
+          historyBase,
+          new Error(shownFailure?.message ?? firstFailure?.error ?? "No response variable was analysed."),
+        );
+        return;
+      }
+      setResults(res);
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
@@ -254,6 +306,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         response: res,
         parameters: {
           ...historyBase.parameters,
+          // Recorded so history can show maturity and withhold Open/Reopen and
+          // "publication-ready" credit from Preview analyses.
+          ...(res.release_status ? { release_status: res.release_status } : {}),
           ...(res.persistence
             ? {
                 persistence_analysis_run_id: res.persistence.analysis_run_id,
@@ -423,7 +478,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                     : "text-emerald-700 dark:text-emerald-300"
                 }
               >
-                {isSessionOnlyPreviewDesign(design) ? "Preview · session-only" : "Early Access"}
+                {/* Before a run there is no payload yet, so the design decides;
+                    after a run the backend release_status takes over (see Results). */}
+                {resolveReleaseStatus(null, design).label}
               </Badge>
               <p>{designMeta(design).hint}</p>
               {isSessionOnlyPreviewDesign(design) && (
@@ -528,11 +585,16 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </div>
           </div>
 
-          {validation && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive flex items-center gap-2">
-              <AlertTriangle className="h-3.5 w-3.5" /> {validation}
-            </div>
-          )}
+          {/* The slot is always mounted at a fixed height so that choosing a
+              response variable (which clears this message) does not shift the
+              controls below it — a moving Run button caused missed clicks. */}
+          <div className="min-h-[2.75rem]" aria-live="polite">
+            {validation && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive flex items-center gap-2">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> {validation}
+              </div>
+            )}
+          </div>
 
           {structuralError && (
             <div
@@ -540,7 +602,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs space-y-2"
             >
               <p className="font-semibold text-destructive flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5" /> Design structure rejected
+                <AlertTriangle className="h-3.5 w-3.5" /> {structuralError.heading}
               </p>
               <p className="text-foreground">{structuralError.message}</p>
               <p className="text-muted-foreground">
@@ -577,10 +639,21 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </div>
           )}
 
-          <Button onClick={handleAnalyze} disabled={isAnalyzing || !!validation} className="gap-2">
-            {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Run Analysis
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || !!validation}
+              aria-busy={isAnalyzing}
+              className="gap-2"
+            >
+              {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              {isAnalyzing ? "Running analysis…" : "Run Analysis"}
+            </Button>
+            {/* No percentage is shown: the engine reports no real progress. */}
+            <p role="status" aria-live="polite" className="text-xs text-muted-foreground min-h-[1rem]">
+              {isAnalyzing ? "Running analysis… please keep this page open until the results appear." : ""}
+            </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -589,7 +662,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         <div className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle
+                ref={resultsHeadingRef}
+                tabIndex={-1}
+                className="text-lg flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              >
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 ANOVA Results — {designMeta(design).fullLabel}
               </CardTitle>
@@ -631,21 +708,40 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </CardContent>
           </Card>
 
-          {isSessionOnlyPreviewDesign(design) && (
-            <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-800">
-              <CardContent className="py-4 px-5 space-y-1">
-                <p className="text-sm font-semibold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-                  <AlertTriangle className="h-4 w-4" /> Preview — session-only
-                </p>
-                <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
-                  {(() => {
-                    const message = SESSION_ONLY_PREVIEW_WARNING.replace("Preview: ", "");
-                    return message.charAt(0).toUpperCase() + message.slice(1);
-                  })()}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {(() => {
+            // Maturity comes from the backend `release_status`; the design is
+            // only the fallback for payloads that predate it.
+            const release = resolveReleaseStatus(results.release_status, design);
+            if (release.maturity === "preview") {
+              return (
+                <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-800">
+                  <CardContent className="py-4 px-5 space-y-1">
+                    <p className="text-sm font-semibold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                      <AlertTriangle className="h-4 w-4" /> {release.label}
+                    </p>
+                    <p className="text-xs text-amber-900/90 dark:text-amber-200/90">
+                      {release.disclosure ??
+                        (() => {
+                          const message = SESSION_ONLY_PREVIEW_WARNING.replace("Preview: ", "");
+                          return message.charAt(0).toUpperCase() + message.slice(1);
+                        })()}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            }
+            if (release.maturity === "early_access") {
+              return (
+                <div className="rounded-md border bg-muted/30 px-4 py-3 text-xs space-y-1">
+                  <Badge variant="secondary" className="text-emerald-700 dark:text-emerald-300">
+                    {release.label}
+                  </Badge>
+                  {release.disclosure && <p className="text-muted-foreground">{release.disclosure}</p>}
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {(() => {
             type TA = {
@@ -764,10 +860,33 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             const governed = isGovernedOneFactor(r, design);
             const governedFactorial = isGovernedFactorial(r, design);
             const governedSplitPlot = isGovernedSplitPlot(r, design);
+            // CRD only: blank response cells are excluded (not outliers). Structural
+            // designs refuse incomplete data instead and never carry this object.
+            const exclusion = design === "crd" ? describeResponseExclusion(r.response_exclusion) : null;
 
             return (
               <div key={trait} className="space-y-3">
                 <h3 className="text-base font-semibold text-foreground px-1">{trait}</h3>
+                {exclusion && (
+                  <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-800">
+                    <CardContent className="py-4 px-5 space-y-2">
+                      <p className="text-sm font-semibold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                        <Info className="h-4 w-4" /> Blank response cells were excluded
+                      </p>
+                      <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+                        {exclusion.lines.map((line) => (
+                          <div key={line.label} className="flex justify-between gap-3 border-b border-dashed border-amber-300/60 py-0.5">
+                            <dt className="text-amber-900/80 dark:text-amber-200/80">{line.label}</dt>
+                            <dd className="font-medium text-right">{line.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {exclusion.unequalReplicationNote && (
+                        <p className="text-xs text-amber-900 dark:text-amber-200">{exclusion.unequalReplicationNote}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
                 {governed && (
                   <GovernedOneFactorPanel
                     design={design}
@@ -807,7 +926,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   interpretation={tr.analysis_result.interpretation || ""}
                   statisticalNotes={(() => {
                     const warnings = (tr.data_warnings ?? []).filter(
-                      (w) => !isSessionOnlyPreviewWarning(w)
+                      (w) =>
+                        !isSessionOnlyPreviewWarning(w) &&
+                        // The exclusion card above already states this; do not repeat it.
+                        !(exclusion && w === r.response_exclusion?.message)
                     );
                     return warnings.length > 0
                       ? warnings.map((w) => ({ text: w }))
@@ -815,6 +937,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   })()}
                   inferentialAlpha={alpha}
                   anovaTable={r.anova_table}
+                  cvPercent={readBackendCvPercent(r)}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
                   descriptiveStats={governedFactorial || governedSplitPlot ? undefined : buildDescriptiveStats(r)}
                 />

@@ -32,7 +32,7 @@ const commonAnalysisSteps = [
   "Choose the experimental design that matches how the experiment was randomized.",
   "Select one or more response variables and the inferential significance level (α = 0.01, 0.05, or 0.10).",
   "Review the design summary before you run the analysis.",
-  "Run the analysis, read the ANOVA and mean-comparison output, then download the Word report."
+  "Run the analysis. The result summary and decision appear first; open “View ANOVA Table & Mean Separation” on the results screen to see the ANOVA table, treatment means and grouping letters. Then download the Word report."
 ];
 
 export const gettingStartedTutorials: Tutorial[] = [
@@ -129,6 +129,22 @@ export const gettingStartedTutorials: Tutorial[] = [
         ]
       },
       {
+        title: "CRD or RCBD? How the mapping decides",
+        bullets: [
+          "CRD: set “Replication / Block Column” to None when you upload the dataset. There is no block, so only the treatment column is mapped.",
+          "RCBD: set “Replication / Block Column” to the column that identifies each complete block (for example rep or block). Every treatment must appear in every block.",
+          "If you choose None for the block, the design opens on CRD. Choosing a block column does not by itself make the experiment an RCBD — only how it was randomized does."
+        ]
+      },
+      {
+        title: "Split-Plot or ordinary Factorial?",
+        bullets: [
+          "Factorial: both factors were applied to the same experimental units, so every combination of A and B was randomized together.",
+          "Split-Plot: one factor (the whole-plot factor) was applied to large plots, and the other (the subplot factor) was applied to smaller units inside each whole plot. The two factors are tested against different errors (Error A and Error B).",
+          "If a factor is hard to change (for example irrigation applied to a whole plot), the experiment is usually a split-plot, not a factorial."
+        ]
+      },
+      {
         title: "Do not infer design from column counts",
         paragraphs: [
           "The same table can sometimes be rearranged to resemble more than one design. What matters is how the experiment was randomized and which experimental unit received each factor.",
@@ -172,7 +188,9 @@ export const gettingStartedTutorials: Tutorial[] = [
         bullets: [
           "Select Run Analysis.",
           "If VivaSense reports a structural error, correct the mapping or dataset rather than trying to bypass it.",
-          "Read the ANOVA result before interpreting mean-separation letters.",
+          "While it runs, the button reads “Running analysis…”. When it finishes, the page moves to the results heading.",
+          "Where to find the ANOVA table: on the results screen, select “View ANOVA Table & Mean Separation”. It opens the ANOVA table (source, DF, SS, MS, F and p-value), then the treatment means with their grouping letters.",
+          "Read the ANOVA table before interpreting mean-separation letters. The replication / block row is shown for completeness; it is not a treatment result.",
           "Download the Word report while the result is available; this is essential for Preview designs."
         ]
       }
@@ -212,6 +230,61 @@ export const gettingStartedTutorials: Tutorial[] = [
       {
         title: "Keep statistical and biological conclusions separate",
         note: "VivaSense can support the statistical argument. The researcher still decides whether an effect is agronomically meaningful, practically important, and consistent with the experimental objective."
+      }
+    ]
+  },
+  {
+    slug: "troubleshooting",
+    title: "Troubleshooting Your Analysis",
+    category: "Getting Started",
+    description: "What to do when Run Analysis does not start, your data is refused, or you cannot find the results or report.",
+    keywords: ["troubleshooting", "error", "not working", "run analysis", "refused", "incomplete", "text in numeric", "report download", "results"],
+    actionPath: "/workspace?module=anova",
+    actionLabel: "Open Experimental Design",
+    sections: [
+      {
+        title: "Run Analysis does not start",
+        bullets: [
+          "The Run Analysis button stays disabled until the inputs are complete. Read the red message above it: it names what is missing, for example “Select at least one response variable.”",
+          "Choose at least one response variable, and map every column the chosen design needs (treatment or factors, and a block column for RCBD, Factorial RCBD and Split-Plot).",
+          "A column cannot play two roles. If one column is mapped as both treatment and block, reassign one of them."
+        ]
+      },
+      {
+        title: "VivaSense says the data is incomplete or refused",
+        bullets: [
+          "Block designs (RCBD, Factorial RCBD, Split-Plot) need every treatment combination in every block, exactly once. The message names the missing or duplicated cell, for example “Treatment TOC-03 × Block R2”.",
+          "Correct the source file (add the missing plot or remove the duplicate), then upload it again and rerun. VivaSense will not fill in or guess missing plots in a structured design.",
+          "For CRD, blank response cells are excluded and reported (original N, analysed N, which row). That is not the same as an outlier."
+        ]
+      },
+      {
+        title: "Text in a numeric response column",
+        bullets: [
+          "A response column must contain numbers only. If a cell holds text such as “dead” or “missing”, VivaSense names the value, the treatment and the block or row.",
+          "Clear that cell, or replace it with the real measurement, in the source file and upload again."
+        ]
+      },
+      {
+        title: "I cannot see the results",
+        bullets: [
+          "After the analysis finishes, the page moves to the results heading. If you scrolled away, look for “ANOVA Results” below the Run Analysis button.",
+          "Select “View ANOVA Table & Mean Separation” to open the ANOVA table and the means."
+        ]
+      },
+      {
+        title: "The report will not download",
+        bullets: [
+          "Download the Word report from the results screen while the analysis is still open.",
+          "If VivaSense says the analysis identity is no longer available, the service was restarted. Rerun the analysis and download again; a report is never rebuilt from a different result.",
+          "Preview designs (Factorial and Split-Plot) cannot be reopened later, so download the report before leaving."
+        ]
+      },
+      {
+        title: "Still stuck?",
+        paragraphs: [
+          "Email support@vivasense.app with the file name, the design you chose and the message you saw."
+        ]
       }
     ]
   }
@@ -324,18 +397,24 @@ export const analysisTutorials: Tutorial[] = [
           "Factor A column.",
           "Factor B column.",
           "At least one numeric response variable.",
-          "Do not map a replication/block column into the Factorial CRD model."
+          "Every Factor A × Factor B combination must be repeated (replicated) at least twice, so the error can be estimated.",
+          "Do not map a replication/block column into the Factorial CRD model. The optional replicate-number column is only a label; leave it unmapped."
         ]
       },
       {
-        title: "Example data shape",
+        title: "Example data shape and mapping",
         example: [
-          "factor_a,factor_b,yield",
-          "A1,B1,10",
-          "A1,B2,12",
-          "A2,B1,14",
-          "A2,B2,18"
-        ]
+          "factor_a,factor_b,rep,yield",
+          "A1,B1,1,10",
+          "A1,B1,2,11",
+          "A1,B2,1,12",
+          "A1,B2,2,13",
+          "A2,B1,1,14",
+          "A2,B1,2,15",
+          "A2,B2,1,18",
+          "A2,B2,2,17"
+        ],
+        note: "Mapping: Factor A Column = factor_a, Factor B Column = factor_b, response = yield. Each of the four combinations appears twice; the rep column is not mapped as a block."
       },
       {
         title: "Interpret interaction first",

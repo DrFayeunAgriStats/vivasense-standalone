@@ -12,6 +12,7 @@
 import { API_BASE } from "./apiConfig";
 import { buildModeHeaders, guardProModule } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
+import { messageFromErrorBody } from "@/components/vivasense/genetics-params/feBeta02";
 const ENGINE_BASE: string = API_BASE;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,6 +135,12 @@ export interface AnovaTable {
   ms: (number | null)[];
   f_value: (number | null)[];
   p_value: (number | null)[];
+  /**
+   * Researcher-facing row labels in the design's own role names (backend
+   * report_wording.attach_display_sources). Authoritative when present; the
+   * `source` keys (e.g. "genotype", "rep") are internal and must not be shown.
+   */
+  display_source?: (string | null)[];
 }
 
 export interface MeanSeparation {
@@ -296,6 +303,43 @@ export interface GeneticsResult {
   main_plot_mean_separation?: MeanSeparation | null;
   /** Split-plot A×B cell means backing the interaction plot (descriptive). */
   interaction_means?: InteractionMeansPayload | null;
+
+  // ── FE-BETA-02 contract (validated backend 9544b562) ───────────────────────
+  /** Backend-supplied factor-level order, by role. Use for UNRANKED presentation only. */
+  level_order?: Partial<
+    Record<"treatment" | "block" | "factor_a" | "factor_b" | "main_plot" | "sub_plot", string[]>
+  > | null;
+  /** CRD blank-response handling disclosure (one-factor CRD only). */
+  response_exclusion?: ResponseExclusion | null;
+  /** Backend descriptive statistics; `cv_percent` is shown only when supplied. */
+  descriptive_stats?: Record<string, unknown> | null;
+  outlier_summary?: Record<string, unknown> | null;
+  diagnostic_observations?: Array<Record<string, unknown>> | null;
+}
+
+export interface ResponseExclusion {
+  original_n?: number;
+  effective_n?: number;
+  excluded_rows?: Array<{ row?: number | string; treatment?: string | number | null; reason?: string }>;
+  treatment_n?: Record<string, number>;
+  unequal_replication?: boolean;
+  message?: string;
+}
+
+/** Backend release maturity of an ANOVA design (02b-5). */
+export interface ReleaseStatus {
+  maturity: "early_access" | "preview";
+  reopenable: boolean;
+  persistence: "durable_saved_run" | "report_download_only" | "session_only" | string;
+  disclosure?: string;
+}
+
+/** Stable trait-level structural validation failure (code + researcher-facing message). */
+export interface StructuralValidation {
+  code?: string;
+  severity?: string;
+  message?: string;
+  [key: string]: unknown;
 }
 
 export interface GeneticsResponse {
@@ -314,6 +358,9 @@ export interface TraitResult {
   analysis_result: GeneticsResponse | null; // null when status === "failed"
   error: string | null;
   data_warnings: string[];
+  /** Present on a failed trait; `message` is the authoritative refusal text. */
+  structural_validation?: StructuralValidation | null;
+  observation_accounting?: Record<string, unknown> | null;
 }
 
 export interface UploadAnalysisResponse {
@@ -337,6 +384,9 @@ export interface UploadAnalysisResponse {
   module?: string | null;
   breeding_summary?: string | null;
   evidence_level?: string;
+  /** Backend maturity / persistence status. Drives badges and Open/Reopen actions. */
+  release_status?: ReleaseStatus | null;
+  report_renderer_version?: string | null;
   experimental_structure?: Record<string, unknown> | null;
   /** Durable governed RCBD identity when the result came from the persistence pathway. */
   persistence?: {
@@ -578,13 +628,17 @@ export async function exportWordReport(
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function extractErrorDetail(response: Response): Promise<string> {
+  // Never surface raw JSON: structured 4xx bodies (detail.message) and 422
+  // validation arrays are reduced to researcher-readable text.
   try {
     const body = await response.json();
-    if (typeof body.detail === "string") return body.detail;
-    return JSON.stringify(body.detail ?? body);
+    return messageFromErrorBody(body, response.status);
   } catch {
     try {
-      return await response.text();
+      const text = await response.text();
+      return text.trim()
+        ? messageFromErrorBody(text, response.status)
+        : `HTTP ${response.status} ${response.statusText}`;
     } catch {
       return `HTTP ${response.status} ${response.statusText}`;
     }

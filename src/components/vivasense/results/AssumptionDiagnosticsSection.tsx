@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VsResultSection } from "./VsResultSection";
+import { cooksReviewFlag, readCooksReview } from "@/components/vivasense/genetics-params/feBeta02";
 
 /* ---------- Backend payload shapes (all fields optional) ---------- */
 
@@ -50,6 +51,9 @@ interface DiagnosticObservation {
   standardized_residual?: number;
   cooks_distance?: number;
   extreme_outlier?: boolean;
+  /** FE-BETA-02: current name for the Cook's-D 4/n screening flag. */
+  cooks_distance_review_flag?: boolean;
+  /** Legacy alias (one-release fallback). */
   influential?: boolean;
 }
 
@@ -58,6 +62,10 @@ interface OutlierSummary {
   cooks_threshold?: number;
   std_residual_threshold?: number;
   n_extreme_outliers?: number;
+  /** FE-BETA-02 contract fields — read first. */
+  n_cooks_distance_review_flags?: number;
+  cooks_distance_screening_threshold?: number;
+  /** Legacy alias (one-release fallback). */
   n_influential_observations?: number;
 }
 
@@ -447,13 +455,15 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
           .filter((o) => o.cooks_distance != null)
           .map((o) => ({ observation: o.observation, cooks_distance: o.cooks_distance }))) ?? [];
 
-  const cooksThreshold = outlier_summary?.cooks_threshold ?? outlier_summary?.threshold;
+  // New contract names first; legacy names remain a one-release fallback.
+  const cooksReview = readCooksReview(outlier_summary);
+  const cooksThreshold = cooksReview.threshold ?? undefined;
 
-  const flagged = obsArr.filter((o) => o.extreme_outlier || o.influential);
+  const flagged = obsArr.filter((o) => o.extreme_outlier || cooksReviewFlag(o));
   const showFlagged =
     flagged.length > 0 ||
     (outlier_summary &&
-      ((outlier_summary.n_extreme_outliers ?? 0) > 0 || (outlier_summary.n_influential_observations ?? 0) > 0));
+      ((outlier_summary.n_extreme_outliers ?? 0) > 0 || (cooksReview.reviewFlagCount ?? 0) > 0));
 
   const chartCount = [
     computedBoxStats.length > 0,
@@ -605,8 +615,13 @@ export function AssumptionDiagnosticsSection(props: AssumptionDiagnosticsProps) 
                         {o.extreme_outlier && (
                           <Badge className="bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-100">Outlier</Badge>
                         )}
-                        {o.influential && (
-                          <Badge className="bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-100">Influential</Badge>
+                        {cooksReviewFlag(o) && (
+                          <Badge
+                            className="bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-100"
+                            title="Crossed the Cook's distance 4/n screening threshold. This is a screening heuristic for review, not proof that the observation is influential."
+                          >
+                            Review (Cook&apos;s D)
+                          </Badge>
                         )}
                       </td>
                     </tr>

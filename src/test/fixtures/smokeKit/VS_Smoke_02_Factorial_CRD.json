@@ -1,0 +1,726 @@
+{
+ "summary_table": [
+  {
+   "trait": "pod_number",
+   "grand_mean": 12.9788888889,
+   "h2": null,
+   "gcv": null,
+   "pcv": null,
+   "gam_percent": null,
+   "heritability_class": null,
+   "gam_class": null,
+   "status": "success",
+   "error": null
+  }
+ ],
+ "trait_results": {
+  "pod_number": {
+   "status": "success",
+   "analysis_result": {
+    "status": "SUCCESS",
+    "mode": "single",
+    "data_validation": {},
+    "variance_warnings": {},
+    "result": {
+     "environment_mode": "single_environment",
+     "n_genotypes": 2,
+     "n_reps": 3,
+     "n_environments": null,
+     "grand_mean": 12.9788888889,
+     "variance_components": {
+      "sigma2_genotype": 7.1856604938,
+      "sigma2_error": 0.46114444444,
+      "sigma2_phenotypic": 7.3393753086,
+      "heritability_basis": "single_environment_model"
+     },
+     "heritability": {},
+     "genetic_parameters": {},
+     "anova_table": {
+      "source": [
+       "phosphorus",
+       "spacing",
+       "phosphorus×spacing",
+       "Residuals"
+      ],
+      "df": [
+       1,
+       2,
+       2,
+       12
+      ],
+      "ss": [
+       65.1320888889,
+       17.4229777778,
+       1.9733777778,
+       5.5337333333
+      ],
+      "ms": [
+       65.1320888889,
+       8.7114888889,
+       0.98668888889,
+       0.46114444444
+      ],
+      "f_value": [
+       141.2401031251,
+       18.8910199263,
+       2.1396525552,
+       null
+      ],
+      "p_value": [
+       5.3860419683e-8,
+       0.00019617847193,
+       0.16042509271,
+       null
+      ],
+      "display_source": [
+       "phosphorus",
+       "spacing",
+       "phosphorus×spacing",
+       "Residuals"
+      ]
+     },
+     "mean_separation": {
+      "genotype": [
+       "P1",
+       "P0"
+      ],
+      "mean": [
+       14.8811111111,
+       11.0766666667
+      ],
+      "se": [
+       0.22635872328,
+       0.22635872328
+      ],
+      "group": [
+       "a",
+       "b"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "treatment_label": "phosphorus",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "treatment_decision": null,
+     "mean_separation_status": null,
+     "mean_separation_b": {
+      "genotype": [
+       "S2",
+       "S3",
+       "S1"
+      ],
+      "mean": [
+       14.2966666667,
+       12.7066666667,
+       11.9333333333
+      ],
+      "se": [
+       0.27723168543,
+       0.27723168543,
+       0.27723168543
+      ],
+      "group": [
+       "a",
+       "b",
+       "b"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "treatment_label": "spacing",
+      "scale_label": "Marginal arithmetic mean"
+     },
+     "interaction_separation": {
+      "genotype": [
+       "P1",
+       "P1",
+       "P1",
+       "P0",
+       "P0",
+       "P0"
+      ],
+      "factor": [
+       "S2",
+       "S3",
+       "S1",
+       "S2",
+       "S1",
+       "S3"
+      ],
+      "mean": [
+       16.2866666667,
+       14.9633333333,
+       13.3933333333,
+       12.3066666667,
+       10.4733333333,
+       10.45
+      ],
+      "se": [
+       0.39206480946,
+       0.39206480946,
+       0.39206480946,
+       0.39206480946,
+       0.39206480946,
+       0.39206480946
+      ],
+      "group": [
+       "a",
+       "ab",
+       "bc",
+       "cd",
+       "d",
+       "d"
+      ],
+      "test": "Tukey HSD",
+      "alpha": 0.05,
+      "genotype_label": "phosphorus",
+      "factor_label": "spacing"
+     },
+     "mean_separation_c": null,
+     "mean_separation_basis": {
+      "selected": "marginal",
+      "significant_terms": "",
+      "alpha": 0.05,
+      "rationale": "The two-way interaction is not significant at the selected alpha, so each factor's marginal means are interpretable on their own."
+     },
+     "two_way_interaction_means": {},
+     "n_treatment_factors": 2,
+     "design": "factorial_crd",
+     "main_plot_mean_separation": null,
+     "interaction_means": {},
+     "descriptive_stats": null,
+     "assumption_tests": {
+      "overall": {
+       "passed": true,
+       "interpretation": "No strong formal normality concern was detected in the fitted factorial CRD residuals at the 0.05 diagnostic threshold. Influence screening is reported below. Graphical residual diagnostics are not included in this version.",
+       "reviewer_summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 2 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      },
+      "normality": {
+       "test": "Shapiro-Wilk",
+       "statistic": 0.98178652426,
+       "p_value": 0.96654419964,
+       "passed": true,
+       "interpretation": "The Shapiro-Wilk test did not provide strong evidence against residual normality at the 0.05 diagnostic threshold (W = 0.9818, p = 0.9665). Formal normality testing is supplementary and should not be read as proof of normality."
+      },
+      "homogeneity": {
+       "test": "Levene",
+       "statistic": 0.55732640066,
+       "p_value": 0.46616840039,
+       "interpretation": "This raw-response-by-factor formal variance test is supplementary and is not an authoritative pass/fail assessment of constant error variance for the fitted factorial model.",
+       "provenance": "raw_response_by_factor_a",
+       "role": "supplementary_not_authoritative_for_factorial_model_diagnostics",
+       "authoritative": false
+      },
+      "diagnostic_policy": {
+       "design": "two_factor_factorial_crd",
+       "diagnostic_alpha": 0.05,
+       "residual_model": "trait_value ~ genotype * factor",
+       "variance_assessment": "residuals_vs_fitted_primary",
+       "normality_assessment": "qq_plot_primary_shapiro_supplementary",
+       "independence": {
+        "statistically_tested": false,
+        "message": "Independence is primarily supported by the experimental design, correct identification of experimental units, and random allocation of treatment combinations. VivaSense cannot verify independence from the uploaded dataset alone."
+       },
+       "influence": {
+        "automatic_removal": false,
+        "message": "Cook's distance and standardized residuals are influence evidence. Flagged observations are never removed automatically and the model is never automatically refitted."
+       },
+       "formal_variance_test": {
+        "test": "Levene",
+        "provenance": "raw_response_by_factor_a",
+        "role": "supplementary_not_authoritative_for_factorial_model_diagnostics",
+        "authoritative": false
+       }
+      },
+      "outlier_detection": {
+       "standardized_residual_threshold": 3,
+       "cooks_distance_screening_rule": "D > 4/n",
+       "cooks_distance_screening_threshold": 0.22222222222,
+       "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+       "n_extreme_outliers": 0,
+       "n_cooks_distance_review_flags": 2,
+       "flagged_observations": [
+        {
+         "observation": 5,
+         "treatment": "P0 × S2",
+         "block": null,
+         "observed": 13.3,
+         "fitted": 12.3066666667,
+         "residual": 0.99333333333,
+         "standardized_residual": 1.7915220112,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        },
+        {
+         "observation": 6,
+         "treatment": "P0 × S2",
+         "block": null,
+         "observed": 11.04,
+         "fitted": 12.3066666667,
+         "residual": -1.2666666667,
+         "standardized_residual": -2.2844911553,
+         "extreme_outlier": false,
+         "cooks_distance_review_flag": true
+        }
+       ],
+       "interpretation": "One or more observations crossed a diagnostic screening rule and warrant examination. For Cook's D, D > 4/n is only a review heuristic; exceeding it does not by itself establish that an observation is influential, erroneous, or suitable for exclusion. Flagged observations remain in the reported analysis, are not automatically removed, and the model is not automatically refitted."
+      },
+      "reviewer_mode": {
+       "status": "PASS",
+       "no_cooks_distance_review_flags": false,
+       "summary": "No strong formal residual-normality concern detected; review the residual evidence. Note: 2 observations crossed the Cook's D 4/n screening heuristic; review is recommended. Exceeding 4/n does not by itself establish influence, error, or suitability for exclusion."
+      }
+     },
+     "transformation_analysis": {},
+     "diagnostic_observations": [
+      {
+       "observation": 1,
+       "treatment": "P0 × S1",
+       "block": null,
+       "observed": 9.99,
+       "fitted": 10.4733333333,
+       "residual": -0.48333333333,
+       "standardized_residual": -0.87171373031,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 2,
+       "treatment": "P0 × S1",
+       "block": null,
+       "observed": 10.84,
+       "fitted": 10.4733333333,
+       "residual": 0.36666666667,
+       "standardized_residual": 0.66130007127,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 3,
+       "treatment": "P0 × S1",
+       "block": null,
+       "observed": 10.59,
+       "fitted": 10.4733333333,
+       "residual": 0.11666666667,
+       "standardized_residual": 0.21041365904,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 4,
+       "treatment": "P0 × S2",
+       "block": null,
+       "observed": 12.58,
+       "fitted": 12.3066666667,
+       "residual": 0.27333333333,
+       "standardized_residual": 0.49296914403,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 5,
+       "treatment": "P0 × S2",
+       "block": null,
+       "observed": 13.3,
+       "fitted": 12.3066666667,
+       "residual": 0.99333333333,
+       "standardized_residual": 1.7915220112,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 6,
+       "treatment": "P0 × S2",
+       "block": null,
+       "observed": 11.04,
+       "fitted": 12.3066666667,
+       "residual": -1.2666666667,
+       "standardized_residual": -2.2844911553,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": true
+      },
+      {
+       "observation": 7,
+       "treatment": "P0 × S3",
+       "block": null,
+       "observed": 10.5,
+       "fitted": 10.45,
+       "residual": 0.05,
+       "standardized_residual": 0.090177282445,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 8,
+       "treatment": "P0 × S3",
+       "block": null,
+       "observed": 9.94,
+       "fitted": 10.45,
+       "residual": -0.51,
+       "standardized_residual": -0.91980828094,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 9,
+       "treatment": "P0 × S3",
+       "block": null,
+       "observed": 10.91,
+       "fitted": 10.45,
+       "residual": 0.46,
+       "standardized_residual": 0.8296309985,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 10,
+       "treatment": "P1 × S1",
+       "block": null,
+       "observed": 13.8,
+       "fitted": 13.3933333333,
+       "residual": 0.40666666667,
+       "standardized_residual": 0.73344189722,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 11,
+       "treatment": "P1 × S1",
+       "block": null,
+       "observed": 12.98,
+       "fitted": 13.3933333333,
+       "residual": -0.41333333333,
+       "standardized_residual": -0.74546553488,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 12,
+       "treatment": "P1 × S1",
+       "block": null,
+       "observed": 13.4,
+       "fitted": 13.3933333333,
+       "residual": 0.0066666666667,
+       "standardized_residual": 0.012023637659,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 13,
+       "treatment": "P1 × S2",
+       "block": null,
+       "observed": 15.47,
+       "fitted": 16.2866666667,
+       "residual": -0.81666666667,
+       "standardized_residual": -1.4728956133,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 14,
+       "treatment": "P1 × S2",
+       "block": null,
+       "observed": 17.12,
+       "fitted": 16.2866666667,
+       "residual": 0.83333333333,
+       "standardized_residual": 1.5029547074,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 15,
+       "treatment": "P1 × S2",
+       "block": null,
+       "observed": 16.27,
+       "fitted": 16.2866666667,
+       "residual": -0.016666666667,
+       "standardized_residual": -0.030059094148,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 16,
+       "treatment": "P1 × S3",
+       "block": null,
+       "observed": 15.42,
+       "fitted": 14.9633333333,
+       "residual": 0.45666666667,
+       "standardized_residual": 0.82361917967,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 17,
+       "treatment": "P1 × S3",
+       "block": null,
+       "observed": 14.71,
+       "fitted": 14.9633333333,
+       "residual": -0.25333333333,
+       "standardized_residual": -0.45689823106,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      },
+      {
+       "observation": 18,
+       "treatment": "P1 × S3",
+       "block": null,
+       "observed": 14.76,
+       "fitted": 14.9633333333,
+       "residual": -0.20333333333,
+       "standardized_residual": -0.36672094861,
+       "extreme_outlier": false,
+       "cooks_distance_review_flag": false
+      }
+     ],
+     "outlier_summary": {
+      "standardized_residual_threshold": 3,
+      "cooks_distance_screening_rule": "D > 4/n",
+      "cooks_distance_screening_threshold": 0.22222222222,
+      "cooks_distance_screening_role": "review_heuristic_not_authoritative",
+      "n_extreme_outliers": 0,
+      "n_cooks_distance_review_flags": 2,
+      "flagged_observations": [
+       {
+        "observation": 5,
+        "treatment": "P0 × S2",
+        "block": null,
+        "observed": 13.3,
+        "fitted": 12.3066666667,
+        "residual": 0.99333333333,
+        "standardized_residual": 1.7915220112,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       },
+       {
+        "observation": 6,
+        "treatment": "P0 × S2",
+        "block": null,
+        "observed": 11.04,
+        "fitted": 12.3066666667,
+        "residual": -1.2666666667,
+        "standardized_residual": -2.2844911553,
+        "extreme_outlier": false,
+        "cooks_distance_review_flag": true
+       }
+      ]
+     },
+     "breeding_implication": null,
+     "observation_accounting": {},
+     "experimental_unit_profile": {},
+     "rcbd_design_profile": {},
+     "factorial_profile": {
+      "design": "factorial_crd",
+      "factor_a": "phosphorus",
+      "factor_b": "spacing",
+      "factor_a_levels": [
+       "P0",
+       "P1"
+      ],
+      "factor_b_levels": [
+       "S1",
+       "S2",
+       "S3"
+      ],
+      "treatment_combinations": 6,
+      "replications": 3,
+      "model_formula": "response ~ A * B",
+      "balanced_complete_required": true,
+      "sum_of_squares": {
+       "convention": "type_iii",
+       "contrasts": "sum_to_zero",
+       "balanced_complete_required": true,
+       "contrast_configuration_source": "governed_python_r_wrapper",
+       "equivalence_note": "VivaSense currently accepts balanced complete factorial data for this pathway. With this balanced structure and the governed sum-to-zero contrast coding, the factorial treatment terms are orthogonally represented, so the reported Type III tests are consistent with the corresponding balanced-design decomposition. Unbalanced factorial modelling is future work and is rejected rather than approximated."
+      }
+     },
+     "factor_a_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 5.3860419683e-8,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "factor_b_decision": {
+      "estimable": true,
+      "significant": true,
+      "p_value": 0.00019617847193,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "interaction_decision": {
+      "estimable": true,
+      "significant": false,
+      "p_value": 0.16042509271,
+      "alpha": 0.05,
+      "rule": "p_value <= alpha"
+     },
+     "factor_a_mean_separation_status": {
+      "method": "Tukey HSD",
+      "scope": "marginal_main_effect",
+      "factor": "phosphorus",
+      "alpha": 0.05,
+      "omnibus_p_value": 5.3860419683e-8,
+      "residual_df": 12,
+      "residual_ms": 0.46114444444,
+      "means_provenance": "Marginal arithmetic mean of phosphorus, averaged over the other factor, from the balanced complete factorial model frame.",
+      "status": "success",
+      "reason_code": "tukey_hsd_success",
+      "message": "Tukey HSD was performed for phosphorus at α = 0.05."
+     },
+     "factor_b_mean_separation_status": {
+      "method": "Tukey HSD",
+      "scope": "marginal_main_effect",
+      "factor": "spacing",
+      "alpha": 0.05,
+      "omnibus_p_value": 0.00019617847193,
+      "residual_df": 12,
+      "residual_ms": 0.46114444444,
+      "means_provenance": "Marginal arithmetic mean of spacing, averaged over the other factor, from the balanced complete factorial model frame.",
+      "status": "success",
+      "reason_code": "tukey_hsd_success",
+      "message": "Tukey HSD was performed for spacing at α = 0.05."
+     },
+     "simple_effects": null,
+     "simple_effects_status": {
+      "status": "not_run_interaction_not_significant",
+      "scope": "simple_effects_within_significant_interaction",
+      "alpha": 0.05,
+      "reason_code": "interaction_not_significant",
+      "message": "Simple effects were not run because the phosphorus x spacing interaction was not significant at alpha = 0.05."
+     },
+     "interaction_plot": {
+      "x_axis_factor": "phosphorus",
+      "line_factor": "spacing",
+      "y_axis_label": "pod_number (cell arithmetic mean)",
+      "x_axis_levels": [
+       "P0",
+       "P1"
+      ],
+      "series": [
+       {
+        "factor_b_level": "S1",
+        "factor_a_levels": [
+         "P0",
+         "P1"
+        ],
+        "mean": [
+         10.4733333333,
+         13.3933333333
+        ],
+        "n": [
+         3,
+         3
+        ]
+       },
+       {
+        "factor_b_level": "S2",
+        "factor_a_levels": [
+         "P0",
+         "P1"
+        ],
+        "mean": [
+         12.3066666667,
+         16.2866666667
+        ],
+        "n": [
+         3,
+         3
+        ]
+       },
+       {
+        "factor_b_level": "S3",
+        "factor_a_levels": [
+         "P0",
+         "P1"
+        ],
+        "mean": [
+         10.45,
+         14.9633333333
+        ],
+        "n": [
+         3,
+         3
+        ]
+       }
+      ],
+      "scale_label": "Cell arithmetic mean",
+      "role": "descriptive_visualisation_not_a_significance_test",
+      "note": "Non-parallel lines suggest the effect of one factor depends on the level of the other. Read this alongside the interaction F-test; the plot alone establishes nothing."
+     },
+     "split_plot_profile": null,
+     "whole_plot_decision": null,
+     "sub_plot_decision": null,
+     "split_plot_interaction_decision": null,
+     "main_plot_separation_status": null,
+     "sub_plot_separation_status": null,
+     "level_order": {
+      "factor_a": [
+       "P0",
+       "P1"
+      ],
+      "factor_b": [
+       "S1",
+       "S2",
+       "S3"
+      ]
+     },
+     "response_exclusion": null
+    },
+    "interpretation": null,
+    "anova_type_warning": null,
+    "analysis_context": {
+     "is_single_environment": true,
+     "environment_count": 1,
+     "design_type": "single"
+    },
+    "analysis_settings": {
+     "inferential_alpha": 0.05,
+     "diagnostic_alpha": 0.05
+    }
+   },
+   "error": null,
+   "data_warnings": [
+    "Preview: this analysis is session-only. Download your report before leaving."
+   ],
+   "observation_accounting": null,
+   "experimental_unit_profile": {},
+   "rcbd_design_profile": {},
+   "structural_validation": null
+  }
+ },
+ "dataset_summary": {
+  "n_genotypes": null,
+  "n_reps": 9,
+  "n_environments": null,
+  "n_traits": 1,
+  "mode": "single",
+  "requested_mode": "single"
+ },
+ "experimental_structure": {
+  "environment_column": null,
+  "source": "none",
+  "factor_columns": [],
+  "n_environments": null,
+  "rep_column": null,
+  "original_rep_column": null,
+  "rep_renumbered": false,
+  "reps_per_environment": null,
+  "notes": []
+ },
+ "failed_traits": [],
+ "anova_type_warning": null,
+ "breeding_summary": "These conclusions are based on data from this specific experiment and should be interpreted within that context. Findings should be validated across additional environments and seasons before applied decisions are finalised.",
+ "domain": "agronomy",
+ "module": "anova",
+ "analysis_settings": {
+  "inferential_alpha": 0.05,
+  "diagnostic_alpha": 0.05
+ },
+ "evidence_level": "A",
+ "release_status": {
+  "maturity": "preview",
+  "reopenable": false,
+  "persistence": "session_only",
+  "disclosure": "Preview: this analysis is session-only. Download your report before leaving."
+ },
+ "report_renderer_version": "factorial-word-v1.0-20261002"
+}
