@@ -283,7 +283,7 @@ export const gettingStartedTutorials: Tutorial[] = [
       {
         title: "Still stuck?",
         paragraphs: [
-          "Email support@vivasense.app with the file name, the design you chose and the message you saw."
+          "Email support@vivasensestat.com with the file name, the design you chose and the message you saw."
         ]
       }
     ]
