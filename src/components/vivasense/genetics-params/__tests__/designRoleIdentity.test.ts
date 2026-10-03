@@ -166,7 +166,9 @@ describe("W1-INT-02 — the resolved design context is representable before runn
     const preview = buildStructuralPreview("crd", swappedMapping, 0.05, previewRows);
     expect(preview.levelCounts.treatment).toBe(3);
     const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).join("\n");
-    expect(asText).toContain(`${REP} · 3 levels`);
+    // FE-BETA-02b: preview counts are lower bounds unless the preview is
+    // complete (793bc6f), so the swap reads "Rep · ≥3 levels visible in preview".
+    expect(asText).toContain(`${REP} · ≥3 levels visible in preview`);
   });
 
   it("reports the replication column and its block count for RCBD", () => {

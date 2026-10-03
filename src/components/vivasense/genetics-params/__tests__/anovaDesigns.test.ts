@@ -269,11 +269,23 @@ describe("structural preview — descriptive only", () => {
     expect(preview.levelCounts.sub_plot).toBe(2);
   });
 
-  it("reports expected combinations as a complete-design count, not a verdict", () => {
+  // FE-BETA-02b: since 793bc6f ("stop presenting sampled level counts as
+  // full-dataset facts") a sampled preview reports a lower bound and defers the
+  // full count to the engine; "(if complete)" is used only when the caller says
+  // the preview holds the complete dataset.
+  it("reports expected combinations from a sampled preview as a lower bound, not a verdict", () => {
     const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
     expect(preview.expectedCombinations).toBe(4);
     const row = preview.rows.find((r) => r.label === "Treatment combinations");
-    expect(row?.value).toContain("if complete");
+    expect(row?.value).toBe("≥4 visible in preview; full dataset checked by engine");
+    expect(row?.value).not.toContain("if complete");
+  });
+
+  it("reports expected combinations as a complete-design count when the preview is complete", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, true);
+    expect(preview.expectedCombinations).toBe(4);
+    const row = preview.rows.find((r) => r.label === "Treatment combinations");
+    expect(row?.value).toBe("4 (if complete)");
   });
 
   it("shows the selected alpha", () => {

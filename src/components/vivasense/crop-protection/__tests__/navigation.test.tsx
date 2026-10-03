@@ -16,7 +16,11 @@ vi.mock("@/services/cropProtectionApi", async () => {
 });
 
 describe("Crop Protection navigation", () => {
-  it("appears in the workspace sidebar", async () => {
+  // FE-BETA-02b: dc1d62e ("simplify Early Access navigation") deliberately
+  // removed Crop Protection from the Early Access sidebar until it passes its
+  // own verification gate. The module stays in code and its dashboard opens
+  // (tests below); only the sidebar entry is hidden.
+  it("is not advertised in the Early Access workspace sidebar", async () => {
     const { Layout } = await import("@/components/layout/Layout");
     render(
       <MemoryRouter initialEntries={["/workspace?module=crop-protection"]}>
@@ -25,7 +29,9 @@ describe("Crop Protection navigation", () => {
         </Layout>
       </MemoryRouter>
     );
-    expect(screen.getByText("Crop Protection")).toBeInTheDocument();
+    expect(screen.queryByText("Crop Protection")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Experimental Design").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Field Layout").length).toBeGreaterThan(0);
   });
 
   it("offers Bioassay / Efficacy Analysis and opens it", async () => {
