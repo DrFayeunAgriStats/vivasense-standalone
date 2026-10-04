@@ -11,6 +11,7 @@ import type {
   ProfileSnapshot,
   RecordAnalysisInput,
 } from "./historyTypes";
+import { governedFactorialReplications } from "@/lib/designCounts";
 
 const TYPE_LABEL: Record<AnalysisTypeId, string> = {
   anova: "ANOVA",
@@ -164,6 +165,16 @@ export function deriveResultSummary(input: RecordAnalysisInput): Record<string, 
     // Advanced-analysis responses carry dataset dims at the top level, not nested.
     for (const k of ["n_genotypes", "n_environments", "n_observations"] as const) {
       if (summary[k] == null && r[k] != null) summary[k] = r[k];
+    }
+    // EA-FINAL-01: a governed factorial states its replications per treatment
+    // combination in factorial_profile; dataset_summary.n_reps counts distinct
+    // replicate IDs (9 for a Factorial CRD numbered 1..9), so it is replaced.
+    if (input.analysisType === "anova") {
+      const factorialReps = governedFactorialReplications(r);
+      if (factorialReps != null) {
+        summary.n_reps = factorialReps;
+        summary.n_reps_source = "factorial_profile";
+      }
     }
     if (Array.isArray(r.failed_traits)) summary.failed_traits = r.failed_traits.length;
     if (r.trait_results && typeof r.trait_results === "object") {

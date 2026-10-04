@@ -56,6 +56,15 @@ const DATASET_DIMS: MetricField[] = [
 ];
 
 /**
+ * ANOVA dimensions (EA-FINAL-01). `n_genotypes` is the engine's internal name
+ * for the one mapped treatment factor of a CRD / RCBD, not evidence that the
+ * factor is a genotype, so an ANOVA card counts "Treatments".
+ */
+const ANOVA_DIMS: MetricField[] = DATASET_DIMS.map((f) =>
+  f.key === "n_genotypes" ? { ...f, label: "Treatments" } : f,
+);
+
+/**
  * Per-module field order. Statistical headline fields lead (populate later),
  * dataset dimensions trail (populate today). The renderer filters to whatever
  * is present and caps the count, so leading-but-absent fields cost nothing.
@@ -67,7 +76,7 @@ export const METRICS_CONFIG: Partial<Record<AnalysisTypeId | string, MetricField
     { key: "cv", label: "CV", format: pct },
     { key: "r_squared", label: "R²", format: fixed(2) },
     { key: "best_entry", label: "Best entry", mono: false },
-    ...DATASET_DIMS,
+    ...ANOVA_DIMS,
   ],
   genetic_parameters: [
     { key: "h2", label: "H²", format: fixed(2) },
@@ -128,19 +137,27 @@ export interface ResolvedMetric {
 /**
  * Resolve the metrics to display for one analysis row: the module's configured
  * fields, filtered to those actually present in result_summary, de-duplicated
- * by label, capped at `max`.
+ * by label, capped at `max`. `designType` (the row's design_type) lets a count
+ * that is known to be unreliable for that design be withheld.
  */
 export function resolveMetrics(
   analysisType: string,
   resultSummary: Record<string, unknown> | null | undefined,
   max = 5,
+  designType?: string | null,
 ): ResolvedMetric[] {
   const fields = METRICS_CONFIG[analysisType] ?? DATASET_DIMS;
   const rs = resultSummary ?? {};
+  // EA-FINAL-01: a Factorial CRD row recorded before n_reps was read from
+  // factorial_profile holds the distinct replicate-ID count (e.g. 9), not the
+  // replications per treatment combination. That number is withheld, not shown.
+  const untrustedReps =
+    designType === "factorial_crd" && rs.n_reps_source !== "factorial_profile";
   const out: ResolvedMetric[] = [];
   const seenLabel = new Set<string>();
   for (const f of fields) {
     if (seenLabel.has(f.label)) continue;
+    if (untrustedReps && f.key === "n_reps") continue;
     const raw = rs[f.key];
     if (raw === undefined || raw === null || raw === "") continue;
     out.push({

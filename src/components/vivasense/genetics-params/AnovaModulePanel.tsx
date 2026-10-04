@@ -21,6 +21,7 @@ import {
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
+import { replicationBadgeLabel } from "@/lib/designCounts";
 import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
@@ -690,9 +691,12 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 {!isFactorialFamily && !isSplitPlot && (results.dataset_summary.n_genotypes ?? 0) > 0 && (
                   <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes, "treatment level")}</Badge>
                 )}
-                {(results.dataset_summary.n_reps ?? 0) > 0 && (
-                  <Badge variant="secondary">{pl(results.dataset_summary.n_reps, "replication")}</Badge>
-                )}
+                {(() => {
+                  // EA-FINAL-01: factorial replications come from factorial_profile,
+                  // never from the distinct replicate-ID count in dataset_summary.
+                  const repsLabel = replicationBadgeLabel(results, design);
+                  return repsLabel ? <Badge variant="secondary">{repsLabel}</Badge> : null;
+                })()}
                 <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
                 {results.persistence && (
                   <Badge variant="outline" className="border-emerald-300 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">

@@ -93,7 +93,7 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
         <ul className="flex flex-col gap-2">
           {rows.map((r) => {
             const accent = ACCENT[MODULE_ACCENT[r.analysis_type] ?? "primary"];
-            const metrics = resolveMetrics(r.analysis_type, r.result_summary, 5);
+            const metrics = resolveMetrics(r.analysis_type, r.result_summary, 5, r.design_type);
             const rt = runtime(r.execution_time_ms);
             return (
               <li key={r.id}>
