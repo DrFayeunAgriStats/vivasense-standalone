@@ -26,7 +26,7 @@ const resultOf = (p: Payload) => (Object.values(p.trait_results as Record<string
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
 const openDetails = () =>
-  fireEvent.click(screen.getByText(/View ANOVA Table & Mean Separation|Show Detailed Statistics/i));
+  fireEvent.click(screen.getByText(/^(View ANOVA Table( & Mean Separation)?|Show Detailed Statistics)$/));
 
 const rowByText = (text: string | RegExp) => screen.getByText(text).closest("tr") as HTMLElement;
 const pCell = (row: HTMLElement) => within(row).getAllByRole("cell").at(-1) as HTMLElement;

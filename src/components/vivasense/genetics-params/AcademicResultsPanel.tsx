@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { anovaSourceLabel, extractRows, fmtNum, formatP } from "./GeneticsResultsDashboard";
-import { anovaSourceLabelMap, emphasiseAnovaRow } from "./feBeta02";
+import { anovaSourceLabelMap, detailedStatsLabel, emphasiseAnovaRow } from "./feBeta02";
 
 /* ── Types ─────────────────────────────────────────── */
 
@@ -260,7 +260,11 @@ export function AcademicResultsPanel({
               <CollapsibleTrigger className="w-full flex items-center justify-between group">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <FlaskConical className="h-5 w-5 text-muted-foreground" />
-                  {domainNeutral ? "View ANOVA Table & Mean Separation" : "Show Detailed Statistics"}
+                  {detailedStatsLabel({
+                    domainNeutral,
+                    hasAnova: anovaRows.length > 0,
+                    hasMeanSeparation: msRows.length > 0,
+                  })}
                 </CardTitle>
                 <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>

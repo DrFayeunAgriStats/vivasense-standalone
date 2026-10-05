@@ -32,7 +32,7 @@ const commonAnalysisSteps = [
   "Choose the experimental design that matches how the experiment was randomized.",
   "Select one or more response variables and the inferential significance level (α = 0.01, 0.05, or 0.10).",
   "Review the design summary before you run the analysis.",
-  "Run the analysis. The result summary and decision appear first; open “View ANOVA Table & Mean Separation” on the results screen to see the ANOVA table, treatment means and grouping letters. Then download the Word report."
+  "Run the analysis. The result summary and decision appear first; open “View ANOVA Table & Mean Separation” (one-factor CRD / RCBD) or “View ANOVA Table” (Factorial and Split-Plot designs, whose means are shown on the results page itself) to see the ANOVA table and, for one-factor designs, the treatment means and grouping letters. Then download the Word report."
 ];
 
 export const gettingStartedTutorials: Tutorial[] = [
@@ -189,7 +189,7 @@ export const gettingStartedTutorials: Tutorial[] = [
           "Select Run Analysis.",
           "If VivaSense reports a structural error, correct the mapping or dataset rather than trying to bypass it.",
           "While it runs, the button reads “Running analysis…”. When it finishes, the page moves to the results heading.",
-          "Where to find the ANOVA table: on the results screen, select “View ANOVA Table & Mean Separation”. It opens the ANOVA table (source, DF, SS, MS, F and p-value), then the treatment means with their grouping letters.",
+          "Where to find the ANOVA table: on the results screen, select “View ANOVA Table & Mean Separation” (one-factor CRD / RCBD) or “View ANOVA Table” (Factorial and Split-Plot designs). It opens the ANOVA table (source, DF, SS, MS, F and p-value); for one-factor designs the treatment means with their grouping letters follow it.",
           "Read the ANOVA table before interpreting mean-separation letters. The replication / block row is shown for completeness; it is not a treatment result.",
           "Download the Word report while the result is available; this is essential for Preview designs."
         ]
@@ -269,7 +269,7 @@ export const gettingStartedTutorials: Tutorial[] = [
         title: "I cannot see the results",
         bullets: [
           "After the analysis finishes, the page moves to the results heading. If you scrolled away, look for “ANOVA Results” below the Run Analysis button.",
-          "Select “View ANOVA Table & Mean Separation” to open the ANOVA table and the means."
+          "Select “View ANOVA Table & Mean Separation” (one-factor CRD / RCBD) or “View ANOVA Table” (Factorial and Split-Plot designs) to open the ANOVA table."
         ]
       },
       {

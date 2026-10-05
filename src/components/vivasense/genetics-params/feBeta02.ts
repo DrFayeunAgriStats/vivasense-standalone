@@ -518,3 +518,21 @@ export function rewriteMappingWarning(warning: string): string {
   }
   return warning;
 }
+
+/**
+ * Trigger label for the collapsible detail panel. It names what that panel
+ * actually contains, not what the analysis page as a whole presents: Factorial
+ * and Split-Plot callers render their mean separation elsewhere and pass none
+ * here, so their panel holds the ANOVA table only.
+ */
+export function detailedStatsLabel(opts: {
+  domainNeutral?: boolean;
+  hasAnova: boolean;
+  hasMeanSeparation: boolean;
+}): string {
+  if (!opts.domainNeutral) return "Show Detailed Statistics";
+  if (opts.hasAnova && opts.hasMeanSeparation) return "View ANOVA Table & Mean Separation";
+  if (opts.hasAnova) return "View ANOVA Table";
+  if (opts.hasMeanSeparation) return "View Mean Separation";
+  return "View Detailed Statistics";
+}
