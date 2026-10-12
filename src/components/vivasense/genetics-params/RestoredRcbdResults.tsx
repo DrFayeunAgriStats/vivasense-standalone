@@ -1,3 +1,4 @@
+import { JourneyResultsViewed } from "./JourneyResultsViewed";
 import { useState } from "react";
 import { CheckCircle2, Download, Loader2 } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
@@ -24,6 +25,7 @@ interface Props {
  * here, so reopening a saved analysis cannot invoke R or create a new execution.
  */
 export function RestoredRcbdResults({ results }: Props) {
+  const [attemptId] = useState(() => crypto.randomUUID());
   const [isDownloading, setIsDownloading] = useState(false);
   const persistence = results.persistence;
   const alpha =
@@ -42,6 +44,8 @@ export function RestoredRcbdResults({ results }: Props) {
       await downloadPersistentRcbdReport(
         persistence.analysis_run_id,
         `VivaSense_ANOVA_rcbd_${new Date().toISOString().slice(0, 10)}.docx`,
+        "plant_breeding",
+        attemptId,
       );
       sonnerToast.success("Persistent ANOVA report downloaded");
     } catch (error) {
@@ -53,6 +57,7 @@ export function RestoredRcbdResults({ results }: Props) {
 
   return (
     <div className="space-y-6">
+      <JourneyResultsViewed context={{ attemptId, analysisRunId: persistence?.analysis_run_id, design: "rcbd" }} />
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>

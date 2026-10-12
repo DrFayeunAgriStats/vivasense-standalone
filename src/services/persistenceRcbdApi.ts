@@ -1,3 +1,4 @@
+import { recordJourney } from "@/services/history/journeyService";
 import { supabase } from "@/integrations/supabase/client";
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import type { DatasetContext } from "@/types/geneticsUpload";
@@ -364,25 +365,34 @@ export async function downloadPersistentRcbdReport(
   analysisRunId: string,
   filename = "vivasense_rcbd_report.docx",
   domain: "plant_breeding" | "agronomy" | "general" = "plant_breeding",
+  attemptId: string = crypto.randomUUID(),
 ): Promise<void> {
-  const session = await requireSession();
-  const blob = await vivaSenseRequest<Blob>(
-    `/persistence/analysis-runs/${analysisRunId}/report`,
-    {
-      method: "POST",
-      authToken: session.access_token,
-      responseType: "blob",
-      timeoutMs: 180000,
-      jsonBody: { domain },
-    },
-  );
+  const journey = { attemptId, analysisRunId, design: "rcbd" };
+  void recordJourney("report_download_requested", journey);
+  try {
+    const session = await requireSession();
+    const blob = await vivaSenseRequest<Blob>(
+      `/persistence/analysis-runs/${analysisRunId}/report`,
+      {
+        method: "POST",
+        authToken: session.access_token,
+        responseType: "blob",
+        timeoutMs: 180000,
+        jsonBody: { domain },
+      },
+    );
 
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    void recordJourney("report_download_initiated", journey);
+  } catch (error) {
+    void recordJourney("report_download_failed", journey);
+    throw error;
+  }
 }
