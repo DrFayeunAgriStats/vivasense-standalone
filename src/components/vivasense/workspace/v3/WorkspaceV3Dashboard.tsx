@@ -10,7 +10,7 @@
  */
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,7 @@ import { dismissOnboarding } from "@/services/preferences";
 import { deriveWorkspaceState, type WorkspaceAction } from "@/lib/workspace/workflowState";
 import { deriveStageDates } from "@/lib/workspace/stageDates";
 import { WorkflowStepper } from "./WorkflowStepper";
+import { CreateStudyModal } from "@/components/vivasense/studies/CreateStudyModal";
 import { ActiveStudyPanel } from "./ActiveStudyPanel";
 import { OnboardingModules } from "./OnboardingModules";
 import { RecentAnalysesV3 } from "./RecentAnalysesV3";
@@ -60,6 +61,8 @@ function moduleForType(type: string): "anova" | "genetics" | "advanced" {
 
 export function WorkspaceV3Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [createStudyOpen, setCreateStudyOpen] = useState(false);
   const { user, profile } = useAuth();
   const [locallyDismissed, setLocallyDismissed] = useState(false);
 
@@ -107,7 +110,11 @@ export function WorkspaceV3Dashboard() {
     locallyDismissed || Boolean((profile as { onboarding_dismissed?: boolean } | null)?.onboarding_dismissed);
 
   const handleAction = (action: WorkspaceAction) => {
-    if (action === "create-study" || action === "data-capture") {
+    if (action === "create-study") {
+      setCreateStudyOpen(true);
+      return;
+    }
+    if (action === "data-capture") {
       navigate("/data-capture");
       return;
     }
@@ -124,6 +131,14 @@ export function WorkspaceV3Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-[820px] px-4 py-6 sm:px-6">
+      <CreateStudyModal
+        isOpen={createStudyOpen}
+        onClose={() => setCreateStudyOpen(false)}
+        onSuccess={() => {
+          void queryClient.invalidateQueries({ queryKey: ["studies"] });
+          void queryClient.invalidateQueries({ queryKey: ["workspace-v3-data"] });
+        }}
+      />
       {/* Header */}
       <header className="mb-4 flex items-start justify-between gap-3">
         <div>
@@ -141,7 +156,7 @@ export function WorkspaceV3Dashboard() {
           </p>
         </div>
         <Button size="sm" onClick={() => handleAction("start-analysis")} className="shrink-0">
-          <Plus className="mr-1 h-4 w-4" /> New Analysis
+          <Plus className="mr-1 h-4 w-4" /> Analyse my data
         </Button>
       </header>
 
