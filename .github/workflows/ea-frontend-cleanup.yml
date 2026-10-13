@@ -25,67 +25,46 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Apply fail-closed Early Access cleanup
+      - name: Write Early Access compatibility layers
         shell: bash
         run: |
           set -euo pipefail
-
           cat > src/lib/vivasenseGating.ts <<'EOF'
           /**
-           * VivaSense Early Access compatibility layer.
-           *
-           * Commercial tiers are intentionally disabled during Early Access.
-           * The legacy "free" | "pro" type is retained only so existing callers
-           * and backend headers remain compatible while every implemented module
-           * is available to testers. Scientific/design/data validation lives in
-           * the analysis modules and is not changed here.
+           * Early Access compatibility layer.
+           * Commercial tiers are disabled; legacy mode values remain only for
+           * caller/header compatibility. Scientific validation is elsewhere.
            */
           export type VivaSenseMode = "free" | "pro";
-
           const STORAGE_KEY = "vivasense_mode";
           const MODE_CHANGE_EVENT = "vivasense:mode-change";
 
-          export function getVivaSenseMode(): VivaSenseMode {
-            return "pro";
-          }
+          export function getVivaSenseMode(): VivaSenseMode { return "pro"; }
 
           export function setVivaSenseMode(_mode: VivaSenseMode): void {
             if (typeof window === "undefined") return;
             try {
               window.localStorage.setItem(STORAGE_KEY, "pro");
               window.dispatchEvent(new CustomEvent(MODE_CHANGE_EVENT, { detail: "pro" }));
-            } catch {
-              // Storage may be unavailable; Early Access remains unrestricted.
-            }
+            } catch { /* storage may be unavailable */ }
           }
 
           export function subscribeVivaSenseMode(cb: (mode: VivaSenseMode) => void): () => void {
             if (typeof window === "undefined") return () => {};
-            const handler = () => cb("pro");
-            window.addEventListener(MODE_CHANGE_EVENT, handler);
-            window.addEventListener("storage", handler);
+            const onMode = () => cb("pro");
+            window.addEventListener(MODE_CHANGE_EVENT, onMode);
+            window.addEventListener("storage", onMode);
             return () => {
-              window.removeEventListener(MODE_CHANGE_EVENT, handler);
-              window.removeEventListener("storage", handler);
+              window.removeEventListener(MODE_CHANGE_EVENT, onMode);
+              window.removeEventListener("storage", onMode);
             };
           }
 
           export type ProGuardKey =
-            | "anova_combined"
-            | "anova_multi_environment"
-            | "anova_gxe"
-            | "genetic_parameters"
-            | "pca"
-            | "path_analysis"
-            | "clustering"
-            | "selection_index"
-            | "stability"
-            | "ammi"
-            | "gge"
-            | "molecular"
-            | "regression"
-            | "export_word"
-            | "advanced_interpretation";
+            | "anova_combined" | "anova_multi_environment" | "anova_gxe"
+            | "genetic_parameters" | "pca" | "path_analysis" | "clustering"
+            | "selection_index" | "stability" | "ammi" | "gge" | "molecular"
+            | "regression" | "export_word" | "advanced_interpretation";
 
           export interface ProGuardInfo {
             key: ProGuardKey;
@@ -120,29 +99,18 @@ jobs:
           export function classifyAnovaRequest(
             _analysisType: string,
             _formData: FormData,
-          ): ProGuardInfo | null {
-            return null;
-          }
+          ): ProGuardInfo | null { return null; }
 
           export function classifyGeneticsRequest(
             _analysisType: string,
-          ): ProGuardInfo | null {
-            return null;
-          }
+          ): ProGuardInfo | null { return null; }
 
           export const isProMode = (): boolean => true;
           EOF
 
           cat > src/services/featureMode.ts <<'EOF'
-          /**
-           * Early Access access-mode compatibility.
-           *
-           * The legacy "pro" value and mode header are retained internally so
-           * older callers/backends keep working. There is no commercial access
-           * decision here during Early Access.
-           */
+          /** Early Access mode compatibility. No commercial decision is made here. */
           export type VivaSenseMode = "free" | "pro";
-
           export const VIVASENSE_MODE_KEY = "vivasense_mode";
           export const VIVASENSE_EXPIRES_KEY = "vivasense_pro_expires_at";
           export const VIVASENSE_DEFAULT_MODE: VivaSenseMode = "pro";
@@ -155,9 +123,7 @@ jobs:
             return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
           }
 
-          export function getProExpiresAt(): string | null {
-            return null;
-          }
+          export function getProExpiresAt(): string | null { return null; }
 
           export function initializeVivaSenseMode(): VivaSenseMode {
             if (canUseLocalStorage()) {
@@ -167,9 +133,7 @@ jobs:
             return "pro";
           }
 
-          export function getVivaSenseMode(): VivaSenseMode {
-            return "pro";
-          }
+          export function getVivaSenseMode(): VivaSenseMode { return "pro"; }
 
           export function setVivaSenseMode(
             _mode: VivaSenseMode,
@@ -195,11 +159,7 @@ jobs:
             | { ok: false; error: string }
           > {
             setVivaSenseMode("pro");
-            return {
-              ok: true,
-              expires_at: "9999-12-31T23:59:59.999Z",
-              already_redeemed: true,
-            };
+            return { ok: true, expires_at: "9999-12-31T23:59:59.999Z", already_redeemed: true };
           }
 
           export async function syncProAccessFromServer(): Promise<{
@@ -210,13 +170,8 @@ jobs:
             return { mode: "pro", expiresAt: null };
           }
 
-          export function isProMode(): boolean {
-            return true;
-          }
-
-          export function modeLabel(_mode: VivaSenseMode): string {
-            return "Early Access";
-          }
+          export function isProMode(): boolean { return true; }
+          export function modeLabel(_mode: VivaSenseMode): string { return "Early Access"; }
 
           export class ProFeatureError extends Error {
             code: string;
@@ -230,12 +185,9 @@ jobs:
           }
 
           export function guardProModule(_moduleName: string): void {
-            // Commercial access restrictions are disabled during Early Access.
+            // Commercial restrictions are disabled during Early Access.
           }
-
-          export function ensureProAccess(featureName: string): void {
-            guardProModule(featureName);
-          }
+          export function ensureProAccess(featureName: string): void { guardProModule(featureName); }
 
           export function setVivaSenseUser(identity: string | null): void {
             if (!canUseLocalStorage()) return;
@@ -286,111 +238,78 @@ jobs:
           }
           EOF
 
-          python3 - <<'PY'
+      - name: Remove Field Data commercial mode UI
+        shell: python
+        run: |
           from pathlib import Path
-          import re
-
-          def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
-              p = Path(path)
-              text = p.read_text()
-              count = text.count(old)
-              if count != expected:
-                  raise SystemExit(f"{path}: expected {expected} exact match(es), found {count}: {old[:90]!r}")
-              p.write_text(text.replace(old, new))
-
-          fd = "src/components/vivasense/FieldDataCollection.tsx"
-          replace_exact(
-              fd,
-              '<p className="mt-1 text-xs text-[#285A4B]">Mode: {isPro ? "Pro" : "Free"} · This module is free for all users.</p>',
-              '<p className="mt-1 text-xs text-[#285A4B]">Early Access · Available to all testers.</p>',
-          )
-
-          fl = "src/components/vivasense/FieldLayoutGenerator.tsx"
-          replace_exact(
-              fl,
-              '  const selectedDesign = useMemo(() => DESIGNS.find((d) => d.value === design), [design]);\n',
-              '',
-          )
-          replace_exact(
-              fl,
-              '    if (selectedDesign?.requiresPro && !isPro) {\n      return "This design is available in VivaSense Pro only.";\n    }\n',
-              '',
-          )
-          replace_exact(
-              fl,
-              'Generate randomized field layouts for classic and Pro experimental designs.',
-              'Generate randomized field layouts for supported experimental designs.',
-          )
-          replace_exact(
-              fl,
-              '''                <option
-                  key={d.value}
-                  value={d.value}
-                  disabled={d.requiresPro && !isPro}
-                >
-                  {d.label} - {d.desc}{d.requiresPro ? " [Pro]" : ""}
-                </option>''',
-              '''                <option key={d.value} value={d.value}>
-                  {d.label} - {d.desc}
-                </option>''',
-          )
-
-          p = Path(fl)
+          p = Path("src/components/vivasense/FieldDataCollection.tsx")
           text = p.read_text()
-          commercial_ui = re.compile(
-              r'\n            <div className="mt-2 flex flex-wrap gap-2">.*?'
-              r'\n            \{selectedDesign\?\.requiresPro && !isPro && \(.*?'
-              r'\n            \)\}\n',
-              re.DOTALL,
-          )
-          text, count = commercial_ui.subn('\n', text)
-          if count != 1:
-              raise SystemExit(f"{fl}: expected 1 commercial UI block, found {count}")
+          replacements = [
+              ('import { getVivaSenseMode, subscribeVivaSenseMode, type VivaSenseMode } from "@/lib/vivasenseGating";\n', ''),
+              ('  const [mode, setMode] = useState<VivaSenseMode>(() => getVivaSenseMode());\n  const isPro = mode === "pro";\n\n', ''),
+              ('  useEffect(() => {\n    const unsubscribe = subscribeVivaSenseMode(setMode);\n    return unsubscribe;\n  }, []);\n\n', ''),
+              ('Mode: {isPro ? "Pro" : "Free"} · This module is free for all users.', 'Early Access · Available to all testers.'),
+          ]
+          for old, new in replacements:
+              n = text.count(old)
+              if n != 1:
+                  raise SystemExit(f"FieldDataCollection expected one match, found {n}: {old[:80]!r}")
+              text = text.replace(old, new)
           p.write_text(text)
 
-          replace_exact(
-              fl,
-              '''              disabled={
-                isLoading ||
-                (selectedDesign?.requiresPro && !isPro) ||
-                (design === "lattice" &&
-                  (!!latticeOptionsError || !latticeOptions ||
-                    (!!selectedLattice && selectedLattice.status !== "supported")))
-              }''',
-              '''              disabled={
-                isLoading ||
-                (design === "lattice" &&
-                  (!!latticeOptionsError || !latticeOptions ||
-                    (!!selectedLattice && selectedLattice.status !== "supported")))
-              }''',
-          )
+      - name: Remove Field Layout commercial UI only
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path("src/components/vivasense/FieldLayoutGenerator.tsx")
+          text = p.read_text()
 
-          # Fail closed on the exact user-facing commercial strings this release removes.
-          checks = {
-              "src/components/vivasense/FieldLayoutGenerator.tsx": [
-                  "[Pro]",
-                  "Pro feature.",
-                  "Upgrade to VivaSense Pro",
-                  "classic and Pro experimental designs",
-                  "available in VivaSense Pro only",
-              ],
-              "src/components/vivasense/FieldDataCollection.tsx": [
-                  'Mode: {isPro ? "Pro" : "Free"}',
-                  "This module is free for all users",
-              ],
-              "src/components/vivasense/VivaSensePlanBadge.tsx": [
-                  "Pro Plan",
-                  "Free Plan",
-              ],
-          }
-          for path, needles in checks.items():
-              contents = Path(path).read_text()
-              found = [needle for needle in needles if needle in contents]
-              if found:
-                  raise SystemExit(f"{path}: residual commercial wording: {found}")
+          def one(old: str, new: str = ""):
+              global text
+              n = text.count(old)
+              if n != 1:
+                  raise SystemExit(f"FieldLayout expected one match, found {n}: {old[:90]!r}")
+              text = text.replace(old, new)
 
-          print("Early Access commercial cleanup replacements applied and verified.")
-          PY
+          one('  const selectedDesign = useMemo(() => DESIGNS.find((d) => d.value === design), [design]);\n')
+          one('    if (selectedDesign?.requiresPro && !isPro) {\n      return "This design is available in VivaSense Pro only.";\n    }\n')
+          one('Generate randomized field layouts for classic and Pro experimental designs.',
+              'Generate randomized field layouts for supported experimental designs.')
+          one('\n                  disabled={d.requiresPro && !isPro}')
+          one('{d.label} - {d.desc}{d.requiresPro ? " [Pro]" : ""}', '{d.label} - {d.desc}')
+          one('                (selectedDesign?.requiresPro && !isPro) ||\n')
+
+          start_marker = '            <div className="mt-2 flex flex-wrap gap-2">'
+          alert_marker = '            {selectedDesign?.requiresPro && !isPro && ('
+          start = text.find(start_marker)
+          alert = text.find(alert_marker, start + 1)
+          if start < 0 or alert < 0:
+              raise SystemExit(f"FieldLayout commercial UI markers missing: start={start}, alert={alert}")
+          close_marker = '            )}\n'
+          close = text.find(close_marker, alert + len(alert_marker))
+          if close < 0:
+              raise SystemExit("FieldLayout commercial alert closing marker missing")
+          text = text[:start] + text[close + len(close_marker):]
+
+          residual = [
+              s for s in [
+                  "[Pro]", "Pro feature.", "Upgrade to VivaSense Pro",
+                  "classic and Pro experimental designs", "available in VivaSense Pro only",
+              ] if s in text
+          ]
+          if residual:
+              raise SystemExit(f"FieldLayout residual commercial wording: {residual}")
+          p.write_text(text)
+
+      - name: Verify intended source-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          unexpected="$(printf '%s\n' "$changed" | grep -vE '^(src/lib/vivasenseGating.ts|src/services/featureMode.ts|src/components/vivasense/VivaSensePlanBadge.tsx|src/components/vivasense/FieldDataCollection.tsx|src/components/vivasense/FieldLayoutGenerator.tsx)$' || true)"
+          test -z "$unexpected" || { echo "Unexpected changed files:"; echo "$unexpected"; exit 1; }
 
       - name: Install dependencies
         run: npm ci
@@ -398,8 +317,8 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Run focused workspace tests
-        run: npm test -- --run src/components/vivasense/workspace/v3/__tests__/studyOnboarding.test.tsx src/components/vivasense/genetics-params/__tests__/anovaSingleEntryPoint.test.ts
+      - name: Run focused scientific-entry tests
+        run: npx vitest run src/components/vivasense/workspace/v3/__tests__/studyOnboarding.test.tsx src/components/vivasense/genetics-params/__tests__/anovaSingleEntryPoint.test.ts
 
       - name: Commit validated cleanup and remove one-shot workflow
         shell: bash
@@ -408,12 +327,10 @@ jobs:
           rm .github/workflows/ea-frontend-cleanup.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/lib/vivasenseGating.ts \
-                  src/services/featureMode.ts \
-                  src/components/vivasense/VivaSensePlanBadge.tsx \
-                  src/components/vivasense/FieldDataCollection.tsx \
-                  src/components/vivasense/FieldLayoutGenerator.tsx \
-                  .github/workflows/ea-frontend-cleanup.yml
+          git add -A
           git diff --cached --check
+          changed="$(git diff --cached --name-only)"
+          unexpected="$(printf '%s\n' "$changed" | grep -vE '^(src/lib/vivasenseGating.ts|src/services/featureMode.ts|src/components/vivasense/VivaSensePlanBadge.tsx|src/components/vivasense/FieldDataCollection.tsx|src/components/vivasense/FieldLayoutGenerator.tsx|.github/workflows/ea-frontend-cleanup.yml)$' || true)"
+          test -z "$unexpected" || { echo "Unexpected staged files:"; echo "$unexpected"; exit 1; }
           git commit -m "Early Access: remove frontend commercial gating"
           git push origin HEAD:release/ea-remove-commercial-gates-frontend-20261013
