@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Trash2, Upload } from "lucide-react";
-import { getVivaSenseMode, subscribeVivaSenseMode, type VivaSenseMode } from "@/lib/vivasenseGating";
 
 export interface TrialMeta {
   trial_id: string;
@@ -129,9 +128,6 @@ function dataKey(trialId: string): string {
 }
 
 export function FieldDataCollection() {
-  const [mode, setMode] = useState<VivaSenseMode>(() => getVivaSenseMode());
-  const isPro = mode === "pro";
-
   const [screen, setScreen] = useState<Screen>("trials");
   const [isInitializingEntry, setIsInitializingEntry] = useState(false);
   const [trials, setTrials] = useState<TrialMeta[]>([]);
@@ -161,11 +157,6 @@ export function FieldDataCollection() {
 
   const [jumpToPlot, setJumpToPlot] = useState("");
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
-
-  useEffect(() => {
-    const unsubscribe = subscribeVivaSenseMode(setMode);
-    return unsubscribe;
-  }, []);
 
   useEffect(() => {
     if (!storageAvailable()) {
@@ -784,7 +775,7 @@ export function FieldDataCollection() {
       <div className="mb-4 rounded-xl border border-[#BFDCCD] bg-white p-4">
         <h2 className="text-xl sm:text-2xl font-bold">📋 Field Data Collection</h2>
         <p className="text-sm font-medium text-[#285A4B]">Beta — Offline</p>
-        <p className="mt-1 text-xs text-[#285A4B]">Mode: {isPro ? "Pro" : "Free"} · This module is free for all users.</p>
+        <p className="mt-1 text-xs text-[#285A4B]">Early Access · Available to all testers.</p>
       </div>
 
       {storageError && (

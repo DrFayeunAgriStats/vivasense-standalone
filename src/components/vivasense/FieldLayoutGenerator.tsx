@@ -145,7 +145,6 @@ export function FieldLayoutGenerator() {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const isPro = mode === "pro";
-  const selectedDesign = useMemo(() => DESIGNS.find((d) => d.value === design), [design]);
   const parseCsv = (s: string) => s.split(/[,\n]+/).map((x) => x.trim()).filter(Boolean);
 
   useEffect(() => {
@@ -370,9 +369,6 @@ export function FieldLayoutGenerator() {
   };
 
   const validate = (): string | null => {
-    if (selectedDesign?.requiresPro && !isPro) {
-      return "This design is available in VivaSense Pro only.";
-    }
     if (replications < 2) return "Replications must be >= 2.";
     if (replications > 20 && design !== "lattice") return "Replications must be <= 20.";
     if (plotWidth <= 0 || plotLength <= 0) return "Plot dimensions must be positive.";
@@ -576,7 +572,7 @@ export function FieldLayoutGenerator() {
             Field Layout Generator
           </CardTitle>
           <CardDescription>
-            Generate randomized field layouts for classic and Pro experimental designs.
+            Generate randomized field layouts for supported experimental designs.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -591,48 +587,12 @@ export function FieldLayoutGenerator() {
                 <option
                   key={d.value}
                   value={d.value}
-                  disabled={d.requiresPro && !isPro}
                 >
-                  {d.label} - {d.desc}{d.requiresPro ? " [Pro]" : ""}
+                  {d.label} - {d.desc}
                 </option>
               ))}
             </select>
 
-            <div className="mt-2 flex flex-wrap gap-2">
-              {DESIGNS.filter((d) => d.requiresPro).map((d) => (
-                <span
-                  key={`badge-${d.value}`}
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#FAEEDA",
-                    color: "#854F0B",
-                    border: "0.5px solid #F0BC52",
-                  }}
-                >
-                  {d.label} Pro
-                </span>
-              ))}
-            </div>
-
-            {selectedDesign?.requiresPro && !isPro && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: "10px 14px",
-                  background: "#FAEEDA",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  color: "#854F0B",
-                  border: "0.5px solid #F0BC52",
-                }}
-              >
-                <span role="img" aria-label="locked">🔒</span> <strong>Pro feature.</strong> Upgrade to VivaSense Pro to access
-                Latin square, split plot, factorial, lattice and alpha lattice designs.{" "}
-                <a href="https://fieldtoinsightacademy.com.ng" target="_blank" rel="noopener noreferrer" style={{ color: "#854F0B", fontWeight: 600 }}>
-                  Upgrade -&gt;
-                </a>
-              </div>
-            )}
           </div>
 
           {(design === "crd" || design === "rcbd") && (
@@ -861,7 +821,6 @@ export function FieldLayoutGenerator() {
               onClick={generate}
               disabled={
                 isLoading ||
-                (selectedDesign?.requiresPro && !isPro) ||
                 (design === "lattice" &&
                   (!!latticeOptionsError || !latticeOptions ||
                     (!!selectedLattice && selectedLattice.status !== "supported")))
