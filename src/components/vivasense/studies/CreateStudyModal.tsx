@@ -67,12 +67,12 @@ export const CreateStudyModal = ({ isOpen, onClose, onSuccess }: CreateStudyModa
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create new study</DialogTitle>
-          <DialogDescription>Group related analyses under a research project.</DialogDescription>
+          <DialogDescription>A study is a named workspace for your experiment’s data and results. Give your existing experiment a name; you do not need to conduct a new experiment. Only the name is required.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="study-title">Title <span className="text-destructive">*</span></Label>
+            <Label htmlFor="study-title">Study / experiment name <span className="text-destructive">*</span></Label>
             <Input
               id="study-title"
               placeholder="e.g. Cowpea Yield Trial 2026"
@@ -83,23 +83,23 @@ export const CreateStudyModal = ({ isOpen, onClose, onSuccess }: CreateStudyModa
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="study-description">Description</Label>
+            <Label htmlFor="study-description">Description (optional)</Label>
             <Textarea id="study-description" rows={2} placeholder="Optional summary" {...register("description")} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="study-crop">Crop</Label>
+              <Label htmlFor="study-crop">Crop (optional)</Label>
               <Input id="study-crop" placeholder="e.g. Maize" {...register("crop")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="study-year">Year</Label>
+              <Label htmlFor="study-year">Year (optional)</Label>
               <Input id="study-year" type="number" inputMode="numeric" placeholder="2026" {...register("year")} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="study-area">Research area</Label>
+            <Label htmlFor="study-area">Research area (optional)</Label>
             <Input id="study-area" placeholder="e.g. Genetics & Breeding" {...register("research_area")} />
           </div>
 
