@@ -1,3 +1,5 @@
+import { recordJourney, type JourneyContext } from "@/services/history/journeyService";
+import { JourneyResultsViewed } from "./JourneyResultsViewed";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,6 +88,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [journey, setJourney] = useState<JourneyContext | null>(null);
   const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   // Assumption-driven transformation: which branch feeds the report. Defaults to
@@ -201,6 +204,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setResults(null);
     setStructuralError(null);
     setAnalysisError(null);
+    const attempt: JourneyContext = { attemptId: crypto.randomUUID(), design };
+    setJourney(attempt);
+    void recordJourney("analysis_started", attempt);
     // Hoisted so the failure path reports the same fields and elapsed time.
     const startedAt = performance.now();
     const historyBase = {
@@ -213,7 +219,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       designType: design,
       traits: selectedTraits,
       startedAt,
-      parameters: { design_type: design, alpha, mode: datasetContext.mode },
+      parameters: { design_type: design, alpha, mode: datasetContext.mode, journey_attempt_id: attempt.attemptId },
     };
     try {
       console.log("[MODULE]", MODULE, "[DESIGN]", design, "[ALPHA]", alpha);
@@ -237,6 +243,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           })
         : await analyzeUpload(request);
 
+      const completedAttempt = { ...attempt, analysisRunId: res.persistence?.analysis_run_id };
+      setJourney(completedAttempt);
       setResults(res);
       // A trait can fail structurally while the HTTP call succeeds — the
       // backend rejects invalid structures before fitting rather than
@@ -246,6 +254,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       );
       setStructuralError(firstFailure?.error ? describeStructuralError(firstFailure.error) : null);
       const successCount = Object.values(res.trait_results).filter((tr) => tr.status === "success").length;
+      void recordJourney(successCount === 0 ? "analysis_failed" : res.failed_traits.length > 0 ? "analysis_partially_succeeded" : "analysis_succeeded", completedAttempt);
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
@@ -265,6 +274,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         },
       });
     } catch (err: any) {
+      void recordJourney("analysis_failed", attempt);
       void recordAnalysisFailure(historyBase, err);
       const message = err instanceof Error ? err.message : String(err ?? "Analysis failed.");
       setAnalysisError(message);
@@ -280,11 +290,14 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     if (!results) return;
     setExportError(null);
     setIsDownloading(true);
+    if (journey && !results.persistence) void recordJourney("report_download_requested", journey);
     try {
       if (results.persistence) {
         await downloadPersistentRcbdReport(
           results.persistence.analysis_run_id,
           `VivaSense_ANOVA_rcbd_${new Date().toISOString().slice(0, 10)}.docx`,
+          "plant_breeding",
+          journey?.attemptId,
         );
         sonnerToast.success("Persistent ANOVA report downloaded");
         return;
@@ -304,6 +317,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
         a.click();
         URL.revokeObjectURL(url);
+        if (journey) void recordJourney("report_download_initiated", journey);
         sonnerToast.success("ANOVA report downloaded");
         return;
       }
@@ -340,8 +354,10 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
       a.click();
       URL.revokeObjectURL(url);
+      if (journey) void recordJourney("report_download_initiated", journey);
       sonnerToast.success("ANOVA report downloaded");
     } catch (err) {
+      if (journey && !results.persistence) void recordJourney("report_download_failed", journey);
       // An exact-token refusal (409) is not a transient failure and must not be
       // retried against some other cached analysis — the correct action is to
       // rerun, so say exactly that instead of a generic "Download failed".
@@ -585,6 +601,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       </Card>
 
       {/* Results */}
+      {results && journey && <JourneyResultsViewed context={journey} />}
       {results && (
         <div className="space-y-6">
           <Card>
