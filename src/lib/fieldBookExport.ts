@@ -17,9 +17,10 @@ export type FieldbookRow = Record<string, unknown>;
 export interface FieldBookOptions {
   /** Design id, e.g. "rcbd", "crd", "factorial_rcbd", "split_plot". */
   design: string;
-  /** Custom factor-A / factor-B names for factorial designs (fallbacks used otherwise). */
+  /** Custom factor-A / factor-B / factor-C names for factorial designs (fallbacks used otherwise). */
   factorAName?: string;
   factorBName?: string;
+  factorCName?: string;
   /** Empty trait columns to include for data entry (headers only, no values). */
   traitColumns: string[];
 }
@@ -52,6 +53,7 @@ function factorColumns(opts: FieldBookOptions): { header: string; key: (row: Fie
     return [
       { header: opts.factorAName?.trim() || "Factor A", key: (r) => r.factor_a_level },
       { header: opts.factorBName?.trim() || "Factor B", key: (r) => r.factor_b_level },
+      ...(opts.factorCName ? [{ header: opts.factorCName.trim(), key: (r: FieldbookRow) => r.factor_c_level }] : []),
     ];
   }
   if (d === "split_plot") {
