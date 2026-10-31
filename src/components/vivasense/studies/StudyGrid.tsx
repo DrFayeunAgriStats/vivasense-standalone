@@ -26,7 +26,7 @@ export const StudyGrid = () => {
   const errorMessage = error instanceof Error ? error.message : "Could not load studies.";
 
   return (
-    <section className="rounded-xl border border-border bg-card/40 p-5 sm:p-6">
+    <section id="studies" className="rounded-xl border border-border bg-card/40 p-5 sm:p-6">
       <header className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FolderKanban className="h-5 w-5 text-primary" />
@@ -65,7 +65,7 @@ export const StudyGrid = () => {
         <div className="flex flex-col items-center gap-2 py-12 text-center">
           <FolderKanban className="h-10 w-10 text-muted-foreground/40" />
           <p className="mt-2 text-base font-semibold text-foreground">No studies yet</p>
-          <p className="max-w-xs text-sm text-muted-foreground">Create your first study to organize your research before running analyses.</p>
+          <p className="max-w-xs text-sm text-muted-foreground">A study is a named workspace for an experiment’s data and results. For example: “Maize fertiliser trial”. You can also start with “Analyse my data” above.</p>
           <Button size="sm" className="mt-4" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" /> Create Study
           </Button>

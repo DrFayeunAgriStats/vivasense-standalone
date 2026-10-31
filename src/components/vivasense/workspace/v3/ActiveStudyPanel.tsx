@@ -53,16 +53,21 @@ export function ActiveStudyPanel({ state, traitCount, workflowPct, onAction }: P
             {state.analysisCount > 0 ? (
               <>
                 <strong>{state.analysisCount} {state.analysisCount === 1 ? "analysis isn't" : "analyses aren't"} in a study.</strong>{" "}
-                Group them to track progress.
+                A study is a named workspace for an experiment’s data and results.
               </>
             ) : (
-              <><strong>No study yet.</strong> Create one to organize your research.</>
+              <><strong>Already have an Excel or CSV file?</strong> Start an analysis below. A study is a named workspace for an experiment’s data and results.</>
             )}
           </span>
         </div>
-        <Button size="sm" variant="outline" onClick={() => onAction("create-study")} className="border-amber-300 text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200">
-          Create Study
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => onAction("start-analysis")}>
+            Analyse my data
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => onAction("create-study")} className="border-amber-300 text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200">
+            Organise an experiment
+          </Button>
+        </div>
       </div>
     );
   }

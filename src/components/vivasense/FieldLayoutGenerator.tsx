@@ -75,6 +75,7 @@ interface LayoutSummary {
 }
 
 interface FieldLayoutResult {
+  factorDefinitions?: Array<{ name: string; levels: string[] }>;
   design?: Design;
   seed?: number;
   treatments?: string[];
@@ -128,6 +129,9 @@ export function FieldLayoutGenerator() {
   const [factorAName, setFactorAName] = useState("Nitrogen");
   const [factorB, setFactorB] = useState("V1, V2, V3");
   const [factorBName, setFactorBName] = useState("Variety");
+  const [factorCount, setFactorCount] = useState<2 | 3>(2);
+  const [factorC, setFactorC] = useState("S1, S2");
+  const [factorCName, setFactorCName] = useState("Spacing");
   const [blockSize, setBlockSize] = useState(4);
 
   // Balanced-lattice block sizes are classified by the engine
@@ -145,7 +149,6 @@ export function FieldLayoutGenerator() {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const isPro = mode === "pro";
-  const selectedDesign = useMemo(() => DESIGNS.find((d) => d.value === design), [design]);
   const parseCsv = (s: string) => s.split(/[,\n]+/).map((x) => x.trim()).filter(Boolean);
 
   useEffect(() => {
@@ -191,6 +194,12 @@ export function FieldLayoutGenerator() {
 
   const treatments = useMemo(() => parseCsv(treatmentsRaw), [treatmentsRaw]);
 
+  const factorDefinitions = [
+    { name: factorAName.trim(), levels: parseCsv(factorA) },
+    { name: factorBName.trim(), levels: parseCsv(factorB) },
+    ...(factorCount === 3 ? [{ name: factorCName.trim(), levels: parseCsv(factorC) }] : []),
+  ];
+
   const buildPayload = () => {
     const base = {
       design_type: design,
@@ -223,10 +232,7 @@ export function FieldLayoutGenerator() {
     if (design === "factorial_rcbd") {
       return {
         ...base,
-        factors: {
-          [factorAName || "Factor A"]: parseCsv(factorA),
-          [factorBName || "Factor B"]: parseCsv(factorB),
-        },
+        factors: Object.fromEntries(factorDefinitions.map((f) => [f.name, f.levels])),
       };
     }
     if (design === "lattice") {
@@ -370,9 +376,6 @@ export function FieldLayoutGenerator() {
   };
 
   const validate = (): string | null => {
-    if (selectedDesign?.requiresPro && !isPro) {
-      return "This design is available in VivaSense Pro only.";
-    }
     if (replications < 2) return "Replications must be >= 2.";
     if (replications > 20 && design !== "lattice") return "Replications must be <= 20.";
     if (plotWidth <= 0 || plotLength <= 0) return "Plot dimensions must be positive.";
@@ -382,6 +385,18 @@ export function FieldLayoutGenerator() {
       if (treatments.length < 2) return "Please provide at least 2 treatments.";
       if (treatments.length > 50) return "Please provide no more than 50 treatments.";
       if (new Set(treatments).size !== treatments.length) return "Treatment labels must be unique.";
+    }
+
+    if (design === "factorial_rcbd") {
+      const names = factorDefinitions.map((f) => f.name.toLowerCase());
+      if (names.some((n) => !n)) return "Give each factor a name.";
+      if (new Set(names).size !== names.length) return "Factor names must be distinct.";
+      const reserved = ["plot number", "replication", "block", "row", "column", "treatment", "genotype", "remarks"];
+      if (names.some((n) => reserved.includes(n))) return "Use factor names different from the fieldbook's standard column names.";
+      for (const f of factorDefinitions) {
+        if (f.levels.length < 2) return `${f.name} needs at least two levels.`;
+        if (new Set(f.levels).size !== f.levels.length) return `${f.name} has duplicate levels.`;
+      }
     }
 
     if (design === "alpha_lattice" && (nTreatments < 4 || blockSize < 2)) {
@@ -414,10 +429,15 @@ export function FieldLayoutGenerator() {
     setError(null);
 
     setIsLoading(true);
+    // Capture the generated design: later form edits must not relabel saved exports.
+    const payload = buildPayload();
+    const generatedFactors = "factors" in payload
+      ? Object.entries(payload.factors).map(([name, levels]) => ({ name, levels }))
+      : undefined;
     try {
       const data = await vivaSenseRequest<Partial<FieldLayoutResult>>("/field-layout/generate", {
         method: "POST",
-        jsonBody: buildPayload(),
+        jsonBody: payload,
         headers: { "X-VivaSense-Mode": isPro ? "pro" : "free" },
       });
       if (!data || typeof data !== "object") {
@@ -425,6 +445,7 @@ export function FieldLayoutGenerator() {
       }
 
       const normalized: FieldLayoutResult = {
+        factorDefinitions: generatedFactors,
         design: (data.design ?? data.design_type) as Design | undefined,
         seed: typeof data.seed === "number" ? data.seed : undefined,
         treatments: Array.isArray(data.treatments) ? data.treatments : undefined,
@@ -492,11 +513,11 @@ export function FieldLayoutGenerator() {
     if (!result) return;
     const traitColumns = fieldBookTraits.split(",").map((t) => t.trim()).filter(Boolean);
     const stamp = new Date().toISOString().slice(0, 10);
-    const safeSeed = String(seed).replace(/[^a-zA-Z0-9]/g, "");
+    const safeSeed = String(result.seed ?? seed).replace(/[^a-zA-Z0-9]/g, "");
     downloadFieldBook(
       result.fieldbook,
-      { design, factorAName, factorBName, traitColumns },
-      `VivaSense_FieldBook_${design}_Seed${safeSeed}_${stamp}.xlsx`,
+      { design: result.design_type, factorAName: result.factorDefinitions?.[0].name, factorBName: result.factorDefinitions?.[1].name, factorCName: result.factorDefinitions?.[2]?.name, traitColumns },
+      `VivaSense_FieldBook_${result.design_type}_Seed${safeSeed}_${stamp}.xlsx`,
     );
   };
 
@@ -516,7 +537,11 @@ export function FieldLayoutGenerator() {
     if (!rows.length) return;
 
     const columns = Object.keys(rows[0]);
-    csvRows.push(columns.map((h) => `"${h}"`).join(","));
+    const headers = columns.map((key) => {
+      const index = ["factor_a_level", "factor_b_level", "factor_c_level"].indexOf(key);
+      return index >= 0 ? result.factorDefinitions?.[index]?.name ?? key : key;
+    });
+    csvRows.push(headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(","));
     rows.forEach((row) => {
       csvRows.push(
         columns
@@ -533,7 +558,7 @@ export function FieldLayoutGenerator() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `VivaSense_DataCollection_${design}_${rows.length}plots_Seed${String(seed).replace(/[^a-zA-Z0-9]/g, "")}.csv`;
+    link.download = `VivaSense_DataCollection_${result.design_type}_${rows.length}plots_Seed${String(result.seed ?? seed).replace(/[^a-zA-Z0-9]/g, "")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -576,13 +601,14 @@ export function FieldLayoutGenerator() {
             Field Layout Generator
           </CardTitle>
           <CardDescription>
-            Generate randomized field layouts for classic and Pro experimental designs.
+            Generate randomized field layouts for supported experimental designs.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
             <Label className="mb-2 block">Experimental Design</Label>
             <select
+              aria-label="Experimental Design"
               value={design}
               onChange={(e) => setDesign(e.target.value as Design)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white"
@@ -591,48 +617,12 @@ export function FieldLayoutGenerator() {
                 <option
                   key={d.value}
                   value={d.value}
-                  disabled={d.requiresPro && !isPro}
                 >
-                  {d.label} - {d.desc}{d.requiresPro ? " [Pro]" : ""}
+                  {d.label} - {d.desc}
                 </option>
               ))}
             </select>
 
-            <div className="mt-2 flex flex-wrap gap-2">
-              {DESIGNS.filter((d) => d.requiresPro).map((d) => (
-                <span
-                  key={`badge-${d.value}`}
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#FAEEDA",
-                    color: "#854F0B",
-                    border: "0.5px solid #F0BC52",
-                  }}
-                >
-                  {d.label} Pro
-                </span>
-              ))}
-            </div>
-
-            {selectedDesign?.requiresPro && !isPro && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: "10px 14px",
-                  background: "#FAEEDA",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  color: "#854F0B",
-                  border: "0.5px solid #F0BC52",
-                }}
-              >
-                <span role="img" aria-label="locked">🔒</span> <strong>Pro feature.</strong> Upgrade to VivaSense Pro to access
-                Latin square, split plot, factorial, lattice and alpha lattice designs.{" "}
-                <a href="https://fieldtoinsightacademy.com.ng" target="_blank" rel="noopener noreferrer" style={{ color: "#854F0B", fontWeight: 600 }}>
-                  Upgrade -&gt;
-                </a>
-              </div>
-            )}
           </div>
 
           {(design === "crd" || design === "rcbd") && (
@@ -695,26 +685,44 @@ export function FieldLayoutGenerator() {
           {/* FACTORIAL RCBD */}
           {design === "factorial_rcbd" && (
             <>
+              <FormField label="Number of factors">
+                <select aria-label="Number of factors" value={factorCount} onChange={e => setFactorCount(Number(e.target.value) as 2 | 3)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                  <option value={2}>2 factors</option>
+                  <option value={3}>3 factors</option>
+                </select>
+              </FormField>
               <FormField label="Factor A levels" helper="Comma-separated e.g. N0, N1, N2" required>
-                <input type="text" value={factorA} onChange={e => setFactorA(e.target.value)}
+                <input aria-label="Factor A levels" type="text" value={factorA} onChange={e => setFactorA(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   placeholder="N0, N1, N2" />
               </FormField>
               <FormField label="Factor A name" required>
-                <input type="text" value={factorAName} onChange={e => setFactorAName(e.target.value)}
+                <input aria-label="Factor A name" type="text" value={factorAName} onChange={e => setFactorAName(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   placeholder="Nitrogen" />
               </FormField>
               <FormField label="Factor B levels" helper="Comma-separated e.g. V1, V2, V3" required>
-                <input type="text" value={factorB} onChange={e => setFactorB(e.target.value)}
+                <input aria-label="Factor B levels" type="text" value={factorB} onChange={e => setFactorB(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   placeholder="V1, V2, V3" />
               </FormField>
               <FormField label="Factor B name" required>
-                <input type="text" value={factorBName} onChange={e => setFactorBName(e.target.value)}
+                <input aria-label="Factor B name" type="text" value={factorBName} onChange={e => setFactorBName(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                   placeholder="Variety" />
               </FormField>
+              {factorCount === 3 && <>
+                <FormField label="Factor C levels" helper="Comma-separated e.g. S1, S2" required>
+                  <input aria-label="Factor C levels" type="text" value={factorC} onChange={e => setFactorC(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="S1, S2" />
+                </FormField>
+                <FormField label="Factor C name" required>
+                  <input aria-label="Factor C name" type="text" value={factorCName} onChange={e => setFactorCName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Spacing" />
+                </FormField>
+              </>}
+              <p className="text-sm text-muted-foreground col-span-full">
+                {factorDefinitions.map((f) => f.levels.length).join(" × ")} = {factorDefinitions.reduce((n, f) => n * f.levels.length, 1)} combinations per block; {factorDefinitions.reduce((n, f) => n * f.levels.length, replications)} plots across {replications} blocks.
+                {factorCount === 3 && " Three-factor layout generation is supported; three-factor ANOVA is not yet available in the analysis form."}
+              </p>
             </>
           )}
 
@@ -861,7 +869,6 @@ export function FieldLayoutGenerator() {
               onClick={generate}
               disabled={
                 isLoading ||
-                (selectedDesign?.requiresPro && !isPro) ||
                 (design === "lattice" &&
                   (!!latticeOptionsError || !latticeOptions ||
                     (!!selectedLattice && selectedLattice.status !== "supported")))
@@ -963,6 +970,15 @@ export function FieldLayoutGenerator() {
               </svg>
             </div>
 
+            {result?.factorDefinitions && (
+              <div className="rounded-md border p-4 text-sm space-y-1" aria-label="Factor combination key">
+                <p className="font-semibold">Factor combination key</p>
+                {result.factorDefinitions.map((f, i) => <p key={f.name}>
+                  {String.fromCharCode(65 + i)} — {f.name}: {f.levels.map((level, j) => `${String.fromCharCode(65 + i)}${j + 1} = ${level}`).join("; ")}
+                </p>)}
+                <p>Each label combines these codes, for example A1B1{result.factorDefinitions.length === 3 ? "C1" : ""}. Every combination occurs once in each block. The fieldbook exports include a separate named column for each factor.</p>
+              </div>
+            )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-muted/40 rounded-md p-4">
               <div>
                 <p className="text-xs text-muted-foreground">Total Plots</p>
