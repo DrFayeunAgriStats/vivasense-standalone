@@ -1,0 +1,39 @@
+name: CORR-UI-01 frontend validation
+
+on:
+  push:
+    branches:
+      - fix/corr-runtime-ui-20261103
+  pull_request:
+    paths:
+      - 'src/pages/RelationshipAnalysis.tsx'
+      - 'src/lib/relationshipCorrelationRequest.ts'
+      - 'src/lib/relationshipCorrelationRequest.test.ts'
+      - 'src/App.tsx'
+      - '.github/workflows/corr-ui-01.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541d7c243d3c2e3b6b1a0c1b2f72b1
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run governed correlation request-contract tests
+        run: npm test -- src/lib/relationshipCorrelationRequest.test.ts
+
+      - name: Build production bundle
+        run: npm run build
