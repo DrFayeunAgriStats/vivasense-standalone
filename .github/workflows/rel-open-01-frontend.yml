@@ -1,0 +1,46 @@
+name: REL-OPEN-01 frontend A1/A1b contract
+
+on:
+  push:
+    branches:
+      - rel-open-01-frontend-20261103
+  pull_request:
+    paths:
+      - 'src/pages/RelationshipAnalysis.tsx'
+      - 'src/lib/relationshipCorrelationRequest.ts'
+      - 'src/lib/relationshipGeneticContract.ts'
+      - 'src/lib/traitAssociationRequest.ts'
+      - 'src/components/vivasense/relationship/**'
+      - 'src/components/vivasense/advanced/TraitAssociationPanel.tsx'
+      - 'src/components/vivasense/genetics-params/CorrelationHeatmap.tsx'
+      - '.github/workflows/rel-open-01-frontend.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run REL-OPEN-01 governed frontend tests
+        run: >-
+          npm test --
+          src/lib/relationshipCorrelationRequest.test.ts
+          src/pages/__tests__/RelationshipAnalysis.governed.test.tsx
+          src/components/vivasense/advanced/__tests__/TraitAssociationPanel.governed.test.tsx
+
+      - name: Build production bundle
+        run: npm run build
