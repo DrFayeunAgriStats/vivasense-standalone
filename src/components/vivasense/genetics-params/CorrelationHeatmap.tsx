@@ -3,8 +3,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface Props {
   traits: string[];
-  rMatrix: number[][];
+  /** null = not estimable / not reported: shown as "—", never as 0. */
+  rMatrix: (number | null)[][];
   pMatrix: (number | null)[][];
+  /** Model-based genotypic correlation (rg): estimate only, no significance legend. */
+  estimateOnly?: boolean;
+  coefficientLabel?: string;
 }
 
 function cellColor(r: number): string {
@@ -25,7 +29,7 @@ function sigLabel(p: number | null): string {
   return "Not significant";
 }
 
-export function CorrelationHeatmap({ traits, rMatrix, pMatrix }: Props) {
+export function CorrelationHeatmap({ traits, rMatrix, pMatrix, estimateOnly = false, coefficientLabel = "r" }: Props) {
   return (
     <TooltipProvider delayDuration={150}>
       <div className="overflow-x-auto">
@@ -45,17 +49,19 @@ export function CorrelationHeatmap({ traits, rMatrix, pMatrix }: Props) {
               <tr key={rowTrait}>
                 <td className="border border-border px-3 py-2 bg-muted font-medium whitespace-nowrap">{rowTrait}</td>
                 {traits.map((colTrait, j) => {
-                  const r = rMatrix[i][j];
-                  const p = pMatrix[i][j];
+                  const r = rMatrix[i]?.[j] ?? null;
+                  const p = estimateOnly ? null : pMatrix[i]?.[j] ?? null;
                   const isDiag = i === j;
-                  const stars = isDiag ? "" : getSignificanceStars(p);
+                  const stars = isDiag || estimateOnly ? "" : getSignificanceStars(p);
 
                   const cellContent = (
                     <td
                       key={j}
-                      className={`border border-border px-3 py-2 text-center font-mono text-xs cursor-default ${isDiag ? "bg-muted/60" : cellColor(r)}`}
+                      className={`border border-border px-3 py-2 text-center font-mono text-xs cursor-default ${isDiag || r === null ? "bg-muted/60" : cellColor(r)}`}
                     >
-                      {isDiag ? "1.00" : (
+                      {isDiag ? "1.00" : r === null ? (
+                        <span className="text-muted-foreground" title="Not estimable / not reported">—</span>
+                      ) : (
                         <span>
                           {r.toFixed(2)}
                           {stars && stars !== "ns" && (
@@ -78,8 +84,8 @@ export function CorrelationHeatmap({ traits, rMatrix, pMatrix }: Props) {
                       </TooltipTrigger>
                       <TooltipContent className="text-xs space-y-1">
                         <p className="font-semibold">{rowTrait} × {colTrait}</p>
-                        <p>r = {r.toFixed(4)}</p>
-                        <p>{sigLabel(p)}</p>
+                        <p>{coefficientLabel} = {r === null ? "not reported" : r.toFixed(4)}</p>
+                        {!estimateOnly && <p>{sigLabel(p)}</p>}
                       </TooltipContent>
                     </Tooltip>
                   );
@@ -89,7 +95,9 @@ export function CorrelationHeatmap({ traits, rMatrix, pMatrix }: Props) {
           </tbody>
         </table>
         <p className="text-xs text-muted-foreground mt-3 italic">
-          Significance: *** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05, ns = not significant.
+          {estimateOnly
+            ? "Model-based genotypic correlation (rg): estimate only — no p-values or significance are reported. “—” = not estimable / not reported."
+            : "Significance: *** p < 0.001, ** p < 0.01, * p < 0.05, ns = not significant. “—” = not estimable."}{" "}
           Hover over cells for details.
         </p>
       </div>

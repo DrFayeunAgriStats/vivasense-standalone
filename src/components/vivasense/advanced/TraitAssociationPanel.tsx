@@ -16,7 +16,14 @@ import { runTraitAssociation } from "@/lib/advancedAnalysisApi";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import { CorrelationHeatmap } from "@/components/vivasense/genetics-params/CorrelationHeatmap";
 import type { DatasetContext } from "@/types/geneticsUpload";
-import type { TraitAssociationResponse, TraitAnalysisUnit } from "@/types/traitAssociation";
+import type { TraitAssociationResponse } from "@/types/traitAssociation";
+import { GeneticDeclarationControls } from "@/components/vivasense/relationship/GeneticDeclarationControls";
+import {
+  EMPTY_GENETIC_CONTROLS,
+  geneticControlsComplete,
+  type GeneticControlsState,
+} from "@/lib/relationshipGeneticContract";
+import { buildTraitAssociationRequest } from "@/lib/traitAssociationRequest";
 import {
   SummaryCard, InterpretationPanel, ExportToolbar, downloadCsv, DatasetTokenWarning,
 } from "./shared";
@@ -37,7 +44,8 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
   const datasetToken = datasetContext?.datasetToken ?? null;
 
   const [traits, setTraits] = useState<string[]>(allTraits);
-  const [analysisUnit, setAnalysisUnit] = useState<TraitAnalysisUnit>("genotype_mean");
+  // A1 + A1b: rg is genetic -- never pre-selected, never inferred.
+  const [geneticControls, setGeneticControls] = useState<GeneticControlsState>({ ...EMPTY_GENETIC_CONTROLS });
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TraitAssociationResponse | null>(null);
@@ -60,17 +68,12 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
       datasetToken,
       traits,
       startedAt,
-      parameters: { analysis_unit: analysisUnit, alpha: 0.05 },
+      parameters: { analysis_context: "genetic", design: geneticControls.design, alpha: 0.05 },
     };
     try {
-      const res = await runTraitAssociation({
-        dataset_token: datasetToken,
-        trait_columns: traits,
-        analysis_unit: analysisUnit,
-        alpha: 0.05,
-        gxe_significant: false,
-        environment_context: "single_environment",
-      });
+      const res = await runTraitAssociation(
+        buildTraitAssociationRequest(datasetToken, traits, geneticControls),
+      );
       if (!res || !Array.isArray(res.trait_names)) throw new Error("Unexpected response from server.");
       setResult(res);
       void recordAnalysis({ ...historyBase, response: res });
@@ -87,9 +90,10 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
 
   // Convert the nested dictionaries into the 2-D arrays CorrelationHeatmap expects.
   const { rMatrix, pMatrix } = useMemo(() => {
-    if (!result) return { rMatrix: [] as number[][], pMatrix: [] as (number | null)[][] };
+    if (!result) return { rMatrix: [] as (number | null)[][], pMatrix: [] as (number | null)[][] };
     const names = result.trait_names;
-    const rMatrix = names.map((a) => names.map((b) => result.correlation_matrix[a]?.[b] ?? 0));
+    // Not-estimable rg stays null ("—"); never substituted with 0.
+    const rMatrix = names.map((a) => names.map((b) => result.correlation_matrix[a]?.[b] ?? null));
     const pMatrix = names.map((a) => names.map((b) => result.pvalue_matrix[a]?.[b] ?? null));
     return { rMatrix, pMatrix };
   }, [result]);
@@ -146,18 +150,19 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div>
-              <Label className="text-xs uppercase tracking-wide">Analysis unit</Label>
-              <Select value={analysisUnit} onValueChange={(v) => setAnalysisUnit(v as TraitAnalysisUnit)}>
-                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="genotype_mean">Genotype means</SelectItem>
-                  <SelectItem value="plot_level">Plot level</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="md:col-span-3">
+              <p className="mb-2 text-sm text-muted-foreground">
+                Trait Association reports the model-based genotypic correlation (rg) — a genetically
+                interpreted estimate (no p-values) for a single-environment RCBD trial.
+              </p>
+              <GeneticDeclarationControls value={geneticControls} onChange={setGeneticControls} idPrefix="trait-assoc" />
             </div>
             <div className="md:col-span-2 flex justify-end">
-              <Button onClick={handleRun} disabled={isRunning || traits.length < 2} className="gap-2">
+              <Button
+                onClick={handleRun}
+                disabled={isRunning || traits.length < 2 || !geneticControlsComplete(geneticControls)}
+                className="gap-2"
+              >
                 {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 Run Analysis
               </Button>
@@ -203,7 +208,7 @@ export function TraitAssociationPanel({ datasetContext }: Props) {
               <ExportToolbar onCsv={() => downloadCsv("trait_association_matrix.csv", matrixCsvRows)} csvLabel="Download matrix" />
             </CardHeader>
             <CardContent>
-              <CorrelationHeatmap traits={result.trait_names} rMatrix={rMatrix} pMatrix={pMatrix} />
+              <CorrelationHeatmap traits={result.trait_names} rMatrix={rMatrix} pMatrix={pMatrix} estimateOnly coefficientLabel="rg" />
               {(result.summary.strongest_positive_pair_label || result.summary.strongest_negative_pair_label) && (
                 <div className="mt-4 flex flex-wrap gap-4 text-sm">
                   {result.summary.strongest_positive_pair_label && (

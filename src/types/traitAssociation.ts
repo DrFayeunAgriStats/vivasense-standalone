@@ -10,14 +10,9 @@
 export type TraitAnalysisUnit = "genotype_mean" | "plot_level";
 export type TraitEnvironmentContext = "single_environment" | "multi_environment";
 
-export interface TraitAssociationRequest {
-  dataset_token: string | null;
-  trait_columns: string[];
-  analysis_unit: TraitAnalysisUnit;
-  alpha: number;
-  gxe_significant: boolean;
-  environment_context: TraitEnvironmentContext;
-}
+/** REL-OPEN-01: rg-only, so always the governed genetic request
+ *  (see src/lib/traitAssociationRequest.ts). */
+export type { GovernedTraitAssociationRequest as TraitAssociationRequest } from "@/lib/traitAssociationRequest";
 
 /** One significant trait–trait association. Fields are rendered defensively
  *  because the backend may evolve the exact key set. */

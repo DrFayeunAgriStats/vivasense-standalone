@@ -18,6 +18,15 @@ import { Input } from "@/components/ui/input";
 import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisplay";
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
+import { GeneticDeclarationControls } from "@/components/vivasense/relationship/GeneticDeclarationControls";
+import {
+  EMPTY_GENETIC_CONTROLS,
+  SUPPORTED_ALPHAS,
+  geneticControlsAfterContextSwitch,
+  geneticControlsComplete,
+  type GeneticControlsState,
+  type RelationshipAlpha,
+} from "@/lib/relationshipGeneticContract";
 import {
   buildRelationshipCorrelationRequest,
   type RelationshipAnalysisContext,
@@ -55,7 +64,6 @@ interface RelationshipResult extends Record<string, unknown> {
 
 const NA_TOKENS = new Set(["", "na", "n/a", "nan", "null", "none", "-", "--"]);
 
-type GeneticMaterialAnswer = "" | "yes" | "no";
 
 function isNumericLike(value: unknown): boolean {
   if (typeof value === "number") return Number.isFinite(value);
@@ -162,7 +170,9 @@ function GeneralCorrelationResults({ result }: { result: RelationshipResult }) {
 export default function RelationshipAnalysis() {
   const navigate = useNavigate();
   const [analysisContext, setAnalysisContext] = useState<RelationshipAnalysisContext>("general");
-  const [geneticMaterialAnswer, setGeneticMaterialAnswer] = useState<GeneticMaterialAnswer>("");
+  // A1 + A1b: never pre-selected; discarded on every context switch.
+  const [geneticControls, setGeneticControls] = useState<GeneticControlsState>({ ...EMPTY_GENETIC_CONTROLS });
+  const [alpha, setAlpha] = useState<RelationshipAlpha>(0.05);
   const [file, setFile] = useState<File | null>(null);
   const [columns, setColumns] = useState<ColumnInfo[]>([]);
   const [genotype, setGenotype] = useState("");
@@ -192,7 +202,7 @@ export default function RelationshipAnalysis() {
       traits.length >= 2 &&
       !isLoading &&
       (analysisContext === "general" ||
-        (genotype && rep && geneticMaterialAnswer === "yes")),
+        (genotype && rep && geneticControlsComplete(geneticControls))),
   );
 
   const resetAnalysis = () => {
@@ -201,7 +211,8 @@ export default function RelationshipAnalysis() {
     setEnvironment("");
     setTraits([]);
     setMethod("pearson");
-    setGeneticMaterialAnswer("");
+    setGeneticControls({ ...EMPTY_GENETIC_CONTROLS });
+    setAlpha(0.05);
     setEnvironmentResolution(null);
     setResult(null);
     setError(null);
@@ -211,6 +222,7 @@ export default function RelationshipAnalysis() {
     if (next === analysisContext) return;
     setAnalysisContext(next);
     resetAnalysis();
+    setGeneticControls(geneticControlsAfterContextSwitch(geneticControls, next));
   };
 
   const parseFile = async (nextFile: File) => {
@@ -296,7 +308,8 @@ export default function RelationshipAnalysis() {
         base64Content,
         fileType: fileTypeFor(file),
         analysisContext,
-        geneticMaterialConfirmed: analysisContext === "genetic" && geneticMaterialAnswer === "yes",
+        geneticControls,
+        alpha: analysisContext === "genetic" ? 0.05 : alpha,
         genotypeColumn: analysisContext === "genetic" ? genotype : null,
         repColumn: analysisContext === "genetic" ? rep : null,
         environmentColumn:
@@ -436,50 +449,7 @@ export default function RelationshipAnalysis() {
                     </p>
                   </div>
 
-                  <fieldset className="rounded-lg border border-border p-4">
-                    <legend className="px-1 text-sm font-medium">
-                      Are the entries genetic materials (for example varieties, lines, hybrids, accessions, families or clones)? *
-                    </legend>
-                    <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="genetic-material"
-                          value="yes"
-                          checked={geneticMaterialAnswer === "yes"}
-                          onChange={() => setGeneticMaterialAnswer("yes")}
-                        />
-                        Yes
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="genetic-material"
-                          value="no"
-                          checked={geneticMaterialAnswer === "no"}
-                          onChange={() => setGeneticMaterialAnswer("no")}
-                        />
-                        No
-                      </label>
-                    </div>
-                  </fieldset>
-
-                  {geneticMaterialAnswer === "no" && (
-                    <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="alert">
-                      <div className="flex items-start gap-2">
-                        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                        <div>
-                          <p className="font-medium">Genetic analysis will not run for these entries.</p>
-                          <p className="mt-1">
-                            Fixed treatments such as fertilizer rates, tillage methods or irrigation regimes must not be interpreted as genetic material.
-                          </p>
-                          <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => changeContext("general")}>
-                            Use General Correlation instead
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <GeneticDeclarationControls value={geneticControls} onChange={setGeneticControls} />
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <label className="space-y-1.5 text-sm font-medium">
@@ -547,6 +517,26 @@ export default function RelationshipAnalysis() {
                   </select>
                 </label>
 
+                {analysisContext === "general" ? (
+                  <label className="block space-y-1.5 text-sm font-medium">
+                    <span>Significance level (α) *</span>
+                    <select
+                      aria-label="Significance level"
+                      value={String(alpha)}
+                      onChange={(e) => setAlpha(Number(e.target.value) as RelationshipAlpha)}
+                      className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      {SUPPORTED_ALPHAS.map((a) => (
+                        <option key={a} value={String(a)}>{a.toFixed(2)}</option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Breeding &amp; Genetic mode reports at α = 0.05; the model-based genetic correlation (rg) is an estimate without p-values.
+                  </p>
+                )}
+
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div>
@@ -604,7 +594,11 @@ export default function RelationshipAnalysis() {
         {error && (
           <div className="mt-6 flex gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{error}</span>
+            <div>
+              <p className="font-medium">The analysis was not run</p>
+              {/* Backend scientific safeguards (422) are shown verbatim, never generalised. */}
+              <p className="mt-1" data-testid="relationship-error-detail">{error}</p>
+            </div>
           </div>
         )}
 
