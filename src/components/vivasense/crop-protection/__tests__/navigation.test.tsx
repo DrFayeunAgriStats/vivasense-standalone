@@ -1,6 +1,9 @@
 /**
- * Navigation: Crop Protection is reachable, and its only active child workflow
- * opens. Future children (pathology, LC50, repellency, AUDPC) must not appear.
+ * Navigation: during Early Access, Crop Protection is NOT advertised in the
+ * workspace sidebar (Layout.tsx lists only modules that have passed the
+ * current verification gate). Its dashboard and only active child workflow
+ * still render when opened directly. Future children (pathology, LC50,
+ * repellency, AUDPC) must not appear.
  */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -16,7 +19,7 @@ vi.mock("@/services/cropProtectionApi", async () => {
 });
 
 describe("Crop Protection navigation", () => {
-  it("appears in the workspace sidebar", async () => {
+  it("is hidden from the Early Access workspace sidebar, which lists only verified modules", async () => {
     const { Layout } = await import("@/components/layout/Layout");
     render(
       <MemoryRouter initialEntries={["/workspace?module=crop-protection"]}>
@@ -25,7 +28,12 @@ describe("Crop Protection navigation", () => {
         </Layout>
       </MemoryRouter>
     );
-    expect(screen.getByText("Crop Protection")).toBeInTheDocument();
+    // Hidden even when the crop-protection module is the active one.
+    expect(screen.queryByText("Crop Protection")).toBeNull();
+    expect(screen.queryByText(/Crop Protection Analytics/i)).toBeNull();
+    // The Early Access module list is exactly the verified modules.
+    expect(screen.getByText("Experimental Design")).toBeInTheDocument();
+    expect(screen.getByText("Field Layout")).toBeInTheDocument();
   });
 
   it("offers Bioassay / Efficacy Analysis and opens it", async () => {

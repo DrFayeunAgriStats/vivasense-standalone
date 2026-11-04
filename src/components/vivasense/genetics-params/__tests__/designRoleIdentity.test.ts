@@ -149,32 +149,42 @@ describe("W1-INT-02 — alpha cannot mutate design-role state", () => {
 });
 
 describe("W1-INT-02 — the resolved design context is representable before running", () => {
+  // previewRows is the whole fixture dataset, so the caller states the
+  // preview is complete (as AnovaModulePanel does when previewRows.length === nRows).
   it("states the design, the mapped columns and their level counts", () => {
-    const preview = buildStructuralPreview("crd", correctMapping, 0.05, previewRows);
+    const preview = buildStructuralPreview("crd", correctMapping, 0.05, previewRows, true);
     expect(preview.designLabel).toContain("Completely Randomized");
     expect(preview.levelCounts.treatment).toBe(18);
 
     const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).join("\n");
-    expect(asText).toContain(TREATMENT);
-    expect(asText).toContain("18 levels");
+    expect(asText).toContain(`${TREATMENT} · 18 levels`);
+    expect(asText).not.toContain("visible in preview");
     expect(asText).toContain("Inferential α: 0.05");
   });
 
   it("makes a role swap visible in the design summary before analysis runs", () => {
     // The swap that caused the field failure is legible here: the treatment
     // role reports 3 levels, not 18.
-    const preview = buildStructuralPreview("crd", swappedMapping, 0.05, previewRows);
+    const preview = buildStructuralPreview("crd", swappedMapping, 0.05, previewRows, true);
     expect(preview.levelCounts.treatment).toBe(3);
     const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).join("\n");
     expect(asText).toContain(`${REP} · 3 levels`);
   });
 
+  it("keeps the role swap visible when the preview is only part of the dataset", () => {
+    const preview = buildStructuralPreview("crd", swappedMapping, 0.05, previewRows, false);
+    expect(preview.levelCounts.treatment).toBe(3);
+    const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).join("\n");
+    expect(asText).toContain(`${REP} · ≥3 levels visible in preview`);
+    expect(asText).not.toContain(`${REP} · 3 levels`);
+  });
+
   it("reports the replication column and its block count for RCBD", () => {
-    const preview = buildStructuralPreview("rcbd", correctMapping, 0.05, previewRows);
+    const preview = buildStructuralPreview("rcbd", correctMapping, 0.05, previewRows, true);
     expect(preview.levelCounts.treatment).toBe(18);
     expect(preview.levelCounts.rep).toBe(3);
     const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).join("\n");
-    expect(asText).toContain("3 blocks");
+    expect(asText).toContain(`${REP} · 3 blocks`);
   });
 
   it.each(ALPHAS)("reports the alpha it was given (%s) and no other design change", (alpha) => {

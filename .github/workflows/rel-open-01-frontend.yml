@@ -45,5 +45,8 @@ jobs:
           src/pages/__tests__/RelationshipAnalysis.governed.test.tsx
           src/components/vivasense/advanced/__tests__/TraitAssociationPanel.governed.test.tsx
 
+      - name: Run full frontend test suite (no failures or skips expected)
+        run: npm test
+
       - name: Build production bundle
         run: npm run build

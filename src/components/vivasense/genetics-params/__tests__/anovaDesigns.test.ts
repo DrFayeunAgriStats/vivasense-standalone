@@ -269,11 +269,32 @@ describe("structural preview — descriptive only", () => {
     expect(preview.levelCounts.sub_plot).toBe(2);
   });
 
-  it("reports expected combinations as a complete-design count, not a verdict", () => {
-    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+  // The preview may hold only the first rows of a dataset. Counts are exact
+  // only when the caller states the preview IS the whole dataset
+  // (AnovaModulePanel: previewRows.length === nRows); otherwise they are
+  // lower bounds and the engine checks the full dataset.
+  it("reports expected combinations as a complete-design count, not a verdict (complete dataset)", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, true);
     expect(preview.expectedCombinations).toBe(4);
     const row = preview.rows.find((r) => r.label === "Treatment combinations");
-    expect(row?.value).toContain("if complete");
+    expect(row?.value).toBe("4 (if complete)");
+  });
+
+  it("reports a partial preview's combinations as a lower bound left to the engine", () => {
+    const preview = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, false);
+    expect(preview.expectedCombinations).toBe(4);
+    const row = preview.rows.find((r) => r.label === "Treatment combinations");
+    expect(row?.value).toBe("≥4 visible in preview; full dataset checked by engine");
+    expect(row?.value).not.toContain("if complete");
+    const text = preview.rows.map((r) => r.value).join("\n");
+    expect(text).toMatch(/· ≥2 blocks visible in preview/);
+    expect(text).not.toMatch(/· 2 blocks(?! visible)/);
+  });
+
+  it("treats the preview as partial unless completeness is stated", () => {
+    const implicit = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows);
+    const partial = buildStructuralPreview("split_plot_rcbd", fullMapping, 0.05, rows, false);
+    expect(implicit.rows).toEqual(partial.rows);
   });
 
   it("shows the selected alpha", () => {

@@ -22,5 +22,13 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.ts',
     include: ['src/**/*.test.{ts,tsx}'],
+    // src/integrations/supabase/client.ts calls createClient() at import time
+    // and requires these. Tests must never reach a real Supabase project, so
+    // they always get an unroutable loopback URL and a dummy key, whatever
+    // the developer's shell exports (guarded by src/test/testEnv.test.ts).
+    env: {
+      VITE_SUPABASE_URL: 'http://127.0.0.1:9',
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'vitest-dummy-publishable-key',
+    },
   },
 })
