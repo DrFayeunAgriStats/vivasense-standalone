@@ -158,3 +158,56 @@ describe("Breeding & Genetic context", () => {
     expect(screen.getByText("The analysis was not run")).toBeInTheDocument();
   });
 });
+
+
+describe("REL-UI-01 Phase A — quick-analysis Word report", () => {
+  const sealedResult = {
+    analysis_context: "general", method: "pearson", alpha: 0.05,
+    trait_names: ["Yield", "Height"], warnings: ["engine warning"],
+    pair_results: [], multiplicity: { n_hypotheses: 1 },
+    phenotypic: { r_matrix: [[1, 0.9], [0.9, 1]], n_observations: 6 },
+    result_integrity: { scheme: "hmac-sha256", digest: "d" },
+  };
+
+  async function runGeneral(resp: unknown) {
+    requestMock.mockResolvedValueOnce(resp);
+    await renderWithData();
+    pickTraits();
+    await act(async () => { fireEvent.click(runButton()); });
+    await waitFor(() => expect(screen.getByTestId("relationship-word-download")).toBeInTheDocument());
+  }
+
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => "blob:x") as never;
+    URL.revokeObjectURL = vi.fn() as never;
+  });
+
+  it("downloads the Word report by sending the sealed backend result unchanged", async () => {
+    await runGeneral(sealedResult);
+    requestMock.mockResolvedValueOnce(new Blob(["docx"]));
+    await act(async () => { fireEvent.click(screen.getByTestId("relationship-word-download")); });
+    await waitFor(() => expect(requestMock).toHaveBeenCalledTimes(2));
+    const [path, opts] = requestMock.mock.calls[1];
+    expect(path).toBe("/export/correlation-word");
+    expect(opts).toMatchObject({ method: "POST", responseType: "blob" });
+    expect(opts.jsonBody).toEqual(sealedResult);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables the download and says why when the result has no seal", async () => {
+    const { result_integrity: _s, ...unsealed } = sealedResult;
+    await runGeneral(unsealed);
+    expect(screen.getByTestId("relationship-word-download")).toBeDisabled();
+    expect(screen.getByTestId("relationship-word-unavailable")).toBeInTheDocument();
+  });
+
+  it("shows a backend integrity refusal verbatim and saves nothing", async () => {
+    await runGeneral(sealedResult);
+    requestMock.mockRejectedValueOnce(new Error("Relationship result integrity check failed: statistics were altered"));
+    await act(async () => { fireEvent.click(screen.getByTestId("relationship-word-download")); });
+    await waitFor(() => expect(screen.getByTestId("relationship-word-error"))
+      .toHaveTextContent("Relationship result integrity check failed: statistics were altered"));
+    expect(screen.getByText("The Word report was not generated")).toBeInTheDocument();
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+  });
+});

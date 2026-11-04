@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - rel-open-01-frontend-20261103
+      - rel-ui-01-phase-a-20261104
   pull_request:
     paths:
       - 'src/pages/RelationshipAnalysis.tsx'
       - 'src/lib/relationshipCorrelationRequest.ts'
       - 'src/lib/relationshipGeneticContract.ts'
       - 'src/lib/traitAssociationRequest.ts'
+      - 'src/lib/relationshipWordExport.ts'
       - 'src/components/vivasense/relationship/**'
       - 'src/components/vivasense/advanced/TraitAssociationPanel.tsx'
       - 'src/components/vivasense/genetics-params/CorrelationHeatmap.tsx'
@@ -39,6 +41,7 @@ jobs:
         run: >-
           npm test --
           src/lib/relationshipCorrelationRequest.test.ts
+          src/lib/relationshipWordExport.test.ts
           src/pages/__tests__/RelationshipAnalysis.governed.test.tsx
           src/components/vivasense/advanced/__tests__/TraitAssociationPanel.governed.test.tsx
 

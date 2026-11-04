@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import {
   AlertCircle,
   ArrowLeft,
+  Download,
   FileSpreadsheet,
   FlaskConical,
   Loader2,
@@ -19,6 +20,7 @@ import VivaSenseResultsDisplay from "@/components/vivasense/VivaSenseResultsDisp
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
 import { resolveEnvironmentMode } from "@/lib/environmentValidation";
 import { GeneticDeclarationControls } from "@/components/vivasense/relationship/GeneticDeclarationControls";
+import { downloadRelationshipWord, hasIntegritySeal } from "@/lib/relationshipWordExport";
 import {
   EMPTY_GENETIC_CONTROLS,
   SUPPORTED_ALPHAS,
@@ -185,6 +187,8 @@ export default function RelationshipAnalysis() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<RelationshipResult | null>(null);
   const [environmentResolution, setEnvironmentResolution] = useState<EnvironmentResolution | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const numericColumns = useMemo(() => columns.filter((c) => c.isNumeric), [columns]);
   const availableTraits = useMemo(() => {
@@ -216,6 +220,7 @@ export default function RelationshipAnalysis() {
     setEnvironmentResolution(null);
     setResult(null);
     setError(null);
+    setExportError(null);
   };
 
   const changeContext = (next: RelationshipAnalysisContext) => {
@@ -325,10 +330,24 @@ export default function RelationshipAnalysis() {
         timeoutMs: analysisContext === "genetic" ? 180000 : 30000,
       });
       setResult(response);
+      setExportError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Relationship Analysis failed.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleWordDownload = async () => {
+    if (!result) return;
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      await downloadRelationshipWord(result, analysisContext);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "The Word report could not be generated.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -617,6 +636,37 @@ export default function RelationshipAnalysis() {
 
         {result && (
           <section className="mt-6 space-y-4" aria-label="Relationship analysis results">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 text-sm">
+              <p className="text-muted-foreground">
+                Quick analysis — not saved to a study. The Word report is generated from this sealed result and
+                states that it has no persisted dataset version.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleWordDownload}
+                disabled={isExporting || !hasIntegritySeal(result)}
+                data-testid="relationship-word-download"
+              >
+                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                Download Word report
+              </Button>
+            </div>
+            {!hasIntegritySeal(result) && (
+              <p className="text-sm text-amber-800" data-testid="relationship-word-unavailable">
+                A verified Word report is unavailable: this result carries no VivaSense integrity seal.
+              </p>
+            )}
+            {exportError && (
+              <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-medium">The Word report was not generated</p>
+                  <p className="mt-1" data-testid="relationship-word-error">{exportError}</p>
+                </div>
+              </div>
+            )}
             {warnings.length > 0 && (
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" role="alert">
                 <div className="mb-2 flex items-center gap-2 font-semibold">
