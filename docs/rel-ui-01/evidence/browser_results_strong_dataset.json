@@ -1,0 +1,56 @@
+[
+ {
+  "name": "general_pearson_a005",
+  "analysis_status": 200,
+  "suggested_filename": "vivasense_relationship_general_2026-11-04.docx",
+  "mode_header": "pro",
+  "seal_identical": true,
+  "payload_identical": true,
+  "error_shown": 0,
+  "page_errors": []
+ },
+ {
+  "name": "general_spearman_a010",
+  "analysis_status": 200,
+  "suggested_filename": "vivasense_relationship_general_2026-11-04.docx",
+  "mode_header": "pro",
+  "seal_identical": true,
+  "payload_identical": true,
+  "error_shown": 0,
+  "page_errors": []
+ },
+ {
+  "name": "missing_seal",
+  "button_disabled": true,
+  "unavailable_msg": "A verified Word report is unavailable: this result carries no VivaSense integrity seal.",
+  "export_calls": 0
+ },
+ {
+  "name": "tampered_r",
+  "backend_status": 422,
+  "downloads": 0,
+  "error_text": "Correlation export refused: the statistical values in this payload do not match the values produced by the VivaSense backend (integrity seal mismatch). Re-run the analysis and export the unmodified result.",
+  "heading": 1
+ },
+ {
+  "name": "tampered_p_adjusted",
+  "backend_status": 422,
+  "downloads": 0,
+  "error_text": "Correlation export refused: the statistical values in this payload do not match the values produced by the VivaSense backend (integrity seal mismatch). Re-run the analysis and export the unmodified result.",
+  "heading": 1
+ },
+ {
+  "name": "tampered_warnings",
+  "backend_status": 422,
+  "downloads": 0,
+  "error_text": "Correlation export refused: the statistical values in this payload do not match the values produced by the VivaSense backend (integrity seal mismatch). Re-run the analysis and export the unmodified result.",
+  "heading": 1
+ },
+ {
+  "name": "tampered_context",
+  "backend_status": 422,
+  "downloads": 0,
+  "error_text": "Correlation export refused: the statistical values in this payload do not match the values produced by the VivaSense backend (integrity seal mismatch). Re-run the analysis and export the unmodified result.",
+  "heading": 1
+ }
+]

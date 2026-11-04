@@ -1,0 +1,92 @@
+{
+ "general_pearson_a005": {
+  "zip_ok": true,
+  "has_document_xml": true,
+  "content_types_ok": true,
+  "pairs": [
+   {
+    "pair": "Yield-Height",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   },
+   {
+    "pair": "Yield-Days",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   },
+   {
+    "pair": "Height-Days",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   }
+  ],
+  "method_label_docx": true,
+  "method_label_ui": true,
+  "alpha_docx": true,
+  "bh_multiplicity_docx": true,
+  "warnings_all_in_docx": true,
+  "warnings_all_in_ui": true,
+  "n_warnings": 1,
+  "verified_statement": true,
+  "no_unverified": true,
+  "causation_statement_docx": true,
+  "causation_statement_ui": true,
+  "not_significance_statement": true,
+  "no_persisted_identity_statement": true,
+  "context_general": true,
+  "declaration_not_declared": true,
+  "heatmap_embedded": true,
+  "interpretation_regenerated": true
+ },
+ "general_spearman_a010": {
+  "zip_ok": true,
+  "has_document_xml": true,
+  "content_types_ok": true,
+  "pairs": [
+   {
+    "pair": "Yield-Height",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   },
+   {
+    "pair": "Yield-Days",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   },
+   {
+    "pair": "Height-Days",
+    "in_docx": true,
+    "r_shown_in_ui": true,
+    "n_shown_in_ui": true,
+    "fdr_shown_in_ui": true
+   }
+  ],
+  "method_label_docx": true,
+  "method_label_ui": true,
+  "alpha_docx": true,
+  "bh_multiplicity_docx": true,
+  "warnings_all_in_docx": true,
+  "warnings_all_in_ui": true,
+  "n_warnings": 1,
+  "verified_statement": true,
+  "no_unverified": true,
+  "causation_statement_docx": true,
+  "causation_statement_ui": true,
+  "not_significance_statement": true,
+  "no_persisted_identity_statement": true,
+  "context_general": true,
+  "declaration_not_declared": true,
+  "heatmap_embedded": true,
+  "interpretation_regenerated": true
+ }
+}
