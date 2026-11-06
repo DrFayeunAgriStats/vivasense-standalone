@@ -135,7 +135,7 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
                 <td className="border-b border-border px-3 py-2 text-right">{p.estimable ? formatP(p.p_raw) : "—"}</td>
                 <td className="border-b border-border px-3 py-2 text-right">{p.estimable ? formatP(p.p_adjusted) : "—"}</td>
                 <td className="border-b border-border px-3 py-2">
-                  {p.estimable ? (p.significant_adjusted ? "yes" : "no") : "not estimated"}
+                  {!p.estimable ? "not estimated" : p.significant_adjusted === null ? "not assessed" : p.significant_adjusted ? "yes" : "no"}
                 </td>
               </tr>
             ))}

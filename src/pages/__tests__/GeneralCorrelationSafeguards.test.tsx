@@ -81,6 +81,21 @@ describe("General Correlation safeguards", () => {
     expect(screen.getByTestId("general-scope-caution")).toBeInTheDocument();     // still visible
   });
 
+  it("does not mislabel an unassessed small-sample Spearman result as nonsignificant", async () => {
+    requestMock.mockResolvedValueOnce({
+      ...result("spearman"),
+      pair_results: [{ trait_1: "Yield", trait_2: "Height", n: 6, estimable: true,
+        r: 0.8286, p_raw: null, p_adjusted: null, significant_adjusted: null }],
+      multiplicity: { n_hypotheses: 0, n_pairs_inference_withheld: 1 },
+    });
+    await run("spearman");
+    const table = screen.getByTestId("general-pair-table");
+    expect(table).toHaveTextContent("0.829");
+    expect(table).toHaveTextContent("not assessed");
+    expect(table).not.toHaveTextContent("not estimated");
+    expect(SPEARMAN_APPROXIMATION_NOTE).toContain("significance decisions are withheld");
+  });
+
   it("adds the Spearman approximation note to Spearman results", async () => {
     await run("spearman");
     expect(screen.getByTestId("general-results-spearman")).toHaveTextContent(SPEARMAN_APPROXIMATION_NOTE);
