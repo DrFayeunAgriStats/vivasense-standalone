@@ -5,6 +5,7 @@ on:
     branches:
       - rel-ui-01-general-only-20261105
       - rel-ui-01-general-safeguards-20261106
+      - release/rel-general-conservative-20261106
   pull_request:
     paths:
       - 'src/pages/GeneralCorrelationAnalysis.tsx'
