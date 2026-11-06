@@ -26,6 +26,7 @@ import { ActiveStudyPanel } from "./ActiveStudyPanel";
 import { OnboardingModules } from "./OnboardingModules";
 import { RecentAnalysesV3 } from "./RecentAnalysesV3";
 import { WorkspaceFooterMetrics } from "./WorkspaceFooterMetrics";
+import { GeneralCorrelationCard } from "./GeneralCorrelationCard";
 import { persistentRcbdAnalysisRunId } from "@/services/history/persistentReport";
 
 /** Stepper stage key → the workspace action it triggers. */
@@ -159,6 +160,11 @@ export function WorkspaceV3Dashboard() {
           <Plus className="mr-1 h-4 w-4" /> Analyse my data
         </Button>
       </header>
+
+      {/* REL-UI-01: always visible (phones and tablets included), independent of data loading. */}
+      <div className="mb-3.5">
+        <GeneralCorrelationCard />
+      </div>
 
       {isLoading ? (
         <div className="space-y-3">

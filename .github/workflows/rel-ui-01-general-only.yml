@@ -11,6 +11,7 @@ on:
       - 'src/lib/generalWordExport.ts'
       - 'src/App.tsx'
       - 'src/components/layout/Layout.tsx'
+      - 'src/components/vivasense/workspace/v3/**'
       - '.github/workflows/rel-ui-01-general-only.yml'
 
 permissions:
@@ -38,6 +39,7 @@ jobs:
           src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx
           src/test/legacyGeneticConsumersUnchanged.test.ts
           src/components/layout/__tests__/Layout.navigation.test.tsx
+          src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx
       - name: Full frontend suite (no failures or skips expected)
         run: npm test
       - name: Build production bundle
