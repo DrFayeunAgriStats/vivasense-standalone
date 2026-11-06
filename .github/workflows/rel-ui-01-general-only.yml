@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - rel-ui-01-general-only-20261105
+      - rel-ui-01-general-safeguards-20261106
   pull_request:
     paths:
       - 'src/pages/GeneralCorrelationAnalysis.tsx'
       - 'src/lib/generalCorrelationContract.ts'
       - 'src/lib/generalWordExport.ts'
+      - 'src/lib/generalCorrelationCautions.ts'
       - 'src/App.tsx'
       - 'src/components/layout/Layout.tsx'
       - 'src/components/vivasense/workspace/v3/**'
@@ -37,6 +39,7 @@ jobs:
           src/lib/generalCorrelationContract.test.ts
           src/lib/generalWordExport.test.ts
           src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx
+          src/pages/__tests__/GeneralCorrelationSafeguards.test.tsx
           src/test/legacyGeneticConsumersUnchanged.test.ts
           src/components/layout/__tests__/Layout.navigation.test.tsx
           src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx

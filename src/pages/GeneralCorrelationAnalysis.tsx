@@ -23,6 +23,12 @@ import {
   type GeneralCorrelationMethod,
 } from "@/lib/generalCorrelationContract";
 import { downloadGeneralWord, hasIntegritySeal } from "@/lib/generalWordExport";
+import {
+  MULTIPLE_TESTING_NOTE,
+  PAIRWISE_MISSING_NOTE,
+  SCOPE_CAUTION,
+  SPEARMAN_APPROXIMATION_NOTE,
+} from "@/lib/generalCorrelationCautions";
 
 interface ColumnInfo {
   name: string;
@@ -141,6 +147,13 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
         number of observations actually used for that coefficient. No genotype means, genetic variance components or
         genetic correlations are computed here.
       </p>
+      <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground" data-testid="general-results-notes">
+        <p className="font-medium text-foreground">How to read these results</p>
+        <p data-testid="general-results-scope">{SCOPE_CAUTION}</p>
+        {result.method === "spearman" && <p data-testid="general-results-spearman">{SPEARMAN_APPROXIMATION_NOTE}</p>}
+        <p data-testid="general-results-multiplicity">{MULTIPLE_TESTING_NOTE}</p>
+        <p data-testid="general-results-pairwise">{PAIRWISE_MISSING_NOTE}</p>
+      </div>
       {result.interpretation && (
         <p className="text-sm" data-testid="general-interpretation">{result.interpretation}</p>
       )}
@@ -263,6 +276,12 @@ export default function GeneralCorrelationAnalysis() {
           genetic correlations; it does not use genotype, replication or design information.
         </p>
 
+        <div role="note" aria-label="Scope of this analysis" data-testid="general-scope-caution"
+          className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          <p className="mb-1 font-semibold">Before you run this analysis</p>
+          <p>{SCOPE_CAUTION}</p>
+        </div>
+
         <form className="mt-6 space-y-5 rounded-xl border border-border bg-card p-5" onSubmit={handleSubmit}>
           {!file ? (
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-border p-6 text-sm">
@@ -311,6 +330,11 @@ export default function GeneralCorrelationAnalysis() {
                   </select>
                 </label>
               </div>
+              {method === "spearman" && (
+                <p role="note" className="text-xs text-amber-900" data-testid="general-spearman-caution">
+                  {SPEARMAN_APPROXIMATION_NOTE}
+                </p>
+              )}
               <fieldset>
                 <legend className="text-sm font-medium">Variables (select at least two)</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
