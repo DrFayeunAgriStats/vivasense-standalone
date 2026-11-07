@@ -136,7 +136,7 @@ export function GeneralCorrelationMatrix({ result }: { result: GeneralCorrelatio
           <tbody>
             {traits.map((ti, i) => (
               <tr key={ti}>
-                <th scope="row" className="whitespace-nowrap border-b border-border px-3 py-2 text-left font-normal">
+                <th scope="row" className="min-w-[8rem] max-w-[14rem] break-words border-b border-border px-3 py-2 text-left align-top font-normal">
                   {i + 1}. {ti}
                 </th>
                 {traits.slice(0, -1).map((tj, j) => {
@@ -228,8 +228,8 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
             <tbody>
               {result.pair_results.map((p) => (
                 <tr key={`${p.trait_1}|${p.trait_2}`}>
-                  <td className="whitespace-nowrap border-b border-border px-3 py-2">{p.trait_1}</td>
-                  <td className="whitespace-nowrap border-b border-border px-3 py-2">{p.trait_2}</td>
+                  <td className="min-w-[7rem] max-w-[12rem] break-words border-b border-border px-3 py-2 align-top">{p.trait_1}</td>
+                  <td className="min-w-[7rem] max-w-[12rem] break-words border-b border-border px-3 py-2 align-top">{p.trait_2}</td>
                   <td className="border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatR(p.r) : NOT_ESTIMABLE_MARK}</td>
                   <td className="border-b border-border px-3 py-2 text-right tabular-nums">{p.n}</td>
                   <td className="whitespace-nowrap border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatP(p.p_raw) : NOT_ESTIMABLE_MARK}</td>
