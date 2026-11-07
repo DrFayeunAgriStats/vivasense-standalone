@@ -1,3 +1,4 @@
+import { MessageCircle } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,13 @@ export function AskVivaSense() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="fixed bottom-16 right-4 z-40 shadow-md sm:bottom-4">Ask VivaSense</Button>
+        <Button className="fixed bottom-16 right-4 z-40 h-auto max-w-[calc(100vw-2rem)] gap-2 rounded-full border-2 border-background px-4 py-2 text-left shadow-lg ring-1 ring-primary sm:bottom-4">
+          <MessageCircle aria-hidden="true" className="h-5 w-5 shrink-0" />
+          <span className="flex flex-col leading-tight">
+            <span className="font-semibold">Need help?</span>
+            <span className="text-xs">Ask VivaSense</span>
+          </span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
