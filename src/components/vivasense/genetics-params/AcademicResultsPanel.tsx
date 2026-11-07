@@ -1,3 +1,4 @@
+import { AskVivaSense } from "@/components/help/AskVivaSense";
 /**
  * AcademicResultsPanel – Insight-first results display
  * Follows: INSIGHT → EVIDENCE → DETAILS hierarchy
@@ -29,6 +30,7 @@ interface StatisticalNote {
 interface AcademicResultsProps {
   /** Module label, e.g. "Genetic Parameters" */
   moduleLabel: string;
+  hasSpecialisedResultHelp?: boolean;
   /** When true, suppress breeding/genotype-specific labels (use treatment-level wording) */
   domainNeutral?: boolean;
   /** Selection reliability: High / Moderate / Low */
@@ -109,6 +111,7 @@ function classificationColor(value: string) {
 
 export function AcademicResultsPanel({
   moduleLabel,
+  hasSpecialisedResultHelp,
   domainNeutral,
   selectionReliability,
   insightSummary,
@@ -142,6 +145,9 @@ export function AcademicResultsPanel({
 
   return (
     <div className="space-y-5">
+      {import.meta.env.VITE_ASK_VIVASENSE === "true" && !hasSpecialisedResultHelp && (
+        <AskVivaSense result={{ label: moduleLabel, interpretation: safeInterpretation }} />
+      )}
       {/* ─── SECTION 1: KEY INSIGHT ─── */}
       {(safeReliability || insightSummary) && (
         <Card className="border-2 border-primary/20 shadow-md">
