@@ -801,7 +801,6 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   />
                 )}
                 <AcademicResultsPanel
-                  hasSpecialisedResultHelp={governedSplitPlot}
                   moduleLabel="ANOVA"
                   domainNeutral
                   insightSummary={governedFactorial || governedSplitPlot ? undefined : describeResultScale(r)}
