@@ -62,7 +62,7 @@ function App() {
             />
             <Route path="/" element={<Navigate to="/workspace" replace />} />
           </Routes>
-          {import.meta.env.VITE_ASK_VIVASENSE === "true" && (
+          {import.meta.env.VITE_ASK_VIVASENSE !== "false" && (
             <SupportPilot />
           )}
           <Toaster />
