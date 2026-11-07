@@ -14,18 +14,15 @@ const topics = [
   { label: "Download or reopen a report", slug: "reports-and-saved-analyses", match: /\b(report|download|word|reopen|saved|preview)\b/i },
 ];
 
-export function AskVivaSense({ result, workspaceModule }: {
-  result?: { label: string; interpretation?: string };
-  workspaceModule?: string;
-} = {}) {
+export function AskVivaSense() {
   const { pathname, search } = useLocation();
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [reply, setReply] = useState<{ prompt: string; slug?: string }>();
-  const module = workspaceModule ?? new URLSearchParams(search).get("module");
+  const module = new URLSearchParams(search).get("module");
   const contextualSlug = pathname === "/data-capture"
     ? "data-capture"
-    : module === "field-layout" ? "field-layout" : module === "anova" ? "run-analysis" : undefined;
+    : module === "field-layout" ? "field-layout" : undefined;
   const tutorial = allTutorials.find((item) => item.slug === reply?.slug);
   const sections = tutorial?.slug === "split-plot-rcbd"
     ? tutorial.sections.slice(0, 2)
@@ -46,9 +43,7 @@ export function AskVivaSense({ result, workspaceModule }: {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {result
-          ? <Button variant="outline">Ask about this result</Button>
-          : <Button className="fixed bottom-16 right-4 z-40 shadow-md sm:bottom-4">Ask VivaSense</Button>}
+        <Button className="fixed bottom-16 right-4 z-40 shadow-md sm:bottom-4">Ask VivaSense</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
@@ -57,14 +52,6 @@ export function AskVivaSense({ result, workspaceModule }: {
             Get quick answers from Help &amp; Learning. Please keep dataset values out of your question.
           </DialogDescription>
         </DialogHeader>
-        {result && (
-          <section className="space-y-2 text-sm">
-            <h3 className="font-semibold">{result.label} · Interpretation from this run</h3>
-            {result.interpretation
-              ? <p className="whitespace-pre-wrap break-words">{result.interpretation}</p>
-              : <p>This result does not provide an interpretation here. Use the result tables and Help &amp; Learning for guidance.</p>}
-          </section>
-        )}
         <div className="flex flex-wrap gap-2">
           {topics.map(({ label, slug }) => (
             <Button key={slug} size="sm" variant="outline" onClick={() => setReply({ prompt: label, slug })}>
