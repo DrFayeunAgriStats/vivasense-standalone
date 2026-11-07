@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ChevronRight } from "lucide-react";
-import { AskVivaSense } from "@/components/help/AskVivaSense";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Layout } from "@/components/layout/Layout";
@@ -558,17 +557,7 @@ export default function VivaSenseWorkspace() {
                   <AnovaUploadResults results={analysisState.results as UploadAnalysisResponse} />
                 )
               ) : (
-                <>
-                  {import.meta.env.VITE_ASK_VIVASENSE === "true" && (
-                    <AskVivaSense result={{
-                      label: String(analysisState.analysisType),
-                      interpretation: typeof analysisState.results?.interpretation === "string"
-                        ? analysisState.results.interpretation
-                        : undefined,
-                    }} />
-                  )}
-                  <VivaSenseResultsDisplay result={analysisState.results} />
-                </>
+                <VivaSenseResultsDisplay result={analysisState.results} />
               )}
             </div>
           </div>
