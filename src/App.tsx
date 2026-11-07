@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
@@ -9,7 +9,14 @@ import HelpLearning from "@/pages/HelpLearning";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 
+import { AskVivaSense } from "@/components/help/AskVivaSense";
+
 const queryClient = new QueryClient();
+
+function SupportPilot() {
+  const { user, loading } = useAuth();
+  return user && !loading ? <AskVivaSense key={user.id} /> : null;
+}
 
 function App() {
   return (
@@ -55,6 +62,9 @@ function App() {
             />
             <Route path="/" element={<Navigate to="/workspace" replace />} />
           </Routes>
+          {import.meta.env.VITE_ASK_VIVASENSE === "true" && (
+            <SupportPilot />
+          )}
           <Toaster />
           <SonnerToaster richColors position="top-right" />
         </BrowserRouter>
