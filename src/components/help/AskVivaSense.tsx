@@ -21,6 +21,7 @@ const correlationGuide: { slug: string; sections: TutorialSection[] } = {
 };
 
 const topics = [
+  { label: "Generate a field layout", slug: "field-layout", match: /\b(field[- ]?(?:layout|book|map)|plot[- ]layout|randomi[sz]ation seed)\b/i },
   { label: "Run General Correlation", slug: correlationGuide.slug, match: /\b(correlat\w*|pearson|spearman)\b/i },
   { label: "Prepare or upload data", slug: "prepare-dataset", match: /\b(upload|csv|xlsx?|excel|format|columns?|missing)\b/i },
   { label: "Map a split-plot design", slug: "split-plot-rcbd", match: /\b(split[- ]plot|whole[- ]plot|sub[- ]?plot)\b/i },
@@ -43,7 +44,7 @@ export function AskVivaSense() {
     : allTutorials.find((item) => item.slug === reply?.slug);
   const sections = tutorial?.slug === "split-plot-rcbd"
     ? tutorial.sections.slice(0, 2)
-    : tutorial?.slug === "reports-and-saved-analyses"
+    : (tutorial?.slug === "reports-and-saved-analyses" || tutorial?.slug === "field-layout")
       ? tutorial.sections
       : tutorial ? [tutorial.sections.find((item) => item.bullets?.length) ?? tutorial.sections[0]].filter(Boolean) : [];
 
@@ -52,7 +53,7 @@ export function AskVivaSense() {
     const prompt = question.trim();
     if (!prompt) return;
     const topic = [...topics].reverse().find((item) => item.match.test(prompt));
-    const directTopic = topics.find((item) => (item.slug === correlationGuide.slug || item.slug === "split-plot-rcbd") && item.match.test(prompt));
+    const directTopic = topics.find((item) => (item.slug === correlationGuide.slug || item.slug === "split-plot-rcbd" || item.slug === "field-layout") && item.match.test(prompt));
     setReply({ prompt, slug: directTopic?.slug ?? topic?.slug });
     setQuestion("");
   }
@@ -95,6 +96,11 @@ export function AskVivaSense() {
               )}
               {section.note && <p>{section.note}</p>}
               </div>)}
+              {tutorial.slug === "field-layout" && (
+                <Link className="underline" to="/workspace?module=field-layout" onClick={() => setOpen(false)}>
+                  Open Field Layout
+                </Link>
+              )}
               {tutorial.slug !== correlationGuide.slug && (
                 <Link className="underline" to={`/help/${tutorial.slug}`} onClick={() => setOpen(false)}>
                   Read the full guide
