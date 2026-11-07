@@ -6,9 +6,6 @@
  * interpretation. Descriptive material comes last and is labelled as such.
  */
 
-import { useState, type FormEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Info, CheckCircle2, MinusCircle, AlertTriangle, XCircle, Layers } from "lucide-react";
@@ -25,8 +22,6 @@ import {
   readInteractionMeans,
   readSplitPlotInteractionPlot,
   splitPlotDiagnosticStatements,
-  type SplitPlotTermDecision,
-  type SplitPlotHierarchy,
   type ProtectedLsdDisplay,
   type SplitPlotPlotDisplay,
 } from "./governedSplitPlot";
@@ -156,92 +151,6 @@ function SplitPlotChart({ plot }: { plot: SplitPlotPlotDisplay }) {
   );
 }
 
-function AskSplitPlotResult({
-  decisions, hierarchy, wholePlotExplanation,
-}: {
-  decisions: SplitPlotTermDecision[];
-  hierarchy: SplitPlotHierarchy | null;
-  wholePlotExplanation: string;
-}) {
-  const [question, setQuestion] = useState("");
-  const [topic, setTopic] = useState<"errors" | "interpretation" | "comparisons" | "unknown">();
-  const interaction = decisions.find((decision) => decision.key === "ab");
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!question.trim()) return;
-    if (/\b(best|highest|lowest|lsd|tukey|compar\w*|rank\w*|simple[- ]effects?)\b/i.test(question)) {
-      setTopic("comparisons");
-    } else if (/\b(df|degrees? of freedom|denominator|error (?:a|b|strat\w*|terms?))\b/i.test(question)) {
-      setTopic("errors");
-    } else if (/\b(interaction|interpret\w*|thesis|write|conclu\w*|significan\w*)\b/i.test(question)) {
-      setTopic("interpretation");
-    } else {
-      setTopic("unknown");
-    }
-  }
-
-  return (
-    <Dialog onOpenChange={(open) => { if (!open) { setQuestion(""); setTopic(undefined); } }}>
-      <DialogTrigger asChild><Button variant="outline">Ask about this result</Button></DialogTrigger>
-      <DialogContent className="max-h-[85dvh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Ask about this result</DialogTitle>
-          <DialogDescription>Get help reading this Split-Plot RCBD result.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => setTopic("errors")}>Error terms and df</Button>
-          <Button size="sm" variant="outline" onClick={() => setTopic("interpretation")}>Interpret the interaction</Button>
-          <Button size="sm" variant="outline" onClick={() => setTopic("comparisons")}>Compare treatments</Button>
-        </div>
-        <form className="flex gap-2" onSubmit={submit}>
-          <input aria-label="Question about this result" className="min-w-0 flex-1 rounded-md border bg-background px-3 text-sm"
-            maxLength={240} value={question} onChange={(event) => setQuestion(event.target.value)}
-            placeholder="Ask about this run" />
-          <Button type="submit" disabled={!question.trim()}>Ask</Button>
-        </form>
-        <div className="space-y-2 text-sm" aria-live="polite">
-          {topic === "errors" && (
-            <>
-              <p>{wholePlotExplanation}</p>
-              <ul className="list-disc pl-5">
-                {decisions.map((decision) => (
-                  <li key={decision.key}>
-                    {decision.term} · {decision.errorStratum}
-                    {decision.denominatorDf !== null && ` · denominator df = ${decision.denominatorDf}`}
-                  </li>
-                ))}
-              </ul>
-              <p>See Experimental units and Inferential decisions.</p>
-            </>
-          )}
-          {topic === "interpretation" && (
-            interaction?.estimable && hierarchy ? (
-              <>
-                <p>{hierarchy.headline}</p>
-                <p>{hierarchy.marginalGuidance}</p>
-                {hierarchy.limitation && <p>{hierarchy.limitation}</p>}
-                <p>See Interpretation hierarchy and Inferential decisions.</p>
-              </>
-            ) : <p>The interaction decision is unavailable or was not estimable. See Inferential decisions.</p>
-          )}
-          {topic === "comparisons" && (
-            <>
-              {interaction?.estimable && interaction.significant ? (
-                <p>The interaction is significant. Use the cell means and interaction plot to describe the observed pattern. A higher observed mean alone does not establish a statistically supported ranking.</p>
-              ) : (
-                <p>Check the interaction decision and any reported comparison results before drawing a treatment conclusion.</p>
-              )}
-              <p>Split-Plot RCBD v1 does not provide formal simple-effects tests. See Interpretation hierarchy and the comparison section for what this run supports.</p>
-            </>
-          )}
-          {topic === "unknown" && <p>This panel can explain error terms, the interaction, and treatment comparisons. Choose a topic above or use Help &amp; Learning.</p>}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function GovernedSplitPlotPanel({ result, mapping, inferentialAlpha }: Props) {
   const info = readSplitPlotProfile(result, mapping);
   if (!info) return null;
@@ -266,9 +175,6 @@ export function GovernedSplitPlotPanel({ result, mapping, inferentialAlpha }: Pr
 
   return (
     <div className="space-y-4">
-      {import.meta.env.VITE_ASK_VIVASENSE === "true" && (
-        <AskSplitPlotResult decisions={decisions} hierarchy={hierarchy} wholePlotExplanation={units.statements[0]} />
-      )}
       {/* Design structure */}
       <Card>
         <CardContent className="py-4 px-5 space-y-3">
