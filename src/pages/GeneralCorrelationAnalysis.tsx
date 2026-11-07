@@ -266,10 +266,20 @@ export default function GeneralCorrelationAnalysis() {
   const [exportError, setExportError] = useState<string | null>(null);
   const [showDesignColumns, setShowDesignColumns] = useState(false);
 
-  const designColumns = useMemo(() => columns.filter((c) => c.isNumeric && isDesignColumn(c.name)), [columns]);
+  // Headers that occur more than once cannot be bound to one column; the backend refuses them too.
+  const duplicateHeaders = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const c of columns) seen.set(c.name, (seen.get(c.name) ?? 0) + 1);
+    return [...seen].filter(([, n]) => n > 1).map(([name]) => name);
+  }, [columns]);
+  const usable = useMemo(
+    () => columns.filter((c) => c.isNumeric && !duplicateHeaders.includes(c.name)),
+    [columns, duplicateHeaders],
+  );
+  const designColumns = useMemo(() => usable.filter((c) => isDesignColumn(c.name)), [usable]);
   const numericColumns = useMemo(
-    () => columns.filter((c) => c.isNumeric && (showDesignColumns || !isDesignColumn(c.name))),
-    [columns, showDesignColumns],
+    () => usable.filter((c) => showDesignColumns || !isDesignColumn(c.name)),
+    [usable, showDesignColumns],
   );
   const warnings = useMemo(
     () => (result && Array.isArray(result.warnings) ? result.warnings.map(String).filter(Boolean) : []),
@@ -435,14 +445,21 @@ export default function GeneralCorrelationAnalysis() {
                 <legend className="text-sm font-medium">Variables (select at least two)</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                   {numericColumns.map((c) => (
-                    <label key={c.name} className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" aria-label={`Variable ${c.name}`} checked={traits.includes(c.name)}
+                    <label key={c.name} className="flex min-w-0 items-start gap-2 break-words text-sm">
+                      <input type="checkbox" className="mt-1 shrink-0" aria-label={`Variable ${c.name}`} checked={traits.includes(c.name)}
                         onChange={() => { toggleTrait(c.name); resetResult(); }} />
                       {c.name}
                       {isDesignColumn(c.name) && <span className="text-xs text-amber-800">(design column)</span>}
                     </label>
                   ))}
                 </div>
+                {duplicateHeaders.length > 0 && (
+                  <p role="note" className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
+                    data-testid="general-duplicate-headers">
+                    These headers occur more than once, so their columns cannot be told apart and are not offered:{" "}
+                    {duplicateHeaders.join(", ")}. Give each column a distinct header to analyse it.
+                  </p>
+                )}
                 {designColumns.length > 0 && (
                   <div className="mt-3 space-y-2 text-sm" data-testid="general-design-columns">
                     <label className="flex items-start gap-2">

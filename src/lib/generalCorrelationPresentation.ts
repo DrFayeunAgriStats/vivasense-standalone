@@ -34,7 +34,7 @@ export const NOT_ESTIMABLE_MARK = "—";
 
 /** Four decimals; "< 0.0001" below that; "—" when not reported. */
 export function formatP(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return NOT_ESTIMABLE_MARK;
+  if (value == null || !Number.isFinite(value) || value < 0) return NOT_ESTIMABLE_MARK;
   if (value < 0.0001) return "< 0.0001";
   return value.toFixed(4);
 }
@@ -55,8 +55,9 @@ export function plural(n: number, singular: string, pluralForm?: string): string
 }
 
 export function pairState(p: PresentationPair): PairState {
-  if (!p.estimable) return "not_estimable";
-  if (p.significant_adjusted == null) return "not_assessed";
+  if (!p.estimable || p.r == null || !Number.isFinite(p.r)) return "not_estimable";
+  // a missing or non-finite adjusted p is never shown as an ordinary test
+  if (p.significant_adjusted == null || p.p_adjusted == null || !Number.isFinite(p.p_adjusted)) return "not_assessed";
   return p.significant_adjusted ? "significant" : "not_significant";
 }
 

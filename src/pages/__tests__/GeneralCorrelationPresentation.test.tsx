@@ -14,7 +14,8 @@ vi.mock("@/components/layout/Layout", () => ({ Layout: ({ children }: { children
 
 import GeneralCorrelationAnalysis from "../GeneralCorrelationAnalysis";
 import {
-  DESIGN_COLUMN_WARNING, buildInterpretation, formatP, formatR, isDesignColumn, pPhrase, type PresentationPair,
+  DESIGN_COLUMN_WARNING, buildInterpretation, formatP, formatR, isDesignColumn, pPhrase, pairState,
+  significanceLabel, stateMark, type PresentationPair,
 } from "@/lib/generalCorrelationPresentation";
 import { SCOPE_CAUTION } from "@/lib/generalCorrelationCautions";
 
@@ -199,5 +200,44 @@ describe("cautions and labels (item 7)", () => {
     await runWith({ ...RESULT, pair_results: [RESULT.pair_results[0]], multiplicity: { n_hypotheses: 1 } });
     expect(screen.getByTestId("general-inference-basis")).toHaveTextContent("across 1 inferentially eligible variable pair;");
     expect(screen.getByTestId("general-inference-basis")).not.toHaveTextContent("pair(s)");
+  });
+});
+
+describe("acceptance audit: edge cases", () => {
+  it("never shows a missing or non-finite p-value as an ordinary test", () => {
+    expect([NaN, Infinity, -0.1].map(formatP)).toEqual(["—", "—", "—"]);
+    const nanAdj = pair("A", "B", { p_adjusted: NaN, significant_adjusted: false });
+    expect(pairState(nanAdj)).toBe("not_assessed");
+    expect(significanceLabel(nanAdj)).toBe("not assessed");
+    expect(stateMark(pair("A", "B", { p_adjusted: null, significant_adjusted: true }))).toBe("†");
+    expect(pairState(pair("A", "B", { r: NaN }))).toBe("not_estimable");
+  });
+
+  it("takes the marker from the adjusted decision only", () => {
+    const e = pair("A", "B", { p_raw: 0.01, p_adjusted: 0.2, significant_raw: true, significant_adjusted: false });
+    expect(stateMark(e)).toBe("");
+    expect(significanceLabel(e)).toBe("not significant");
+  });
+
+  it("does not offer columns whose header occurs more than once", async () => {
+    render(<MemoryRouter><GeneralCorrelationAnalysis /></MemoryRouter>);
+    const csv = "Yield,Yield,Height,Days\n1,2,3,4\n2,3,4,5\n3,5,6,6\n4,4,8,7\n5,6,9,9\n6,8,9,9\n";
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Upload general correlation dataset"), {
+        target: { files: [new File([csv], "dup.csv", { type: "text/csv" })] },
+      });
+    });
+    await waitFor(() => expect(screen.getByLabelText("Variable Height")).toBeInTheDocument());
+    expect(screen.queryByLabelText("Variable Yield")).toBeNull();
+    expect(screen.getByTestId("general-duplicate-headers")).toHaveTextContent("Yield");
+  });
+
+  it("shows a backend column-identity refusal verbatim", async () => {
+    const msg = "Column identity is ambiguous: the headers 'Yield (t/ha)', 'Yield t/ha' cannot be told apart once standardised (each becomes 'Yield_t_ha'), so 'Yield t/ha' cannot be matched to a single column. Rename the columns so that each header is distinct, then upload the file again.";
+    requestMock.mockRejectedValueOnce(new Error(msg));
+    await upload();
+    for (const t of T) fireEvent.click(screen.getByLabelText(`Variable ${t}`));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: /Run General Correlation/ })); });
+    await waitFor(() => expect(screen.getByTestId("general-error-detail")).toHaveTextContent(msg));
   });
 });
