@@ -4,9 +4,24 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { allTutorials } from "@/data/helpLearningContent";
+import { allTutorials, type TutorialSection } from "@/data/helpLearningContent";
+
+const correlationGuide: { slug: string; sections: TutorialSection[] } = {
+  slug: "general-correlation",
+  sections: [{
+    title: "Run General Correlation",
+    bullets: [
+      "Open General Correlation in the workspace sidebar.",
+      "Upload or select your dataset, then choose at least two numeric variables to compare.",
+      "Choose Pearson for a linear relationship or Spearman for a rank-based monotonic relationship.",
+      "Select the significance level and run the analysis. Use the download option on the results screen to save the Word report.",
+    ],
+    note: "Use one row per independent observational unit. For breeding questions about genetic correlations, use the dedicated breeding workflow rather than General Correlation.",
+  }],
+};
 
 const topics = [
+  { label: "Run General Correlation", slug: correlationGuide.slug, match: /\b(correlat\w*|pearson|spearman)\b/i },
   { label: "Prepare or upload data", slug: "prepare-dataset", match: /\b(upload|csv|xlsx?|excel|format|columns?|missing)\b/i },
   { label: "Map a split-plot design", slug: "split-plot-rcbd", match: /\b(split[- ]plot|whole[- ]plot|sub[- ]?plot)\b/i },
   { label: "Choose a design", slug: "choose-design", match: /\b(design|randomi[sz]\w*|map|mapping|treatments?|factorial|r?cbd|crd)\b/i },
@@ -23,7 +38,9 @@ export function AskVivaSense() {
   const contextualSlug = pathname === "/data-capture"
     ? "data-capture"
     : module === "field-layout" ? "field-layout" : undefined;
-  const tutorial = allTutorials.find((item) => item.slug === reply?.slug);
+  const tutorial = reply?.slug === correlationGuide.slug
+    ? correlationGuide
+    : allTutorials.find((item) => item.slug === reply?.slug);
   const sections = tutorial?.slug === "split-plot-rcbd"
     ? tutorial.sections.slice(0, 2)
     : tutorial?.slug === "reports-and-saved-analyses"
@@ -35,7 +52,7 @@ export function AskVivaSense() {
     const prompt = question.trim();
     if (!prompt) return;
     const topic = [...topics].reverse().find((item) => item.match.test(prompt));
-    const directTopic = topics.find((item) => item.slug === "split-plot-rcbd" && item.match.test(prompt));
+    const directTopic = topics.find((item) => (item.slug === correlationGuide.slug || item.slug === "split-plot-rcbd") && item.match.test(prompt));
     setReply({ prompt, slug: directTopic?.slug ?? topic?.slug });
     setQuestion("");
   }
@@ -78,9 +95,11 @@ export function AskVivaSense() {
               )}
               {section.note && <p>{section.note}</p>}
               </div>)}
-              <Link className="underline" to={`/help/${tutorial.slug}`} onClick={() => setOpen(false)}>
-                Read the full guide
-              </Link>
+              {tutorial.slug !== correlationGuide.slug && (
+                <Link className="underline" to={`/help/${tutorial.slug}`} onClick={() => setOpen(false)}>
+                  Read the full guide
+                </Link>
+              )}
             </>
           ) : reply ? (
             <p>Try a topic above or browse Help &amp; Learning for more guidance.</p>
