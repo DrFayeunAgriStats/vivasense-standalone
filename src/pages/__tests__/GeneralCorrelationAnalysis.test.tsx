@@ -74,7 +74,7 @@ describe("General correlation page", () => {
     expect(Object.keys(opts.jsonBody).sort()).toEqual(["alpha", "base64_content", "file_type", "method", "trait_columns"]);
     expect(opts.jsonBody).toMatchObject({ file_type: "csv", trait_columns: ["Yield", "Height"], method: "spearman", alpha: 0.1 });
     const table = await screen.findByTestId("general-pair-table");
-    for (const cell of ["0.987", "6", "<0.001", "yes"]) expect(table).toHaveTextContent(cell);
+    for (const cell of ["0.987", "6", "0.0003", "significant"]) expect(table).toHaveTextContent(cell);   // REL-UI-02 p rule
     expect(screen.getByTestId("general-inference-basis")).toHaveTextContent("α = 0.05");
     expect(screen.getByText("engine warning")).toBeInTheDocument();
     expect(screen.getByTestId("general-interpretation")).toHaveTextContent("does not establish causation");

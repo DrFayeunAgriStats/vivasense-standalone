@@ -14,6 +14,7 @@ vi.mock("@/components/layout/Layout", () => ({ Layout: ({ children }: { children
 import GeneralCorrelationAnalysis from "../GeneralCorrelationAnalysis";
 import {
   MULTIPLE_TESTING_NOTE, PAIRWISE_MISSING_NOTE, SCOPE_CAUTION, SPEARMAN_APPROXIMATION_NOTE,
+  RESULTS_MULTIPLICITY_SHORT, RESULTS_PAIRWISE_SHORT, RESULTS_SCOPE_SHORT, RESULTS_SPEARMAN_SHORT,
 } from "@/lib/generalCorrelationCautions";
 
 const CSV = "Yield,Height\n1,10\n2,11\n3,15\n4,14\n5,20\n6,21\n";
@@ -74,11 +75,12 @@ describe("General Correlation safeguards", () => {
 
   it("shows scope, multiple-testing and missing-data notes with Pearson results (no Spearman note)", async () => {
     await run("pearson");
-    expect(screen.getByTestId("general-results-scope")).toHaveTextContent(SCOPE_CAUTION);
-    expect(screen.getByTestId("general-results-multiplicity")).toHaveTextContent(MULTIPLE_TESTING_NOTE);
-    expect(screen.getByTestId("general-results-pairwise")).toHaveTextContent(PAIRWISE_MISSING_NOTE);
+    // REL-UI-02: shortened reminders after the results; the full caution stays above the form
+    expect(screen.getByTestId("general-results-scope")).toHaveTextContent(RESULTS_SCOPE_SHORT);
+    expect(screen.getByTestId("general-results-multiplicity")).toHaveTextContent(RESULTS_MULTIPLICITY_SHORT);
+    expect(screen.getByTestId("general-results-pairwise")).toHaveTextContent(RESULTS_PAIRWISE_SHORT);
     expect(screen.queryByTestId("general-results-spearman")).toBeNull();
-    expect(screen.getByTestId("general-scope-caution")).toBeInTheDocument();     // still visible
+    expect(screen.getByTestId("general-scope-caution")).toHaveTextContent(SCOPE_CAUTION);     // still visible, in full
   });
 
   it("does not mislabel an unassessed small-sample Spearman result as nonsignificant", async () => {
@@ -98,7 +100,7 @@ describe("General Correlation safeguards", () => {
 
   it("adds the Spearman approximation note to Spearman results", async () => {
     await run("spearman");
-    expect(screen.getByTestId("general-results-spearman")).toHaveTextContent(SPEARMAN_APPROXIMATION_NOTE);
+    expect(screen.getByTestId("general-results-spearman")).toHaveTextContent(RESULTS_SPEARMAN_SHORT);
   });
 
   it("still shows raw and adjusted p-values and keeps the Word download", async () => {

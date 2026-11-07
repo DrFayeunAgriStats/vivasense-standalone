@@ -24,26 +24,38 @@ import {
 } from "@/lib/generalCorrelationContract";
 import { downloadGeneralWord, hasIntegritySeal } from "@/lib/generalWordExport";
 import {
-  MULTIPLE_TESTING_NOTE,
-  PAIRWISE_MISSING_NOTE,
+  RESULTS_FULL_CAUTIONS_POINTER,
+  RESULTS_MULTIPLICITY_SHORT,
+  RESULTS_PAIRWISE_SHORT,
+  RESULTS_SCOPE_SHORT,
+  RESULTS_SPEARMAN_SHORT,
   SCOPE_CAUTION,
   SPEARMAN_APPROXIMATION_NOTE,
 } from "@/lib/generalCorrelationCautions";
+import {
+  DESIGN_COLUMN_WARNING,
+  NOT_ESTIMABLE_MARK,
+  buildInterpretation,
+  coefSymbol,
+  formatP,
+  formatR,
+  isDesignColumn,
+  markerLegend,
+  methodName,
+  plural,
+  sampleSizePhrase,
+  significanceLabel,
+  stateMark,
+  type PresentationPair,
+} from "@/lib/generalCorrelationPresentation";
 
 interface ColumnInfo {
   name: string;
   isNumeric: boolean;
 }
 
-export interface GeneralPairResult {
-  trait_1: string;
-  trait_2: string;
+export interface GeneralPairResult extends PresentationPair {
   n: number;
-  estimable: boolean;
-  r: number | null;
-  p_raw: number | null;
-  p_adjusted: number | null;
-  significant_adjusted: boolean | null;
 }
 
 export interface GeneralCorrelationResult extends Record<string, unknown> {
@@ -52,7 +64,7 @@ export interface GeneralCorrelationResult extends Record<string, unknown> {
   alpha: number;
   analysis_context: "general";
   pair_results: GeneralPairResult[];
-  multiplicity: { n_hypotheses?: number; n_pairs_not_estimable?: number } | null;
+  multiplicity: { n_hypotheses?: number; n_pairs_not_estimable?: number; n_pairs_inference_withheld?: number } | null;
   phenotypic: { n_observations: number };
   warnings?: string[];
   interpretation?: string;
@@ -89,74 +101,152 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export function formatCoefficient(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  return value.toFixed(3);
+function pairKey(a: string, b: string): string {
+  return `${a}\u0000${b}`;
 }
 
-export function formatP(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  if (value < 0.001) return "<0.001";
-  return value.toFixed(4);
-}
-
-export function GeneralCorrelationResults({ result }: { result: GeneralCorrelationResult }) {
-  const sym = result.method === "spearman" ? "ρ" : "r";
-  const m = result.multiplicity?.n_hypotheses;
+/** Lower-triangle matrix (diagonal omitted): coefficient + FDR marker, pairwise n beneath. */
+export function GeneralCorrelationMatrix({ result }: { result: GeneralCorrelationResult }) {
+  const traits = result.trait_names;
+  const sym = coefSymbol(result.method);
+  const lookup = new Map<string, GeneralPairResult>();
+  for (const p of result.pair_results) {
+    lookup.set(pairKey(p.trait_1, p.trait_2), p);
+    lookup.set(pairKey(p.trait_2, p.trait_1), p);
+  }
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm md:p-6">
-      <div>
-        <h2 className="text-lg font-semibold">General Correlation Results</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {result.method === "spearman" ? "Spearman rank" : "Pearson"} correlations using pairwise-complete
-          observations. Coefficients describe association, not causation.
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground" data-testid="general-inference-basis">
-          Significance level α = {result.alpha}. Benjamini–Hochberg FDR across {m ?? "the estimable"} variable
-          pair(s); significance is judged on the adjusted p-value.
-        </p>
-      </div>
+    <figure className="space-y-2" data-testid="general-matrix">
+      <figcaption className="text-sm">
+        <span className="font-semibold">Correlation matrix.</span> {methodName(result.method)} correlation
+        coefficients ({sym}), lower triangle, diagonal omitted. Each cell shows {sym} and the number of
+        pairwise-complete observations ({sampleSizePhrase(result.pair_results)}).
+      </figcaption>
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full border-collapse text-sm" data-testid="general-pair-table">
+        <table className="border-collapse text-sm" aria-label={`Lower-triangle ${methodName(result.method)} correlation matrix`}>
           <thead className="bg-muted/50">
             <tr>
-              {["Variable 1", "Variable 2", sym, "n", "raw p", "FDR-adjusted p", `Significant (adjusted, α = ${result.alpha})`].map((h) => (
-                <th key={h} className="border-b border-border px-3 py-2 text-left font-medium">{h}</th>
+              <th scope="col" className="border-b border-border px-3 py-2 text-left font-medium">Variable</th>
+              {traits.slice(0, -1).map((t, j) => (
+                <th key={t} scope="col" className="border-b border-border px-3 py-2 text-center font-medium" title={t}>
+                  {j + 1}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {result.pair_results.map((p) => (
-              <tr key={`${p.trait_1}|${p.trait_2}`}>
-                <td className="border-b border-border px-3 py-2">{p.trait_1}</td>
-                <td className="border-b border-border px-3 py-2">{p.trait_2}</td>
-                <td className="border-b border-border px-3 py-2 text-right">{p.estimable ? formatCoefficient(p.r) : "—"}</td>
-                <td className="border-b border-border px-3 py-2 text-right">{p.n}</td>
-                <td className="border-b border-border px-3 py-2 text-right">{p.estimable ? formatP(p.p_raw) : "—"}</td>
-                <td className="border-b border-border px-3 py-2 text-right">{p.estimable ? formatP(p.p_adjusted) : "—"}</td>
-                <td className="border-b border-border px-3 py-2">
-                  {!p.estimable ? "not estimated" : p.significant_adjusted === null ? "not assessed" : p.significant_adjusted ? "yes" : "no"}
-                </td>
+            {traits.map((ti, i) => (
+              <tr key={ti}>
+                <th scope="row" className="whitespace-nowrap border-b border-border px-3 py-2 text-left font-normal">
+                  {i + 1}. {ti}
+                </th>
+                {traits.slice(0, -1).map((tj, j) => {
+                  if (j >= i) return <td key={tj} className="border-b border-border px-3 py-2" />;
+                  const p = lookup.get(pairKey(ti, tj));
+                  const estimable = Boolean(p && p.estimable && p.r != null);
+                  return (
+                    <td key={tj} className="whitespace-nowrap border-b border-border px-3 py-1.5 text-center tabular-nums"
+                      data-testid={`general-matrix-cell-${i}-${j}`}>
+                      <span className="block">{estimable && p ? `${formatR(p.r)}${stateMark(p)}` : NOT_ESTIMABLE_MARK}</span>
+                      <span className="block text-xs text-muted-foreground">{p?.n != null ? `n = ${p.n}` : ""}</span>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="text-xs text-muted-foreground" data-testid="general-matrix-legend">
+        {markerLegend(result.pair_results, result.alpha, result.multiplicity?.n_hypotheses)}
+      </p>
+    </figure>
+  );
+}
+
+export function GeneralInterpretation({ result }: { result: GeneralCorrelationResult }) {
+  const interp = buildInterpretation(result.trait_names, result.method, result.alpha, result.pair_results, result.multiplicity);
+  return (
+    <section className="space-y-2 text-sm" aria-label="Interpretation" data-testid="general-interpretation">
+      <h3 className="font-semibold">Interpretation</h3>
+      <p data-testid="general-interpretation-summary">{interp.summary}</p>
+      <ul className="list-disc space-y-1.5 pl-5" data-testid="general-interpretation-pairs">
+        {interp.items.map((item) => (
+          <li key={item.label} data-state={item.state}>
+            <span className="font-medium">{item.label}:</span> {item.text}
+          </li>
+        ))}
+      </ul>
+      <p>{interp.closing}</p>
+    </section>
+  );
+}
+
+export function GeneralCorrelationResults({ result }: { result: GeneralCorrelationResult }) {
+  const sym = coefSymbol(result.method);
+  const m = result.multiplicity?.n_hypotheses;
+  const withheld = result.multiplicity?.n_pairs_inference_withheld ?? 0;
+  return (
+    <div className="space-y-5 rounded-xl border border-border bg-card p-5 shadow-sm md:p-6">
+      <div>
+        <h2 className="text-lg font-semibold">General Correlation Results</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {methodName(result.method)} correlations using pairwise-complete observations. Coefficients describe
+          association, not causation.
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground" data-testid="general-inference-basis">
+          Significance level α = {result.alpha}.{" "}
+          {m != null
+            ? `Benjamini–Hochberg FDR across ${plural(m, "inferentially eligible variable pair")}`
+            : "Benjamini–Hochberg FDR across the estimable variable pairs"}
+          {withheld ? ` (${plural(withheld, "pair")} with inference withheld)` : ""}; significance is judged on the
+          adjusted p-value.
+        </p>
+      </div>
+      <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground" data-testid="general-results-notes">
+        <p className="font-medium text-foreground">How to read these results</p>
+        <p data-testid="general-results-scope">{RESULTS_SCOPE_SHORT}</p>
+        {result.method === "spearman" && <p data-testid="general-results-spearman">{RESULTS_SPEARMAN_SHORT}</p>}
+        <p data-testid="general-results-multiplicity">{RESULTS_MULTIPLICITY_SHORT}</p>
+        <p data-testid="general-results-pairwise">{RESULTS_PAIRWISE_SHORT}</p>
+        <p>{RESULTS_FULL_CAUTIONS_POINTER}</p>
+      </div>
+      <GeneralCorrelationMatrix result={result} />
+      <figure className="space-y-2">
+        <figcaption className="text-sm">
+          <span className="font-semibold">Pairwise results.</span> {sym}, pairwise n, raw and FDR-adjusted p-values
+          (four decimals; values below 0.0001 shown as &lt; 0.0001).
+        </figcaption>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="min-w-full border-collapse text-sm" data-testid="general-pair-table">
+            <thead className="bg-muted/50">
+              <tr>
+                {["Variable 1", "Variable 2", sym, "n", "raw p", "FDR-adjusted p", `Significance (adjusted, α = ${result.alpha})`].map((h, i) => (
+                  <th key={h} scope="col" className={`border-b border-border px-3 py-2 font-medium ${i >= 2 && i <= 5 ? "text-right" : "text-left"}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {result.pair_results.map((p) => (
+                <tr key={`${p.trait_1}|${p.trait_2}`}>
+                  <td className="whitespace-nowrap border-b border-border px-3 py-2">{p.trait_1}</td>
+                  <td className="whitespace-nowrap border-b border-border px-3 py-2">{p.trait_2}</td>
+                  <td className="border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatR(p.r) : NOT_ESTIMABLE_MARK}</td>
+                  <td className="border-b border-border px-3 py-2 text-right tabular-nums">{p.n}</td>
+                  <td className="whitespace-nowrap border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatP(p.p_raw) : NOT_ESTIMABLE_MARK}</td>
+                  <td className="whitespace-nowrap border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatP(p.p_adjusted) : NOT_ESTIMABLE_MARK}</td>
+                  <td className="whitespace-nowrap border-b border-border px-3 py-2">{significanceLabel(p)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </figure>
       <p className="text-xs text-muted-foreground">
         Dataset rows available to this analysis: {result.phenotypic?.n_observations}. The n shown for each pair is the
         number of observations actually used for that coefficient. No genotype means, genetic variance components or
         genetic correlations are computed here.
       </p>
-      <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground" data-testid="general-results-notes">
-        <p className="font-medium text-foreground">How to read these results</p>
-        <p data-testid="general-results-scope">{SCOPE_CAUTION}</p>
-        {result.method === "spearman" && <p data-testid="general-results-spearman">{SPEARMAN_APPROXIMATION_NOTE}</p>}
-        <p data-testid="general-results-multiplicity">{MULTIPLE_TESTING_NOTE}</p>
-        <p data-testid="general-results-pairwise">{PAIRWISE_MISSING_NOTE}</p>
-      </div>
-      {result.interpretation && (
-        <p className="text-sm" data-testid="general-interpretation">{result.interpretation}</p>
-      )}
+      <GeneralInterpretation result={result} />
     </div>
   );
 }
@@ -174,8 +264,13 @@ export default function GeneralCorrelationAnalysis() {
   const [result, setResult] = useState<GeneralCorrelationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [showDesignColumns, setShowDesignColumns] = useState(false);
 
-  const numericColumns = useMemo(() => columns.filter((c) => c.isNumeric), [columns]);
+  const designColumns = useMemo(() => columns.filter((c) => c.isNumeric && isDesignColumn(c.name)), [columns]);
+  const numericColumns = useMemo(
+    () => columns.filter((c) => c.isNumeric && (showDesignColumns || !isDesignColumn(c.name))),
+    [columns, showDesignColumns],
+  );
   const warnings = useMemo(
     () => (result && Array.isArray(result.warnings) ? result.warnings.map(String).filter(Boolean) : []),
     [result],
@@ -191,6 +286,7 @@ export default function GeneralCorrelationAnalysis() {
   const parseFile = async (nextFile: File) => {
     setParseError(null);
     setTraits([]);
+    setShowDesignColumns(false);
     resetResult();
     try {
       const lower = nextFile.name.toLowerCase();
@@ -311,7 +407,7 @@ export default function GeneralCorrelationAnalysis() {
           )}
           {parseError && <p className="text-sm text-red-700" role="alert">{parseError}</p>}
 
-          {numericColumns.length > 0 && (
+          {(numericColumns.length > 0 || designColumns.length > 0) && (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="text-sm">
@@ -343,9 +439,32 @@ export default function GeneralCorrelationAnalysis() {
                       <input type="checkbox" aria-label={`Variable ${c.name}`} checked={traits.includes(c.name)}
                         onChange={() => { toggleTrait(c.name); resetResult(); }} />
                       {c.name}
+                      {isDesignColumn(c.name) && <span className="text-xs text-amber-800">(design column)</span>}
                     </label>
                   ))}
                 </div>
+                {designColumns.length > 0 && (
+                  <div className="mt-3 space-y-2 text-sm" data-testid="general-design-columns">
+                    <label className="flex items-start gap-2">
+                      <input type="checkbox" className="mt-1" aria-label="Show design columns" checked={showDesignColumns}
+                        onChange={(e) => {
+                          const show = e.target.checked;
+                          setShowDesignColumns(show);
+                          if (!show) setTraits((cur) => cur.filter((t) => !isDesignColumn(t)));
+                          resetResult();
+                        }} />
+                      <span>
+                        Show design columns ({designColumns.map((c) => c.name).join(", ")}). They are hidden by default.
+                      </span>
+                    </label>
+                    {showDesignColumns && (
+                      <p role="note" className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
+                        data-testid="general-design-warning">
+                        {DESIGN_COLUMN_WARNING}
+                      </p>
+                    )}
+                  </div>
+                )}
               </fieldset>
               <Button type="submit" disabled={!canRun}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
