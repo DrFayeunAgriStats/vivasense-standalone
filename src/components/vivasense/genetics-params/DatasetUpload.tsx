@@ -1,3 +1,4 @@
+import { SampleDatasets } from "@/components/help/SampleDatasets";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,12 +44,12 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
     }
   };
 
-  const handlePreview = async () => {
-    if (!file) return;
+  const handlePreview = async (inputFile = file) => {
+    if (!inputFile) return;
     setIsPreviewing(true);
     setPreview(null);
     try {
-      const res = await uploadPreview(file);
+      const res = await uploadPreview(inputFile);
       setPreview(res);
       setGenotypeCol(res.detected_columns.genotype?.column ?? "");
       setRepCol(res.detected_columns.rep?.column ?? "");
@@ -160,12 +161,22 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
-            <Input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} className="flex-1" />
-            <Button onClick={handlePreview} disabled={!file || isPreviewing} className="gap-2">
+            <Input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} disabled={isPreviewing} className="flex-1" />
+            <Button onClick={() => void handlePreview()} disabled={!file || isPreviewing} className="gap-2">
               {isPreviewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
               Preview Dataset
             </Button>
           </div>
+          <SampleDatasets
+            ids={["crd", "rcbd", "factorial-crd", "factorial-rcbd", "split-plot-rcbd", "met"]}
+            disabled={isPreviewing}
+            onTry={sample => {
+              setFile(sample);
+              setLocationCol("");
+              setYearCol("");
+              void handlePreview(sample);
+            }}
+          />
           {file && <p className="text-xs text-muted-foreground">Selected: <span className="font-medium">{file.name}</span></p>}
         </CardContent>
       </Card>
