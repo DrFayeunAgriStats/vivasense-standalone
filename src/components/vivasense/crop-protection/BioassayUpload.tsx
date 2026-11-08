@@ -1,3 +1,4 @@
+import { SampleDatasets } from "@/components/help/SampleDatasets";
 /**
  * Dataset upload for the bioassay workflow.
  *
@@ -46,19 +47,19 @@ export function BioassayUpload({ dataset, onDatasetReady }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<UploadPreviewResponse | null>(null);
 
-  const handlePreview = async () => {
-    if (!file) return;
+  const handlePreview = async (inputFile = file) => {
+    if (!inputFile) return;
     setIsLoading(true);
     try {
       const [response, base64Content] = await Promise.all([
-        uploadPreview(file),
-        fileToBase64(file),
+        uploadPreview(inputFile),
+        fileToBase64(inputFile),
       ]);
       setPreview(response);
       onDatasetReady({
-        file,
+        file: inputFile,
         base64Content,
-        fileType: resolveFileType(file),
+        fileType: resolveFileType(inputFile),
         columns: response.column_names,
         rowCount: response.n_rows,
         preview: response.data_preview,
@@ -126,6 +127,7 @@ export function BioassayUpload({ dataset, onDatasetReady }: Props) {
             <Input
               type="file"
               accept=".csv,.xlsx,.xls"
+              disabled={isLoading}
               className="flex-1"
               onChange={(event) => {
                 const selected = event.target.files?.[0];
@@ -135,7 +137,7 @@ export function BioassayUpload({ dataset, onDatasetReady }: Props) {
                 }
               }}
             />
-            <Button onClick={handlePreview} disabled={!file || isLoading} className="gap-2">
+            <Button onClick={() => void handlePreview()} disabled={!file || isLoading} className="gap-2">
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -144,6 +146,11 @@ export function BioassayUpload({ dataset, onDatasetReady }: Props) {
               Preview
             </Button>
           </div>
+          <SampleDatasets ids={["bioassay"]} disabled={isLoading} onTry={sample => {
+            setFile(sample);
+            setPreview(null);
+            void handlePreview(sample);
+          }} />
           {file && (
             <p className="text-xs text-muted-foreground">
               Selected: <span className="font-medium">{file.name}</span>
