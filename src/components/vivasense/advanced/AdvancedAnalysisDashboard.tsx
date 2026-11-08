@@ -1,3 +1,4 @@
+import { SampleDatasets } from "@/components/help/SampleDatasets";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,7 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
           <ArrowLeft className="h-4 w-4" />
           Back to advanced modules
         </Button>
+        <SampleDatasets ids={active === "stability" ? ["met"] : ["rcbd", "met"]} />
         <Panel datasetContext={datasetContext} />
       </div>
     );
