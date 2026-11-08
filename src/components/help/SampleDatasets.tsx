@@ -29,7 +29,7 @@ const samples: { id: string; title: string; unit: string; columns: string[]; row
 
 export function SampleDatasets({ ids, onTry, disabled }: {
   ids?: string[];
-  onTry?: (file: File) => void;
+  onTry?: (file: File, sampleId: string) => void;
   disabled?: boolean;
 }) {
   const available = samples.filter(sample => !ids || ids.includes(sample.id));
@@ -52,7 +52,7 @@ export function SampleDatasets({ ids, onTry, disabled }: {
 
   function loadSample() {
     const csv = [sample.columns, ...sample.rows].map(row => row.join(",")).join("\n");
-    onTry?.(new File([csv], `vivasense-sample-${sample.id}.csv`, { type: "text/csv" }));
+    onTry?.(new File([csv], `vivasense-sample-${sample.id}.csv`, { type: "text/csv" }), sample.id);
   }
 
   return (

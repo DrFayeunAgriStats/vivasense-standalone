@@ -6,6 +6,8 @@
 
 export interface DatasetContext {
   file: File;
+  /** Only from a built-in Try-this-sample action, never inferred from a user filename. */
+  sampleId?: string;
   base64Content: string;
   fileType: "csv" | "xlsx" | "xls";
   genotypeColumn: string;

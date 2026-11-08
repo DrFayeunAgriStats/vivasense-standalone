@@ -25,6 +25,8 @@ const domainNeutralWarning = (warning: string) =>
 export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
+  // Only the Try-this-sample button sets this; filenames never imply an experiment design.
+  const [sampleId, setSampleId] = useState<string | null>(null);
   const [preview, setPreview] = useState<UploadPreviewResponse | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
 
@@ -40,12 +42,14 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
     const f = e.target.files?.[0];
     if (f) {
       setFile(f);
+      setSampleId(null);
       setPreview(null);
     }
   };
 
-  const handlePreview = async (inputFile = file) => {
+  const handlePreview = async (inputFile = file, selectedSampleId: string | null = null) => {
     if (!inputFile) return;
+    setSampleId(selectedSampleId);
     setIsPreviewing(true);
     setPreview(null);
     try {
@@ -94,6 +98,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
 
       const ctx: DatasetContext = {
         file,
+        sampleId: sampleId ?? undefined,
         base64Content: base64,
         fileType: ext as "csv" | "xlsx" | "xls",
         genotypeColumn: genotypeCol,
@@ -140,6 +145,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
             onClick={() => {
               onDatasetReady(null as any);
               setFile(null);
+              setSampleId(null);
               setPreview(null);
             }}
           >
@@ -170,11 +176,11 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
           <SampleDatasets
             ids={["crd", "rcbd", "factorial-crd", "factorial-rcbd", "split-plot-rcbd", "met"]}
             disabled={isPreviewing}
-            onTry={sample => {
+            onTry={(sample, selectedSampleId) => {
               setFile(sample);
               setLocationCol("");
               setYearCol("");
-              void handlePreview(sample);
+              void handlePreview(sample, selectedSampleId);
             }}
           />
           {file && <p className="text-xs text-muted-foreground">Selected: <span className="font-medium">{file.name}</span></p>}

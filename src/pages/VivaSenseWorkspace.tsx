@@ -527,7 +527,7 @@ export default function VivaSenseWorkspace() {
               </span>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Field Layout Generator</h1>
               <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                Produce randomized plot maps, fieldbooks, and data-collection sheets for classic and Pro designs.
+                Produce randomised plot maps, fieldbooks, and data-collection sheets for classic and Pro designs.
               </p>
             </div>
             <div className="mt-8">

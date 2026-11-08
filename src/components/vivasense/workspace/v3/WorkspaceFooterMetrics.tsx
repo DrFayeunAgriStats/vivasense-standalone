@@ -28,7 +28,7 @@ export function WorkspaceFooterMetrics({ successfulAnalyses, pending, studyCount
     <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5 border-t border-border pt-4">
       <Item v={String(successfulAnalyses)} l="successful analyses" accent />
       <Item v={String(pending)} l="pending" />
-      <Item v={String(studyCount)} l={studyCount === 1 ? "saved VivaCollect study" : "saved VivaCollect studies"} />
+      <span title="Only saved VivaCollect field-data studies are counted. Named analysis groups from other areas are separate."><Item v={String(studyCount)} l={studyCount === 1 ? "VivaCollect study" : "VivaCollect studies"} /></span>
       {rt && (
         <>
           <span className="mx-2 h-4 w-px self-center bg-border" aria-hidden />

@@ -12,7 +12,7 @@ import type { WorkflowStage } from "@/lib/workspace/workflowState";
 
 interface Props {
   stages: WorkflowStage[];
-  /** stageKey → ISO date; only present for stages we can date honestly. */
+  /** stageKey → latest persisted analysis timestamp (not completion of a UI action). */
   stageDates?: Record<string, string | undefined>;
   onNavigate: (stageKey: string) => void;
 }
@@ -79,9 +79,9 @@ export function WorkflowStepper({ stages, stageDates, onNavigate }: Props) {
                   >
                     {s.label}
                   </span>
-                  {/* Date (completed, real timestamp only) / current marker */}
+                  {/* Latest persisted analysis of this type; not a workflow action completion time. */}
                   {isDone && date ? (
-                    <span className="font-mono text-[8px] tracking-tight text-muted-foreground">{date}</span>
+                    <span className="font-mono text-[8px] tracking-tight text-muted-foreground" title="Latest recorded analysis, not the date this step was completed. Session-only runs may not be recorded.">last {date}</span>
                   ) : isCurrent ? (
                     <span className="text-[8px] font-semibold text-amber-600 dark:text-amber-500">current</span>
                   ) : (

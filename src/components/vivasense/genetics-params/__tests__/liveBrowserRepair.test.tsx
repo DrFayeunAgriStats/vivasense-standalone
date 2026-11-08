@@ -39,15 +39,16 @@ const dataset = (
 });
 
 describe("live-browser dataset-switch regression", () => {
-  it("clears the selected response when a new dataset replaces the previous one", async () => {
+  it("clears stale response and preselects the new dataset’s sole trait", async () => {
     const first = dataset("factorial.csv", "nitrogen", "rep", "yield_t_ha", "token-1");
     const second = dataset("Test_RCBD.csv", "genotype", "rep", "fresh_leaf_yield", "token-2");
 
     const { rerender } = render(<AnovaModulePanel datasetContext={first} />);
 
     const oldResponse = await screen.findByLabelText("yield_t_ha");
-    fireEvent.click(oldResponse);
-    expect(oldResponse).toBeChecked();
+    expect(oldResponse).toBeChecked(); // New one-trait onboarding default
+    fireEvent.click(oldResponse); // User can still opt out
+    expect(oldResponse).not.toBeChecked();
 
     rerender(<AnovaModulePanel datasetContext={second} />);
 
@@ -55,7 +56,7 @@ describe("live-browser dataset-switch regression", () => {
       expect(screen.queryByLabelText("yield_t_ha")).not.toBeInTheDocument();
     });
     const newResponse = screen.getByLabelText("fresh_leaf_yield");
-    expect(newResponse).not.toBeChecked();
+    expect(newResponse).toBeChecked(); // Only the newly loaded trait is selected
     expect(screen.getByText("Using:").parentElement).toHaveTextContent("Test_RCBD.csv");
   });
 });
