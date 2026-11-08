@@ -1,3 +1,4 @@
+import { SampleDatasets } from "@/components/help/SampleDatasets";
 import { Link, useParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { BookOpen, FileSpreadsheet, FlaskConical, GraduationCap, LayoutGrid, Search } from "lucide-react";
@@ -74,6 +75,9 @@ export default function HelpLearning() {
   return (
     <Layout showFooter>
       <main>
+        <section className="mx-auto max-w-6xl px-4 py-6 sm:px-6" aria-label="Sample datasets">
+          <SampleDatasets />
+        </section>
         <section className="border-b border-border bg-primary-soft/35">
           <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-12">
             <Badge variant="secondary" className="bg-background/80">VivaSense Early Access Guide</Badge>
