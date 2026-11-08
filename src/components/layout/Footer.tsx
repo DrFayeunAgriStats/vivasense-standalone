@@ -22,11 +22,11 @@ export function Footer({ variant = "minimal-vivasense" }: FooterProps) {
                 Statistical analytics platform for agricultural research workflows.
               </p>
               <a
-                href="mailto:info@fieldtoinsightacademy.com.ng"
+                href="mailto:support@vivasensestat.com"
                 className="inline-flex items-center gap-1.5 mt-3 text-xs text-primary-foreground/90 hover:text-primary-foreground transition-colors"
               >
                 <Mail className="w-3 h-3" />
-                info@fieldtoinsightacademy.com.ng
+                support@vivasensestat.com
               </a>
             </div>
 
@@ -54,7 +54,7 @@ export function Footer({ variant = "minimal-vivasense" }: FooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:support@vivasense.app" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                  <a href="mailto:support@vivasensestat.com" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                     Support
                   </a>
                 </li>

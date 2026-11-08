@@ -68,8 +68,13 @@ const ANOVA_SOURCE_LABELS: Record<string, string> = {
   "environment:genotype": "Environment × Genotype",
 };
 
-export function anovaSourceLabel(src: unknown): string {
+export function anovaSourceLabel(src: unknown, mappedTreatmentFactor?: string): string {
   const key = String(src ?? "").trim();
+  // Generic governed CRD/RCBD model still uses the internal "genotype" term.
+  // Change only its display label, never the source key or model term.
+  if (/^genotype$/i.test(key) && mappedTreatmentFactor?.trim()) {
+    return mappedTreatmentFactor.trim();
+  }
   return ANOVA_SOURCE_LABELS[key] ?? key;
 }
 

@@ -112,7 +112,7 @@ interface LatticeBlockSize {
 export function FieldLayoutGenerator() {
   const [mode, setMode] = useState<VivaSenseMode>(() => getVivaSenseMode());
   const [design, setDesign] = useState<Design>("rcbd");
-  const [treatmentsRaw, setTreatmentsRaw] = useState("T1, T2, T3, T4");
+  const [treatmentsRaw, setTreatmentsRaw] = useState("");
   const [replications, setReplications] = useState(3);
   const [plotWidth, setPlotWidth] = useState(2);
   const [plotLength, setPlotLength] = useState(3);
@@ -573,10 +573,10 @@ export function FieldLayoutGenerator() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-serif">
             <MapPin className="h-5 w-5 text-primary" />
-            Field Layout Generator
+            Configure field layout
           </CardTitle>
           <CardDescription>
-            Generate randomized field layouts for classic and Pro experimental designs.
+            Generate randomised field layouts for classic and Pro experimental designs.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -597,22 +597,6 @@ export function FieldLayoutGenerator() {
                 </option>
               ))}
             </select>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              {DESIGNS.filter((d) => d.requiresPro).map((d) => (
-                <span
-                  key={`badge-${d.value}`}
-                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{
-                    background: "#FAEEDA",
-                    color: "#854F0B",
-                    border: "0.5px solid #F0BC52",
-                  }}
-                >
-                  {d.label} Pro
-                </span>
-              ))}
-            </div>
 
             {selectedDesign?.requiresPro && !isPro && (
               <div
@@ -801,7 +785,7 @@ export function FieldLayoutGenerator() {
                 onChange={(e) => setReplications(parseInt(e.target.value, 10) || 0)} className="mt-1.5" />
             </div>
             <div>
-              <Label htmlFor="seed">Randomization Seed</Label>
+              <Label htmlFor="seed">Randomisation Seed</Label>
               <Input id="seed" type="number" value={seed} onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)} className="mt-1.5" />
             </div>
             <div>
@@ -916,7 +900,7 @@ export function FieldLayoutGenerator() {
               >
                 <rect x={0} y={0} width={svgW} height={svgH} fill="#ffffff" />
                 <text x={pad} y={18} fontFamily="Montserrat, sans-serif" fontSize={13} fill="#1B5E20" fontWeight={600}>
-                  {result?.design_type ?? layout.design} Field Layout - N (Top)
+                  {String(result?.design_type ?? layout.design).toUpperCase()} Field Layout - N (Top)
                 </text>
                 {isLatticeDesign && Array.from(new Map(layout.cells.filter(c => c.blockLabel).map(c => [c.row, c.blockLabel!])).entries()).map(([rowIdx, label]) => (
                   <g key={`blk-${rowIdx}`}>

@@ -47,6 +47,8 @@ interface AcademicResultsProps {
   statisticalNotes?: StatisticalNote[];
   /** Raw ANOVA table data */
   anovaTable?: unknown;
+  /** Mapped treatment factor for governed one-factor ANOVA display only. */
+  treatmentFactorName?: string;
   /** Raw mean separation data */
   meanSeparation?: unknown;
   /** Additional collapsible table sections */
@@ -118,6 +120,7 @@ export function AcademicResultsPanel({
   classifications,
   statisticalNotes,
   anovaTable,
+  treatmentFactorName,
   meanSeparation,
   extraTables,
   descriptiveStats,
@@ -294,7 +297,7 @@ export function AcademicResultsPanel({
                             const isSig = !isNaN(pNum) && pNum <= effectiveAlpha;
                             return (
                               <TableRow key={i}>
-                                <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term)}</TableCell>
+                                <TableCell className="font-medium">{anovaSourceLabel(row.source ?? row.Source ?? row.term, treatmentFactorName)}</TableCell>
                                 <TableCell className="text-right font-mono">{String(row.df ?? row.DF ?? "—")}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ss ?? row.SS ?? row.sum_sq)}</TableCell>
                                 <TableCell className="text-right font-mono">{fmtNum(row.ms ?? row.MS ?? row.mean_sq)}</TableCell>

@@ -815,6 +815,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   })()}
                   inferentialAlpha={alpha}
                   anovaTable={r.anova_table}
+                  treatmentFactorName={governed ? treatmentCol : undefined}
                   meanSeparation={isSplitPlot || governedFactorial ? undefined : r.mean_separation}
                   descriptiveStats={governedFactorial || governedSplitPlot ? undefined : buildDescriptiveStats(r)}
                 />

@@ -89,9 +89,9 @@ export function WorkspaceV3Dashboard() {
     const runtimes = analyses.map((a) => a.execution_time_ms).filter((n): n is number => n != null && Number.isFinite(n));
     const avgRuntimeMs = runtimes.length ? runtimes.reduce((s, n) => s + n, 0) / runtimes.length : null;
 
-    // publication-ready = successful analyses (all rows are 'success' today).
-    const publicationReady = analyses.filter((a) => a.analysis_status === "success").length;
-    const pending = analyses.length - publicationReady;
+    // Success only means the calculation completed; it is not publication approval.
+    const successfulAnalyses = analyses.filter((a) => a.analysis_status === "success").length;
+    const pending = analyses.length - successfulAnalyses;
 
     return {
       state,
@@ -99,7 +99,7 @@ export function WorkspaceV3Dashboard() {
       traitCount: traitSet.size,
       stageDates: deriveStageDates(analyses),
       avgRuntimeMs,
-      publicationReady,
+      successfulAnalyses,
       pending,
     };
   }, [studies, analyses]);
@@ -190,7 +190,7 @@ export function WorkspaceV3Dashboard() {
           />
 
           <WorkspaceFooterMetrics
-            publicationReady={derived.publicationReady}
+            successfulAnalyses={derived.successfulAnalyses}
             pending={derived.pending}
             studyCount={derived.state.studyCount}
             avgRuntimeMs={derived.avgRuntimeMs}
