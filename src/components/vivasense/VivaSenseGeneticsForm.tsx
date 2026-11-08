@@ -1,3 +1,4 @@
+import { SampleDatasets } from "@/components/help/SampleDatasets";
 import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -419,6 +420,15 @@ export function VivaSenseGeneticsForm({ onSubmit, isLoading, retryMessage }: Pro
                   </Select>
                 </div>
 
+                {analysisType && !file && (
+                  <SampleDatasets
+                    ids={analysisType === "variance_components" ? ["met", "rcbd"] : ["rcbd", "met"]}
+                    onTry={sample => {
+                      setFile(sample);
+                      void parseFile(sample);
+                    }}
+                  />
+                )}
                 {/* File Upload */}
                 {analysisType && (
                   <div className="space-y-2">
