@@ -24,6 +24,7 @@ import { pl } from "@/lib/utils";
 import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
+import { initialAnovaSelections } from "@/lib/sampleAnalysisDefaults";
 import type { AnovaAlpha } from "@/services/geneticsUploadApi";
 import {
   GOVERNED_DESIGNS,
@@ -98,7 +99,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // that could otherwise leak from the previous file (the live-browser RCBD
   // failure showed a stale response trait and stale mappings crossing files).
   useEffect(() => {
-    setDesign("rcbd");
+    const initial = initialAnovaSelections(datasetContext);
+    setDesign(initial.design);
     setAlpha(DEFAULT_ALPHA);
     setTreatmentCol(datasetContext?.genotypeColumn ?? "");
     setRepColumn(datasetContext?.repColumn ?? "");
@@ -106,7 +108,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setFactorB("");
     setMainPlot("");
     setSubPlot("");
-    setSelectedTraits([]);
+    setSelectedTraits(initial.traits);
     setResults(null);
     setStructuralError(null);
     setShowErrorDetail(false);
