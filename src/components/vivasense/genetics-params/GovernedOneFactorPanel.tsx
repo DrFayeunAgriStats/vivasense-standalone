@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Info, MinusCircle, AlertTriangle, XCircle } from "lucide-react";
 import type { GeneticsResult } from "@/services/geneticsUploadApi";
+import { experimentalResidualCV } from "@/lib/anovaPresentation";
 import type { GovernedDesignType } from "./anovaDesigns";
 import {
   buildDesignSummary,
@@ -42,6 +43,7 @@ export function GovernedOneFactorPanel({ design, result, mapping, inferentialAlp
   const separation = describeSeparationGate(result.mean_separation_status, hasLetters);
   const summary = buildDesignSummary(design, result, mapping, inferentialAlpha);
   const accounting = describeObservationAccounting(result.observation_accounting);
+  const residualCV = experimentalResidualCV(design, result.anova_table, result.grand_mean);
   const policy = describeDiagnosticsPolicy(result, inferentialAlpha);
 
   return (
@@ -63,6 +65,13 @@ export function GovernedOneFactorPanel({ design, result, mapping, inferentialAlp
               </div>
             ))}
           </dl>
+          {residualCV !== null && (
+            <p className="text-xs text-muted-foreground" data-testid="experimental-cv">
+              Experimental residual CV%: <strong>{residualCV.toFixed(2)}%</strong>
+              {" "}(100 × √residual MS / grand mean; {design.toUpperCase()} residual error).
+              This is not the descriptive sample CV% and does not indicate significance.
+            </p>
+          )}
         </CardContent>
       </Card>
 

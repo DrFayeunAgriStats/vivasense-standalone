@@ -130,7 +130,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
                 Dataset loaded: <span className="text-emerald-700 dark:text-emerald-400">{datasetContext.file.name}</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {datasetContext.availableTraitColumns.length} traits available · {datasetContext.mode} mode
+                {datasetContext.availableTraitColumns.length} {datasetContext.availableTraitColumns.length === 1 ? "trait" : "traits"} available · {datasetContext.mode} mode
               </p>
             </div>
           </div>
