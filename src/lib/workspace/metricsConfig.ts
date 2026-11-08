@@ -67,7 +67,8 @@ export const METRICS_CONFIG: Partial<Record<AnalysisTypeId | string, MetricField
     { key: "cv", label: "CV", format: pct },
     { key: "r_squared", label: "R²", format: fixed(2) },
     { key: "best_entry", label: "Best entry", mono: false },
-    ...DATASET_DIMS,
+    // n_genotypes here counts one-factor treatment levels, not necessarily genotypes.
+    ...DATASET_DIMS.map(field => field.key === "n_genotypes" ? { ...field, label: "Treatment levels" } : field),
   ],
   genetic_parameters: [
     { key: "h2", label: "H²", format: fixed(2) },
