@@ -1,0 +1,52 @@
+name: General Correlation Availability Guard
+
+on:
+  push:
+    branches:
+      - master
+      - fix/restore-general-correlation-ui-20261108
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  general-correlation-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Prevent deletion of released module and new features
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const read=(p)=>fs.readFileSync(p,'utf8');
+          const app=read('src/App.tsx');
+          const nav=read('src/components/layout/Layout.tsx');
+          const dashboard=read('src/components/vivasense/workspace/v3/WorkspaceV3Dashboard.tsx');
+          assert.ok(app.includes('path="/relationship-analysis/general"'));
+          assert.ok(app.includes('GeneralCorrelationAnalysis'));
+          assert.ok(nav.includes('nav-general-correlation'));
+          assert.ok(dashboard.includes('<GeneralCorrelationCard />'));
+          assert.ok(app.includes('<SupportPilot />'));
+          assert.ok(read('src/pages/HelpLearning.tsx').includes('SampleDatasets'));
+          assert.ok(fs.existsSync('src/pages/GeneralCorrelationAnalysis.tsx'));
+          console.log('PASS: General Correlation, Ask VivaSense and sample datasets remain available');
+          NODE
+      - name: Targeted General Correlation tests
+        run: npx vitest run src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx src/pages/__tests__/GeneralCorrelationPresentation.test.tsx src/pages/__tests__/GeneralCorrelationSafeguards.test.tsx src/components/layout/__tests__/Layout.navigation.test.tsx src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx src/lib/generalCorrelationContract.test.ts src/lib/generalWordExport.test.ts
+      - name: Full frontend test suite
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Lint
+        run: npm run lint

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp } from "lucide-react";
+import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp, Sigma } from "lucide-react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -23,6 +23,19 @@ const nav = [
 const modules = [
   { module: "anova", label: "Experimental Design", icon: FlaskConical },
   { module: "field-layout", label: "Field Layout", icon: LayoutGrid },
+] as const;
+
+// Verified stand-alone analysis pages (own route, not a /workspace module).
+// REL-UI-01: General Correlation is ordinary association among observed
+// variables; the subtitle keeps it visibly distinct from genetic correlation.
+const routeModules = [
+  {
+    to: "/relationship-analysis/general",
+    label: "General Correlation",
+    subtitle: "Observed variables · not genetic",
+    description: "Ordinary Pearson/Spearman correlation among observed variables. It does not estimate genetic correlation.",
+    icon: Sigma,
+  },
 ] as const;
 
 export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
@@ -83,6 +96,30 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
+                  </Link>
+                );
+              })}
+              {routeModules.map((item) => {
+                const active = pathname === item.to;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    title={item.description}
+                    aria-label={`${item.label} — ${item.subtitle}`}
+                    data-testid="nav-general-correlation"
+                    className={`flex items-start gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
+                      active
+                        ? "bg-primary-soft text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="mt-0.5 h-4 w-4" />
+                    <span className="flex flex-col">
+                      <span>{item.label}</span>
+                      <span className="text-[11px] leading-tight opacity-80">{item.subtitle}</span>
+                    </span>
                   </Link>
                 );
               })}
