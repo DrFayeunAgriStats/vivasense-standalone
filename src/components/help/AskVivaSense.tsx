@@ -5,6 +5,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { allTutorials, type TutorialSection } from "@/data/helpLearningContent";
+import { answerStatisticalQuestion, isUnansweredStatisticalQuestion } from "@/lib/statisticsHelp";
 
 const correlationGuide: { slug: string; sections: TutorialSection[] } = {
   slug: "general-correlation",
@@ -39,7 +40,9 @@ export function AskVivaSense() {
   const contextualSlug = pathname === "/data-capture"
     ? "data-capture"
     : module === "field-layout" ? "field-layout" : undefined;
-  const tutorial = reply?.slug === correlationGuide.slug
+  const statisticsAnswer = reply ? answerStatisticalQuestion(reply.prompt) : null;
+  const unsupportedStatistics = reply ? isUnansweredStatisticalQuestion(reply.prompt) : false;
+  const tutorial = statisticsAnswer || unsupportedStatistics ? undefined : reply?.slug === correlationGuide.slug
     ? correlationGuide
     : allTutorials.find((item) => item.slug === reply?.slug);
   const sections = tutorial?.slug === "split-plot-rcbd"
@@ -54,23 +57,27 @@ export function AskVivaSense() {
     if (!prompt) return;
     const topic = [...topics].reverse().find((item) => item.match.test(prompt));
     const directTopic = topics.find((item) => (item.slug === correlationGuide.slug || item.slug === "split-plot-rcbd" || item.slug === "field-layout") && item.match.test(prompt));
-    setReply({ prompt, slug: directTopic?.slug ?? topic?.slug });
+    const statistical = answerStatisticalQuestion(prompt) || isUnansweredStatisticalQuestion(prompt);
+    setReply({ prompt, slug: statistical ? undefined : directTopic?.slug ?? topic?.slug });
     setQuestion("");
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="fixed bottom-16 right-4 z-40 shadow-md sm:bottom-4">Ask VivaSense</Button>
+        <Button className="fixed bottom-16 left-3 z-40 shadow-md sm:bottom-4 sm:left-auto sm:right-4" aria-label="Ask VivaSense"><span className="sm:hidden">Ask</span><span className="hidden sm:inline">Ask VivaSense</span></Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ask VivaSense</DialogTitle>
           <DialogDescription>
-            Get quick answers from Help &amp; Learning. Please keep dataset values out of your question.
+            Verified statistical explanations and navigation help, not an AI tutor. Please keep dataset values out of your question.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-wrap gap-2">
+          {(["When should I use LSD instead of Tukey?", "What does CV% tell me?"] as const).map((prompt) => (
+            <Button key={prompt} size="sm" variant="outline" onClick={() => setReply({ prompt })}>{prompt}</Button>
+          ))}
           {topics.map(({ label, slug }) => (
             <Button key={slug} size="sm" variant="outline" onClick={() => setReply({ prompt: label, slug })}>
               {label}
@@ -84,7 +91,16 @@ export function AskVivaSense() {
         </div>
         <div aria-live="polite" className="space-y-2 text-sm">
           {reply && <p className="break-words font-semibold">{reply.prompt}</p>}
-          {tutorial && sections.length ? (
+          {statisticsAnswer ? (
+            <section className="space-y-2" aria-label="Verified statistical explanation">
+              <p className="font-medium">{statisticsAnswer.title}</p>
+              {statisticsAnswer.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              {statisticsAnswer.points && <ul className="list-disc space-y-1 pl-5">{statisticsAnswer.points.map((point) => <li key={point}>{point}</li>)}</ul>}
+              <p className="text-xs text-muted-foreground">General teaching guidance only. Check the study design and the analysis report before drawing conclusions.</p>
+            </section>
+          ) : unsupportedStatistics ? (
+            <p>I don't have a verified explanation for this statistical question yet. Please consult the relevant course notes or ask a qualified statistician. I won't substitute upload instructions for a statistical answer.</p>
+          ) : tutorial && sections.length ? (
             <>
               {sections.map((section) => <div className="space-y-2" key={section.title}>
               <p className="font-medium">{section.title}</p>
