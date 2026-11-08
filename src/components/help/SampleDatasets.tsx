@@ -24,6 +24,7 @@ const samples: { id: string; title: string; unit: string; columns: string[]; row
   { id: "split-plot-rcbd", title: "Split-Plot RCBD", unit: "One subplot per row. Map Nitrogen to whole plot, Variety to subplot, and Block to replication.", columns: ["Block", "Nitrogen", "Variety", "Yield"], rows: split },
   { id: "correlation", title: "General Correlation", unit: "One independent plant per row. Select numeric traits, leaving PlantID out of the analysis.", columns: ["PlantID", "Height", "LeafCount", "Yield"], rows: trial.map(([, , y, h, l], i) => [`P${i + 1}`, h, l, y]) },
   { id: "met", title: "Multi-environment trials", unit: "One genotype plot per block within an environment per row.", columns: ["Environment", "Block", "Genotype", "Yield", "Height", "LeafCount"], rows: ["Akure", "Ibadan", "Ikenne"].flatMap((env, e) => trial.map(([b, g, y, h, l], i) => [env, b, g, Number(y) + (e * 4 + noise[(i + e * 3) % 16]) / 10, h, l])) },
+  { id: "bioassay", title: "Crop Protection Bioassay", unit: "One experimental unit per row. Map Treatment, Dose, and Replicate as design columns and MortalityPct as the response.", columns: ["Treatment", "Dose", "Replicate", "MortalityPct"], rows: blocks.flatMap((block, b) => ["ProductA", "ProductB"].flatMap((product, a) => [0, 1, 2, 4].map((dose, i) => [product, dose, block, 8 + 14 * i + 4 * a * i + noise[b * 4 + i]]))) },
 ];
 
 export function SampleDatasets({ ids, onTry, disabled }: {
