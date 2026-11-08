@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
+import GeneralCorrelationAnalysis from "@/pages/GeneralCorrelationAnalysis";
 import DataCapture from "@/pages/DataCapture";
 import HelpLearning from "@/pages/HelpLearning";
 import { Toaster } from "@/components/ui/toaster";
@@ -30,6 +31,14 @@ function App() {
               element={
                 <VivaSenseAuthGuard>
                   <VivaSenseWorkspace />
+                </VivaSenseAuthGuard>
+              }
+            />
+            <Route
+              path="/relationship-analysis/general"
+              element={
+                <VivaSenseAuthGuard>
+                  <GeneralCorrelationAnalysis />
                 </VivaSenseAuthGuard>
               }
             />
