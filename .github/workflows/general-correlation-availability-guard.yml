@@ -16,6 +16,10 @@ jobs:
   general-correlation-guard:
     runs-on: ubuntu-latest
     timeout-minutes: 18
+    env:
+      # Test-only placeholders: never use production Supabase credentials in CI.
+      VITE_SUPABASE_URL: https://ci-only-placeholder.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ci-only-public-placeholder-not-a-real-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
