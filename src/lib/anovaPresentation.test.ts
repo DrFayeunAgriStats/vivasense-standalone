@@ -10,7 +10,7 @@ describe("experimental residual CV display", () => {
     expect(experimentalResidualCV("crd", table, 5)).toBeCloseTo(10, 10);
   });
   it("uses the same well-defined residual error stratum for complete RCBD", () => {
-    expect(experimentalResidualCV("rcbd", {...table, source:["rep", "Treatment", "Error"]}, 10)).toBeCloseTo(5, 10);
+    expect(experimentalResidualCV("rcbd", {...table, source:["rep", "Treatment", "Error"], ms:[1.5, 3, 0.25]}, 10)).toBeCloseTo(5, 10);
   });
   it("does not invent CV for split plot, missing MSE, ambiguous errors, or nonpositive means", () => {
     expect(experimentalResidualCV("split_plot_rcbd", table, 5)).toBeNull();
