@@ -43,7 +43,26 @@ jobs:
           assert.ok(app.includes('<SupportPilot />'));
           assert.ok(read('src/pages/HelpLearning.tsx').includes('SampleDatasets'));
           assert.ok(fs.existsSync('src/pages/GeneralCorrelationAnalysis.tsx'));
-          console.log('PASS: General Correlation, Ask VivaSense and sample datasets remain available');
+          const workspacePage=read('src/pages/VivaSenseWorkspace.tsx');
+          const onboarding=read('src/components/vivasense/workspace/v3/OnboardingModules.tsx');
+          const guides=read('src/data/helpLearningContent.ts');
+          const ask=read('src/components/help/AskVivaSense.tsx');
+          assert.ok(nav.includes('label: "ANOVA & Mean Separation"'));
+          assert.ok(nav.includes('Research Tools'));
+          assert.ok(onboarding.includes('name: "ANOVA & Mean Separation"'));
+          assert.ok(onboarding.includes('Research Tools'));
+          assert.ok(workspacePage.includes('ANOVA &amp; Mean Separation'));
+          assert.ok(workspacePage.includes('Statistical Analysis'));
+          assert.ok(workspacePage.includes('Design &amp; Planning'));
+          assert.ok(workspacePage.includes('Analysis of designed experiments'));
+          assert.ok(workspacePage.includes('Randomise and lay out a chosen design.'));
+          assert.ok(guides.includes('Open ANOVA & Mean Separation from the sidebar.'));
+          assert.ok(guides.includes('title: "Choose the Correct Experimental Design"'));
+          assert.ok(guides.includes('Choose the experimental design that matches'));
+          assert.ok(ask.includes('label: "ANOVA & Mean Separation"'));
+          assert.ok(!guides.includes('Experimental Design & ANOVA'));
+          assert.ok(!workspacePage.includes('Experimental Design & ANOVA'));
+          console.log('PASS: General Correlation, Ask VivaSense, sample datasets and research-stage names');
           NODE
       - name: Targeted General Correlation tests
         run: npx vitest run src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx src/pages/__tests__/GeneralCorrelationPresentation.test.tsx src/pages/__tests__/GeneralCorrelationSafeguards.test.tsx src/components/layout/__tests__/Layout.navigation.test.tsx src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx src/lib/generalCorrelationContract.test.ts src/lib/generalWordExport.test.ts

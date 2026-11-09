@@ -18,7 +18,7 @@ import {
 
 const quickLinks = [
   {
-    title: "Run ANOVA",
+    title: "ANOVA & Mean Separation",
     description: "Upload data and choose CRD, RCBD, Factorial, or Split-Plot.",
     to: "/workspace?module=anova",
     icon: FlaskConical
@@ -85,8 +85,8 @@ export default function HelpLearning() {
               Help &amp; Learning
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Practical guidance for the VivaSense workflows that are available now: experimental design and ANOVA,
-              field layout, data capture, reports, and saved RCBD analyses.
+              Practical guidance for the VivaSense workflows that are available now: ANOVA and mean separation,
+              field layout and design planning, data capture, reports, and saved RCBD analyses.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">

@@ -18,7 +18,7 @@ const MODULES: {
   action: WorkspaceAction;
   accent: string;
 }[] = [
-  { icon: FlaskConical, name: "Experimental Design", desc: "CRD, RCBD, factorial and split-plot ANOVA", action: "start-analysis", accent: "text-primary bg-primary/10" },
+  { icon: FlaskConical, name: "ANOVA & Mean Separation", desc: "ANOVA for CRD, RCBD, factorial and split-plot experiments", action: "start-analysis", accent: "text-primary bg-primary/10" },
   { icon: LayoutGrid, name: "Field Layout", desc: "Randomise plots and generate field books", action: "field-layout", accent: "text-blue-600 bg-blue-500/10 dark:text-blue-400" },
   { icon: ClipboardList, name: "Data Capture", desc: "Record field observations by study and plot", action: "data-capture", accent: "text-violet-600 bg-violet-500/10 dark:text-violet-400" },
 ];
@@ -27,7 +27,7 @@ export function OnboardingModules({ onNavigate, onDismiss }: Props) {
   return (
     <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Analysis Modules</h2>
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Research Tools</h2>
         <button
           type="button"
           onClick={onDismiss}

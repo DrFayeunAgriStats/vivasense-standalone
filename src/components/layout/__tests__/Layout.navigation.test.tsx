@@ -18,7 +18,7 @@ function renderAt(path: string) {
   );
 }
 
-const sidebar = () => screen.getByText("Analysis Modules").closest("aside") as HTMLElement;
+const sidebar = () => screen.getByText("Research Tools").closest("aside") as HTMLElement;
 
 describe("Workspace sidebar — General Correlation entry", () => {
   it("links General Correlation to /relationship-analysis/general", () => {
@@ -37,7 +37,7 @@ describe("Workspace sidebar — General Correlation entry", () => {
     expect(link.textContent ?? "").not.toMatch(/\brg\b|genotypic|heritab/i);
   });
 
-  it("keeps every existing workspace link unchanged", () => {
+  it("preserves every workspace route while using clear research-stage module labels", () => {
     renderAt("/workspace");
     const nav = sidebar();
     const hrefs = Array.from(nav.querySelectorAll("a")).map((a) => [a.textContent?.trim().split("Observed")[0], a.getAttribute("href")]);
@@ -45,7 +45,7 @@ describe("Workspace sidebar — General Correlation entry", () => {
       ["Research Workspace", "/workspace"],
       ["Data Capture", "/data-capture"],
       ["Help & Learning", "/help"],
-      ["Experimental Design", "/workspace?module=anova"],
+      ["ANOVA & Mean Separation", "/workspace?module=anova"],
       ["Field Layout", "/workspace?module=field-layout"],
       ["General Correlation", "/relationship-analysis/general"],
     ]);

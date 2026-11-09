@@ -47,7 +47,7 @@ describe("VivaSenseWorkspace no longer builds an ANOVA payload", () => {
   });
 
   it("directs ANOVA to the governed module instead", () => {
-    expect(source).toMatch(/Experimental Design \/ ANOVA module/);
+    expect(source).toMatch(/ANOVA & Mean Separation module/);
   });
 });
 
