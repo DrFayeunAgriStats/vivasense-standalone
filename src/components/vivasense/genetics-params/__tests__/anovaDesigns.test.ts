@@ -17,6 +17,7 @@ import {
   designMeta,
   requiredRoles,
   requiresBlock,
+  usesPersistentRcbdEndpoint,
   activeMapping,
   validateMapping,
   buildStructuralPreview,
@@ -360,5 +361,58 @@ describe("legacy factorial handling", () => {
   it("does not crash on an unknown or absent stored design", () => {
     expect(labelStoredDesign(null)).toBe("Unspecified design");
     expect(labelStoredDesign("something_else")).toBe("something_else");
+  });
+});
+
+describe("multi-environment RCBD routing — regression", () => {
+  it("uses durable RCBD only for single-environment RCBD", () => {
+    expect(usesPersistentRcbdEndpoint("rcbd", "single")).toBe(true);
+    expect(usesPersistentRcbdEndpoint("rcbd", "multi")).toBe(false);
+    for (const design of GOVERNED_DESIGN_IDS.filter(id => id !== "rcbd")) {
+      expect(usesPersistentRcbdEndpoint(design, "single")).toBe(false);
+      expect(usesPersistentRcbdEndpoint(design, "multi")).toBe(false);
+    }
+  });
+
+  it("keeps the environment column and nested-replication mapping in the combined request", () => {
+    const request = buildAnovaRequest({
+      datasetContext: {
+        ...ctx,
+        environmentColumn: "Environment",
+        mode: "multi",
+      },
+      design: "rcbd",
+      alpha: 0.05,
+      mapping: { treatment: "Genotype", rep: "Block" },
+      traits: ["Yield"],
+    });
+    expect(request).toMatchObject({
+      module: "anova",
+      design_type: "rcbd",
+      mode: "multi",
+      genotype_column: "Genotype",
+      rep_column: "Block",
+      environment_column: "Environment",
+      trait_columns: ["Yield"],
+      alpha: 0.05,
+    });
+  });
+
+  it("retains Location × Year environment construction for multi-environment RCBD", () => {
+    const request = buildAnovaRequest({
+      datasetContext: {
+        ...ctx,
+        environmentColumn: null,
+        environmentFactorColumns: ["Location", "Year"],
+        mode: "multi",
+      },
+      design: "rcbd",
+      alpha: 0.05,
+      mapping: { treatment: "Genotype", rep: "Block" },
+      traits: ["Yield"],
+    });
+    expect(request.environment_column).toBeNull();
+    expect(request.environment_factor_columns).toEqual(["Location", "Year"]);
+    expect(request.mode).toBe("multi");
   });
 });
