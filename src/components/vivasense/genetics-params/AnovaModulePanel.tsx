@@ -21,6 +21,7 @@ import {
 } from "@/services/geneticsUploadApi";
 import { AcademicResultsPanel } from "./AcademicResultsPanel";
 import { pl } from "@/lib/utils";
+import { modelCVRows } from "./modelCVRows";
 import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
@@ -627,8 +628,11 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                 {!isFactorialFamily && !isSplitPlot && (results.dataset_summary.n_genotypes ?? 0) > 0 && (
                   <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes, "treatment level")}</Badge>
                 )}
-                {(results.dataset_summary.n_reps ?? 0) > 0 && (
+                {(results.dataset_summary.n_reps ?? 0) > 0 && design !== "factorial_crd" && (
                   <Badge variant="secondary">{pl(results.dataset_summary.n_reps, "replication")}</Badge>
+                )}
+                {design === "factorial_crd" && (
+                  <Badge variant="secondary">Replication is counted within each treatment combination</Badge>
                 )}
                 <Badge variant="outline">{results.dataset_summary.mode} mode</Badge>
                 {results.persistence && (
@@ -851,10 +855,26 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             const governed = isGovernedOneFactor(r, design);
             const governedFactorial = isGovernedFactorial(r, design);
             const governedSplitPlot = isGovernedSplitPlot(r, design);
+            const cvRows = modelCVRows(r, design, results.dataset_summary.mode);
 
             return (
               <div key={trait} className="space-y-3">
                 <h3 className="text-base font-semibold text-foreground px-1">{trait}</h3>
+                {cvRows.length > 0 && (
+                  <Card>
+                    <CardContent className="py-3 px-4">
+                      <p className="text-sm font-medium mb-2">Experimental precision</p>
+                      <div className="flex flex-wrap gap-3">
+                        {cvRows.map(row => (
+                          <div key={row.label} className="text-sm">
+                            <span className="font-medium">{row.label}: {row.percent.toFixed(2)}%</span>
+                            <p className="text-xs text-muted-foreground">{row.provenance}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 {governed && (
                   <GovernedOneFactorPanel
                     design={design}
