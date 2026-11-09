@@ -21,4 +21,27 @@ describe("workshop research-stage terminology", () => {
     expect(design?.title).toBe("Choose the Correct Experimental Design");
     expect(design?.actionPath).toBe("/workspace?module=anova");
   });
+
+  it("groups field layout guidance under Design & Planning without changing its tool route", () => {
+    expect(tutorialCategories).toContain("Design & Planning");
+    expect(tutorialCategories).not.toContain("Field Layout");
+    const field = allTutorials.find(item => item.slug === "field-layout");
+    expect(field?.category).toBe("Design & Planning");
+    expect(field?.actionPath).toBe("/workspace?module=field-layout");
+    expect(field?.actionLabel).toBe("Open Field Layout");
+  });
+  it("uses British spelling in displayed guide text and titles", () => {
+    const crd = allTutorials.find(item => item.slug === "crd");
+    const rcbd = allTutorials.find(item => item.slug === "rcbd");
+    const choose = allTutorials.find(item => item.slug === "choose-design");
+    expect(crd?.title).toBe("CRD — Completely Randomised Design");
+    expect(rcbd?.title).toBe("RCBD — Randomised Complete Block Design");
+    expect(choose?.description).toContain("randomisation structure");
+    for (const guide of allTutorials) {
+      const visible = [guide.title, guide.description, guide.actionLabel,
+        ...guide.sections.flatMap(section => [section.title, ...(section.paragraphs ?? []), ...(section.bullets ?? []), ...(section.example ?? []), section.note ?? ""])
+      ].join(" ");
+      expect(visible).not.toMatch(/randomiz(?:ed|ation)/i);
+    }
+  });
 });

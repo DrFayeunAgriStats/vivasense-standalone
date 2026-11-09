@@ -1,7 +1,7 @@
 export type TutorialCategory =
   | "Getting Started"
   | "Statistical Analysis"
-  | "Field Layout"
+  | "Design & Planning"
   | "Data Capture"
   | "Reports & Saved Analyses";
 
@@ -29,7 +29,7 @@ const commonAnalysisSteps = [
   "Choose your CSV, XLSX, or XLS file and select Preview Dataset.",
   "Confirm the detected columns, then map the treatment or factor, replication/block, and environment roles that actually exist in your experiment.",
   "Confirm the mapping and prepare the dataset.",
-  "Choose the experimental design that matches how the experiment was randomized.",
+  "Choose the experimental design that matches how the experiment was randomised.",
   "Select one or more response variables and the inferential significance level (α = 0.01, 0.05, or 0.10).",
   "Review the design summary before you run the analysis.",
   "Run the analysis, read the ANOVA and mean-comparison output, then download the Word report."
@@ -113,8 +113,8 @@ export const gettingStartedTutorials: Tutorial[] = [
     slug: "choose-design",
     title: "Choose the Correct Experimental Design",
     category: "Getting Started",
-    description: "Use the randomization structure of the experiment—not the appearance of the data—to choose the model.",
-    keywords: ["crd", "rcbd", "factorial", "split plot", "design choice", "randomization"],
+    description: "Use the randomisation structure of the experiment—not the appearance of the data—to choose the model.",
+    keywords: ["crd", "rcbd", "factorial", "split plot", "design choice", "randomisation", "randomization"],
     actionPath: "/workspace?module=anova",
     actionLabel: "Choose a Design",
     sections: [
@@ -131,13 +131,13 @@ export const gettingStartedTutorials: Tutorial[] = [
       {
         title: "Do not infer design from column counts",
         paragraphs: [
-          "The same table can sometimes be rearranged to resemble more than one design. What matters is how the experiment was randomized and which experimental unit received each factor.",
+          "The same table can sometimes be rearranged to resemble more than one design. What matters is how the experiment was randomised and which experimental unit received each factor.",
           "A replication column does not automatically make an experiment RCBD, and repeated observations do not automatically create blocks."
         ]
       },
       {
         title: "When unsure",
-        note: "Return to the field protocol or randomization plan. If the design cannot be established confidently, do not choose the model by trial and error."
+        note: "Return to the field protocol or randomisation plan. If the design cannot be established confidently, do not choose the model by trial and error."
       }
     ]
   },
@@ -220,17 +220,17 @@ export const gettingStartedTutorials: Tutorial[] = [
 export const analysisTutorials: Tutorial[] = [
   {
     slug: "crd",
-    title: "CRD — Completely Randomized Design",
+    title: "CRD — Completely Randomised Design",
     category: "Statistical Analysis",
     description: "Use one treatment factor without a blocking structure.",
-    keywords: ["crd", "completely randomized", "one factor", "anova"],
+    keywords: ["crd", "completely randomised", "completely randomized", "one factor", "anova"],
     actionPath: "/workspace?module=anova",
     actionLabel: "Open CRD Analysis",
     sections: [
       {
         title: "When to use CRD",
         paragraphs: [
-          "Use CRD when experimental units are treated as sufficiently homogeneous for the planned randomization and there is one treatment factor without a block term."
+          "Use CRD when experimental units are treated as sufficiently homogeneous for the planned randomisation and there is one treatment factor without a block term."
         ]
       },
       {
@@ -261,7 +261,7 @@ export const analysisTutorials: Tutorial[] = [
   },
   {
     slug: "rcbd",
-    title: "RCBD — Randomized Complete Block Design",
+    title: "RCBD — Randomised Complete Block Design",
     category: "Statistical Analysis",
     description: "Use one treatment factor arranged in complete blocks or replications.",
     keywords: ["rcbd", "block", "replication", "complete block", "anova"],
@@ -400,7 +400,7 @@ export const analysisTutorials: Tutorial[] = [
       {
         title: "When to use it",
         paragraphs: [
-          "Use Split-Plot RCBD when randomization occurs in two stages: a main-plot factor is assigned to whole plots within blocks, and a subplot factor is assigned within each whole plot."
+          "Use Split-Plot RCBD when randomisation occurs in two stages: a main-plot factor is assigned to whole plots within blocks, and a subplot factor is assigned within each whole plot."
         ]
       },
       {
@@ -468,9 +468,9 @@ export const fieldLayoutTutorials: Tutorial[] = [
   {
     slug: "field-layout",
     title: "Generate a Field Layout and Field Book",
-    category: "Field Layout",
+    category: "Design & Planning",
     description: "Randomise treatments, inspect the layout, and export materials for field work.",
-    keywords: ["field layout", "randomization", "field book", "plots", "seed", "export"],
+    keywords: ["field layout", "randomisation", "randomization", "field book", "plots", "seed", "export"],
     actionPath: "/workspace?module=field-layout",
     actionLabel: "Open Field Layout",
     sections: [
@@ -481,13 +481,13 @@ export const fieldLayoutTutorials: Tutorial[] = [
           "Choose the design offered by the generator.",
           "Enter treatment labels and the number of replications required by the design.",
           "Enter plot dimensions and alley width when you want the physical layout summary to carry those values.",
-          "Keep or change the randomization seed. Reusing the same seed with the same inputs makes the intended randomization reproducible."
+          "Keep or change the randomisation seed. Reusing the same seed with the same inputs makes the intended randomisation reproducible."
         ]
       },
       {
         title: "Generate and inspect",
         paragraphs: [
-          "Select Generate to create the randomized layout. Inspect treatment labels, plot numbers, replication/block structure, and total plot count before using the layout in the field."
+          "Select Generate to create the randomised layout. Inspect treatment labels, plot numbers, replication/block structure, and total plot count before using the layout in the field."
         ]
       },
       {
@@ -601,7 +601,7 @@ export const allTutorials = [
 export const tutorialCategories: TutorialCategory[] = [
   "Getting Started",
   "Statistical Analysis",
-  "Field Layout",
+  "Design & Planning",
   "Data Capture",
   "Reports & Saved Analyses"
 ];
