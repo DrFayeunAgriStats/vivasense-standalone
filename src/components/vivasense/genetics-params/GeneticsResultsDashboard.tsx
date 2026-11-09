@@ -64,8 +64,11 @@ export function formatP(v: unknown): string {
  * payloads are untouched. Terms with no entry fall through to the raw key.
  */
 const ANOVA_SOURCE_LABELS: Record<string, string> = {
+  environment: "Environment",
+  genotype: "Genotype",
   "environment:rep": "Replication(Environment)",
   "environment:genotype": "Environment × Genotype",
+  "genotype:environment": "Environment × Genotype",
 };
 
 export function anovaSourceLabel(src: unknown, mappedTreatmentFactor?: string): string {
