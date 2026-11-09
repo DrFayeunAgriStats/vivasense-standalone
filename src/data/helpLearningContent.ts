@@ -114,7 +114,7 @@ export const gettingStartedTutorials: Tutorial[] = [
     title: "Choose the Correct Experimental Design",
     category: "Getting Started",
     description: "Use the randomisation structure of the experiment—not the appearance of the data—to choose the model.",
-    keywords: ["crd", "rcbd", "factorial", "split plot", "design choice", "randomisation"],
+    keywords: ["crd", "rcbd", "factorial", "split plot", "design choice", "randomisation", "randomization"],
     actionPath: "/workspace?module=anova",
     actionLabel: "Choose a Design",
     sections: [
@@ -223,7 +223,7 @@ export const analysisTutorials: Tutorial[] = [
     title: "CRD — Completely Randomised Design",
     category: "Statistical Analysis",
     description: "Use one treatment factor without a blocking structure.",
-    keywords: ["crd", "completely randomised", "one factor", "anova"],
+    keywords: ["crd", "completely randomised", "completely randomized", "one factor", "anova"],
     actionPath: "/workspace?module=anova",
     actionLabel: "Open CRD Analysis",
     sections: [
@@ -470,7 +470,7 @@ export const fieldLayoutTutorials: Tutorial[] = [
     title: "Generate a Field Layout and Field Book",
     category: "Design & Planning",
     description: "Randomise treatments, inspect the layout, and export materials for field work.",
-    keywords: ["field layout", "randomisation", "field book", "plots", "seed", "export"],
+    keywords: ["field layout", "randomisation", "randomization", "field book", "plots", "seed", "export"],
     actionPath: "/workspace?module=field-layout",
     actionLabel: "Open Field Layout",
     sections: [
