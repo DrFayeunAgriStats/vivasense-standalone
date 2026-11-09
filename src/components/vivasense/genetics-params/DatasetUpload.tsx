@@ -174,7 +174,7 @@ export function DatasetUpload({ onDatasetReady, datasetContext }: Props) {
             </Button>
           </div>
           <SampleDatasets
-            ids={["crd", "rcbd", "factorial-crd", "factorial-rcbd", "split-plot-rcbd", "met"]}
+            ids={["crd", "rcbd", "factorial-crd", "factorial-rcbd", "split-plot-rcbd", "met", "met-crossover", "bioassay"]}
             disabled={isPreviewing}
             onTry={(sample, selectedSampleId) => {
               setFile(sample);

@@ -24,7 +24,7 @@ import { pl } from "@/lib/utils";
 import { describeResultScale, buildDescriptiveStats } from "./resultCounts";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
-import { initialAnovaSelections } from "@/lib/sampleAnalysisDefaults";
+import { initialAnovaSelections, initialSampleRoleMappings } from "@/lib/sampleAnalysisDefaults";
 import type { AnovaAlpha } from "@/services/geneticsUploadApi";
 import {
   GOVERNED_DESIGNS,
@@ -101,14 +101,15 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   // failure showed a stale response trait and stale mappings crossing files).
   useEffect(() => {
     const initial = initialAnovaSelections(datasetContext);
+    const sampleMapping = initialSampleRoleMappings(datasetContext);
     setDesign(initial.design);
     setAlpha(DEFAULT_ALPHA);
     setTreatmentCol(datasetContext?.genotypeColumn ?? "");
     setRepColumn(datasetContext?.repColumn ?? "");
-    setFactorA("");
-    setFactorB("");
-    setMainPlot("");
-    setSubPlot("");
+    setFactorA(sampleMapping.factorA);
+    setFactorB(sampleMapping.factorB);
+    setMainPlot(sampleMapping.mainPlot);
+    setSubPlot(sampleMapping.subPlot);
     setSelectedTraits(initial.traits);
     setResults(null);
     setStructuralError(null);
