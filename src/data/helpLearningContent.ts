@@ -1,6 +1,6 @@
 export type TutorialCategory =
   | "Getting Started"
-  | "Experimental Design & ANOVA"
+  | "Statistical Analysis"
   | "Field Layout"
   | "Data Capture"
   | "Reports & Saved Analyses";
@@ -25,7 +25,7 @@ export interface Tutorial {
 }
 
 const commonAnalysisSteps = [
-  "Open Experimental Design from the sidebar.",
+  "Open ANOVA & Mean Separation from the sidebar.",
   "Choose your CSV, XLSX, or XLS file and select Preview Dataset.",
   "Confirm the detected columns, then map the treatment or factor, replication/block, and environment roles that actually exist in your experiment.",
   "Confirm the mapping and prepare the dataset.",
@@ -43,7 +43,7 @@ export const gettingStartedTutorials: Tutorial[] = [
     description: "The shortest path from a research dataset to an ANOVA result and Word report.",
     keywords: ["start", "first analysis", "workflow", "upload", "anova", "report"],
     actionPath: "/workspace?module=anova",
-    actionLabel: "Open Experimental Design",
+    actionLabel: "Open ANOVA & Mean Separation",
     sections: [
       {
         title: "What VivaSense does in this Early Access release",
@@ -145,7 +145,7 @@ export const gettingStartedTutorials: Tutorial[] = [
     slug: "run-analysis",
     title: "Run an Analysis Step by Step",
     category: "Getting Started",
-    description: "A screen-by-screen guide to the current Experimental Design & ANOVA workflow.",
+    description: "A screen-by-screen guide to the current ANOVA & Mean Separation workflow.",
     keywords: ["run", "analysis", "upload", "mapping", "alpha", "word report"],
     actionPath: "/workspace?module=anova",
     actionLabel: "Run an Analysis",
@@ -221,7 +221,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "crd",
     title: "CRD — Completely Randomized Design",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Use one treatment factor without a blocking structure.",
     keywords: ["crd", "completely randomized", "one factor", "anova"],
     actionPath: "/workspace?module=anova",
@@ -262,7 +262,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "rcbd",
     title: "RCBD — Randomized Complete Block Design",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Use one treatment factor arranged in complete blocks or replications.",
     keywords: ["rcbd", "block", "replication", "complete block", "anova"],
     actionPath: "/workspace?module=anova",
@@ -306,7 +306,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "factorial-crd",
     title: "Factorial CRD",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Analyse two crossed treatment factors without a block term.",
     keywords: ["factorial crd", "factor a", "factor b", "interaction"],
     actionPath: "/workspace?module=anova",
@@ -349,7 +349,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "factorial-rcbd",
     title: "Factorial RCBD",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Analyse two crossed treatment factors within complete blocks.",
     keywords: ["factorial rcbd", "factor a", "factor b", "block", "interaction"],
     actionPath: "/workspace?module=anova",
@@ -391,7 +391,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "split-plot-rcbd",
     title: "Split-Plot RCBD",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Analyse a whole-plot factor and subplot factor with their correct error strata.",
     keywords: ["split plot", "whole plot", "subplot", "error a", "error b"],
     actionPath: "/workspace?module=anova",
@@ -437,7 +437,7 @@ export const analysisTutorials: Tutorial[] = [
   {
     slug: "mean-separation",
     title: "Mean Separation and Grouping Letters",
-    category: "Experimental Design & ANOVA",
+    category: "Statistical Analysis",
     description: "Understand what post-ANOVA comparison tables do—and what the letters do not mean.",
     keywords: ["mean separation", "tukey", "lsd", "groups", "letters"],
     sections: [
@@ -600,7 +600,7 @@ export const allTutorials = [
 
 export const tutorialCategories: TutorialCategory[] = [
   "Getting Started",
-  "Experimental Design & ANOVA",
+  "Statistical Analysis",
   "Field Layout",
   "Data Capture",
   "Reports & Saved Analyses"

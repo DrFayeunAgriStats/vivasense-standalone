@@ -21,7 +21,7 @@ const nav = [
 // current verification gate. Hidden modules remain in code and can return to
 // navigation after their own validation; this is presentation hardening only.
 const modules = [
-  { module: "anova", label: "Experimental Design", icon: FlaskConical },
+  { module: "anova", label: "ANOVA & Mean Separation", icon: FlaskConical },
   { module: "field-layout", label: "Field Layout", icon: LayoutGrid },
 ] as const;
 
@@ -76,7 +76,7 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
             </nav>
 
             <p className="mt-7 px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Analysis Modules
+              Research Tools
             </p>
             <nav className="flex flex-col gap-0.5">
               {modules.map((item) => {

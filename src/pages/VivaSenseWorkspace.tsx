@@ -116,7 +116,7 @@ export default function VivaSenseWorkspace() {
 
   const sectionMeta: Record<WorkspaceSection, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
     overview: { label: "Overview", icon: LayoutGrid },
-    anova: { label: "Experimental Design & ANOVA", icon: Sigma },
+    anova: { label: "ANOVA & Mean Separation", icon: Sigma },
     genetics: { label: "Genetics & Breeding", icon: Dna },
     advanced: { label: "Advanced Analytics", icon: Sparkles },
   };
@@ -216,7 +216,7 @@ export default function VivaSenseWorkspace() {
         // routed an ANOVA request to the wrong screen, and that should say so
         // rather than silently build a weaker request.
         throw new Error(
-          "ANOVA now runs in the Experimental Design / ANOVA module, where the design " +
+          "ANOVA now runs in the ANOVA & Mean Separation module, where the design " +
             "(CRD, RCBD, Factorial CRD, Factorial RCBD, Split-Plot RCBD) and the " +
             "significance level are set explicitly. Open that module to run this analysis."
         );
@@ -374,18 +374,21 @@ export default function VivaSenseWorkspace() {
               <ChevronRight className="h-3.5 w-3.5" />
               <span>Modules</span>
               <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-foreground">ANOVA</span>
+              <span className="text-foreground">ANOVA &amp; Mean Separation</span>
             </nav>
             <div className="mt-4 flex items-start justify-between gap-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                  Experimental Design
+                  Statistical Analysis
                 </span>
                 <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
-                  Experimental Design & ANOVA
+                  ANOVA &amp; Mean Separation
                 </h1>
                 <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                  Upload a dataset, choose the experimental design, and analyse one or more response variables using treatment comparisons, mean separation, diagnostics, and interpretation per trait.
+                  Analysis of designed experiments
+                </p>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  Upload a dataset, select the experimental design used in the field, and analyse the response variables with an appropriate model.
                 </p>
               </div>
               <Button asChild variant="outline" size="sm" className="shrink-0">
@@ -523,11 +526,11 @@ export default function VivaSenseWorkspace() {
             </nav>
             <div className="mt-4">
               <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                Experimental Design
+                Design &amp; Planning
               </span>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Field Layout Generator</h1>
               <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground md:text-base">
-                Produce randomised plot maps, fieldbooks, and data-collection sheets for classic and Pro designs.
+                Randomise and lay out a chosen design. Treatments, replication and experimental units should be decided first.
               </p>
             </div>
             <div className="mt-8">

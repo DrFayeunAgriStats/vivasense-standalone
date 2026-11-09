@@ -27,7 +27,7 @@ const topics = [
   { label: "Prepare or upload data", slug: "prepare-dataset", match: /\b(upload|csv|xlsx?|excel|format|columns?|missing)\b/i },
   { label: "Map a split-plot design", slug: "split-plot-rcbd", match: /\b(split[- ]plot|whole[- ]plot|sub[- ]?plot)\b/i },
   { label: "Choose a design", slug: "choose-design", match: /\b(design|randomi[sz]\w*|map|mapping|treatments?|factorial|r?cbd|crd)\b/i },
-  { label: "Run an analysis", slug: "run-analysis", match: /\b(run|anova|error|failed|stuck)\b/i },
+  { label: "ANOVA & Mean Separation", slug: "run-analysis", match: /\b(run|anova|error|failed|stuck)\b/i },
   { label: "Download or reopen a report", slug: "reports-and-saved-analyses", match: /\b(report|download|word|reopen|saved|preview)\b/i },
 ];
 
