@@ -21,8 +21,10 @@ export function describeResultScale(result: GeneticsResult): string {
     `Grand mean: ${hasCount(result.grand_mean) ? result.grand_mean.toFixed(2) : "—"}`,
   ];
   const scale: string[] = [];
-  if (hasCount(result.n_genotypes)) scale.push(pl(result.n_genotypes, "treatment level"));
-  if (hasCount(result.n_reps)) scale.push(pl(result.n_reps, "replication"));
+  const isMulti = result.environment_mode === "multi_environment" && hasCount(result.n_environments) && result.n_environments > 1;
+  if (hasCount(result.n_genotypes)) scale.push(pl(result.n_genotypes, isMulti ? "genotype" : "treatment level"));
+  if (isMulti && hasCount(result.n_environments)) scale.push(pl(result.n_environments, "environment"));
+  if (hasCount(result.n_reps)) scale.push(pl(result.n_reps, isMulti ? "block per environment" : "replication"));
   if (scale.length > 0) parts.push(scale.join(" × "));
   return parts.join(" | ");
 }
