@@ -112,6 +112,21 @@ export function requiresBlock(design: GovernedDesignType): boolean {
   return requiredRoles(design).includes("rep");
 }
 
+/**
+ * The durable RCBD service only fits a single-environment RCBD.
+ * An RCBD spanning multiple environments must retain its Environment column
+ * and use the combined ANOVA engine (replication nested within environment).
+ * Never dispatch multi-environment rows to the durable single-RCBD endpoint:
+ * repeating B1..B4 across environments would otherwise look like duplicate
+ * Treatment × Block cells.
+ */
+export function usesPersistentRcbdEndpoint(
+  design: GovernedDesignType,
+  mode: "single" | "multi",
+): boolean {
+  return design === "rcbd" && mode === "single";
+}
+
 // ── Mapping ──────────────────────────────────────────────────────────────────
 
 export type ColumnMapping = Partial<Record<ColumnRole, string>>;
