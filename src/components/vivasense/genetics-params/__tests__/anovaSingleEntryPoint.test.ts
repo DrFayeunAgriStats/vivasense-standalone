@@ -69,3 +69,19 @@ describe("the governed panel is the only ANOVA request builder", () => {
     expect(designs).toMatch(/main_plot_column: active\.main_plot/);
   });
 });
+
+describe("multi-environment RCBD dispatch guard", () => {
+  const panel = readSource("src/components/vivasense/genetics-params/AnovaModulePanel.tsx");
+
+  it("uses mode-aware persistence routing instead of routing every RCBD to the single-environment endpoint", () => {
+    expect(panel).toMatch(/usesPersistentRcbdEndpoint\(design, datasetContext\.mode\)/);
+    expect(panel).toMatch(/const res = usePersistentRcbd\s*\?/);
+    expect(panel).not.toMatch(/const res = design === "rcbd"\s*\?/);
+  });
+
+  it("warns researchers that combined RCBD results are session-only", () => {
+    expect(panel).toMatch(/isCombinedRcbd/);
+    expect(panel).toMatch(/session-only combined analysis/);
+    expect(panel).toMatch(/Download the Word report/);
+  });
+});
