@@ -24,7 +24,9 @@ export function describeResultScale(result: GeneticsResult): string {
   const isMulti = result.environment_mode === "multi_environment" && hasCount(result.n_environments) && result.n_environments > 1;
   if (hasCount(result.n_genotypes)) scale.push(pl(result.n_genotypes, isMulti ? "genotype" : "treatment level"));
   if (isMulti && hasCount(result.n_environments)) scale.push(pl(result.n_environments, "environment"));
-  if (hasCount(result.n_reps)) scale.push(pl(result.n_reps, isMulti ? "block per environment" : "replication"));
+  if (hasCount(result.n_reps)) scale.push(isMulti
+    ? pl(result.n_reps, "block per environment", "blocks per environment")
+    : pl(result.n_reps, "replication"));
   if (scale.length > 0) parts.push(scale.join(" × "));
   return parts.join(" | ");
 }
