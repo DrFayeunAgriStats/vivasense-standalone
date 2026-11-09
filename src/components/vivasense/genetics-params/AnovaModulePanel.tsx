@@ -36,6 +36,7 @@ import {
   validateMapping,
   buildStructuralPreview,
   buildAnovaRequest,
+  usesPersistentRcbdEndpoint,
   describeStructuralError,
 } from "./anovaDesigns";
 import {
@@ -195,6 +196,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const isSplitPlot = design === "split_plot_rcbd";
   const isFactorialFamily = design === "factorial_crd" || design === "factorial_rcbd";
   const roles = requiredRoles(design);
+  const usePersistentRcbd = usesPersistentRcbdEndpoint(design, datasetContext.mode);
+  const isCombinedRcbd = design === "rcbd" && datasetContext.mode === "multi";
 
   // ── Run analysis ──────────────────────────────────────────────────────
   const handleAnalyze = async () => {
@@ -207,7 +210,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     const startedAt = performance.now();
     const historyBase = {
       analysisType: "anova" as const,
-      backendEndpoint: design === "rcbd"
+      backendEndpoint: usePersistentRcbd
         ? "/persistence/analysis-runs/execute"
         : "/genetics/analyze-upload?module=anova",
       datasetName: datasetContext.file.name,
@@ -229,7 +232,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         traits: selectedTraits,
       });
 
-      const res = design === "rcbd"
+      const res = usePersistentRcbd
         ? await runPersistentRcbdAnalysis({
             datasetContext,
             treatmentColumn: treatmentCol,
@@ -393,6 +396,14 @@ export function AnovaModulePanel({ datasetContext }: Props) {
           {pl(datasetContext.availableTraitColumns.length, "response variable")} · {datasetContext.mode} mode
         </Badge>
       </div>
+
+      {isCombinedRcbd && (
+        <div role="status" className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
+          Multi-environment RCBD: VivaSense will analyse Environment, Genotype and their interaction,
+          with blocks nested within each environment. This is a session-only combined analysis,
+          not a persistent single-environment RCBD. Download the Word report after the run.
+        </div>
+      )}
 
       {/* Design selector */}
       <Card>
