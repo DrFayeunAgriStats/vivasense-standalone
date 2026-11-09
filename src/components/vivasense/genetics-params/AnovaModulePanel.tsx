@@ -645,6 +645,79 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             </CardContent>
           </Card>
 
+          {/* P0 MET: a significant interaction governs all recommendations.
+              These are raw descriptive cell means, never inferred Tukey letters. */}
+          {Object.entries(results.trait_results ?? {}).map(([trait, entry]) => {
+            const gxe = entry.analysis_result?.result?.gxe_profile;
+            if (!gxe) return null;
+            const governs = gxe.decision === "significant";
+            const unassessable = gxe.decision === "not_estimable";
+            return (
+              <Card key={trait} className={governs || unassessable ? "border-amber-300 dark:border-amber-800" : ""}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    {(governs || unassessable) && <AlertTriangle className="h-4 w-4 text-amber-600" />}
+                    Genotype × Environment — {trait}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <p className="font-medium">
+                    {governs
+                      ? `Significant G×E at α = ${gxe.inferential_alpha.toFixed(2)}. Interaction governs the interpretation.`
+                      : unassessable
+                        ? "G×E could not be assessed; pooled genotype ranking is withheld."
+                        : `No significant G×E detected at α = ${gxe.inferential_alpha.toFixed(2)}; this does not prove stable rankings.`}
+                  </p>
+                  {governs && (
+                    <p className="text-amber-800 dark:text-amber-200">
+                      Pooled genotype Tukey letters are withheld. Do not identify one overall best genotype
+                      across environments from pooled means alone.
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Environment × Genotype observed means (descriptive only). No within-environment
+                    significance tests or grouping letters have been calculated.
+                  </p>
+                  {gxe.environment_genotype_means.length > 0 && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-muted/60">
+                            <th className="border px-2 py-1 text-left">Environment</th>
+                            <th className="border px-2 py-1 text-left">Genotype</th>
+                            <th className="border px-2 py-1 text-right">Mean</th>
+                            <th className="border px-2 py-1 text-right">Plots (n)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gxe.environment_genotype_means.map((cell, index) => (
+                            <tr key={`${cell.environment}:${cell.genotype}:${index}`}>
+                              <td className="border px-2 py-1">{cell.environment}</td>
+                              <td className="border px-2 py-1">{cell.genotype}</td>
+                              <td className="border px-2 py-1 text-right tabular-nums">{cell.mean.toFixed(3)}</td>
+                              <td className="border px-2 py-1 text-right tabular-nums">{cell.n}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {gxe.crossover_top_rank_change === true && (
+                    <p className="text-xs">
+                      Descriptive crossover: the genotype with the highest observed mean
+                      changes between environments. This is not a separate significance test.
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Model provenance: Genotype is tested against the residual in the current
+                    fixed-environment combined ANOVA. Random-environment mixed-model inference
+                    is not provided by this result.
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+
           {isSessionOnlyPreviewDesign(design) && (
             <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-800">
               <CardContent className="py-4 px-5 space-y-1">
