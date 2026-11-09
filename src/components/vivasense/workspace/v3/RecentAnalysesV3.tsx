@@ -89,11 +89,17 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
           <p className="text-xs text-muted-foreground/70">Run an analysis and it will appear here.</p>
         </div>
       ) : (
+        <>
+        <p className="mb-2 text-[11px] text-muted-foreground">
+          Reopen is available only for completed RCBD analyses with a linked saved run.
+          For CRD and other session-only analyses, download the Word report immediately after each run.
+        </p>
         <ul className="flex flex-col gap-2">
           {rows.map((r) => {
             const accent = ACCENT[MODULE_ACCENT[r.analysis_type] ?? "primary"];
             const metrics = resolveMetrics(r.analysis_type, r.result_summary, 5);
             const rt = runtime(r.execution_time_ms);
+            const canReopen = hasPersistentRcbdReport(r);
             return (
               <li key={r.id}>
                 <div className="group w-full rounded-lg border border-border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
@@ -114,7 +120,7 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                       )}
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      {hasPersistentRcbdReport(r) && (
+                      {canReopen && (
                         <button
                           type="button"
                           onClick={() => void handleDownload(r)}
@@ -130,13 +136,23 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
                           {downloadingId === r.id ? "Downloading…" : "Report"}
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => onOpen?.(r)}
-                        className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground outline-none transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        Open <ArrowRight className="h-3 w-3" />
-                      </button>
+                      {canReopen ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpen?.(r)}
+                          className="flex items-center gap-1 rounded border border-border px-2 py-0.5 text-[11px] font-semibold text-muted-foreground outline-none transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                          title="Reopen this completed persistent RCBD AnalysisRun"
+                        >
+                          Open <ArrowRight className="h-3 w-3" />
+                        </button>
+                      ) : (
+                        <span
+                          className="text-[10px] font-medium text-muted-foreground"
+                          title="This record has no recoverable saved result. Download reports immediately after session-only analyses."
+                        >
+                          Not reopenable
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -178,6 +194,7 @@ export function RecentAnalysesV3({ rows, loading, onOpen, onViewAll }: Props) {
             );
           })}
         </ul>
+        </>
       )}
     </section>
   );
