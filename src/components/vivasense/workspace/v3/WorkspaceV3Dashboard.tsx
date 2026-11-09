@@ -50,15 +50,6 @@ const ACTION_MODULE: Partial<Record<WorkspaceAction, "anova" | "advanced" | "fie
   "field-layout": "field-layout",
 };
 
-/** Analysis type → the workspace module that hosts it (for "Open"). */
-function moduleForType(type: string): "anova" | "genetics" | "advanced" {
-  if (type === "anova") return "anova";
-  if (["correlation", "regression", "genetic_parameters", "trait_association", "path_analysis"].includes(type)) {
-    return "genetics";
-  }
-  return "advanced";
-}
-
 export function WorkspaceV3Dashboard() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
@@ -180,11 +171,9 @@ export function WorkspaceV3Dashboard() {
             rows={recent}
             onOpen={(r) => {
               const runId = persistentRcbdAnalysisRunId(r);
-              navigate(
-                runId
-                  ? `/workspace?resume_run=${encodeURIComponent(runId)}`
-                  : `/workspace?module=${moduleForType(r.analysis_type)}`
-              );
+              // A history row without a durable saved run must not open a blank setup form.
+              if (!runId) return;
+              navigate(`/workspace?resume_run=${encodeURIComponent(runId)}`);
             }}
             onViewAll={() => document.getElementById("research-dashboard")?.scrollIntoView({ behavior: "smooth" })}
           />
