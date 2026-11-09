@@ -629,7 +629,9 @@ export function AnovaModulePanel({ datasetContext }: Props) {
                   <Badge variant="secondary">{pl(results.dataset_summary.n_genotypes, "treatment level")}</Badge>
                 )}
                 {(results.dataset_summary.n_reps ?? 0) > 0 && design !== "factorial_crd" && (
-                  <Badge variant="secondary">{pl(results.dataset_summary.n_reps, results.dataset_summary.mode === "multi" ? "block per environment" : "replication")}</Badge>
+                  <Badge variant="secondary">{results.dataset_summary.mode === "multi"
+                    ? pl(results.dataset_summary.n_reps, "block per environment", "blocks per environment")
+                    : pl(results.dataset_summary.n_reps, "replication")}</Badge>
                 )}
                 {design === "factorial_crd" && (
                   <Badge variant="secondary">Replication is counted within each treatment combination</Badge>
