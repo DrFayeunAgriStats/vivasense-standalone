@@ -39,7 +39,7 @@ describe("workshop research-stage terminology", () => {
     expect(choose?.description).toContain("randomisation structure");
     for (const guide of allTutorials) {
       const visible = [guide.title, guide.description, guide.actionLabel,
-        ...guide.sections.flatMap(section => [section.title, ...section.steps, section.note ?? ""])
+        ...guide.sections.flatMap(section => [section.title, ...(section.paragraphs ?? []), ...(section.bullets ?? []), ...(section.example ?? []), section.note ?? ""])
       ].join(" ");
       expect(visible).not.toMatch(/randomiz(?:ed|ation)/i);
     }
