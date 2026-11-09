@@ -17,7 +17,7 @@ const finite = (n: unknown): n is number => typeof n === "number" && Number.isFi
 export function modelCVRows(
   result: GeneticsResult,
   design: GovernedDesignType,
-  mode: "single" | "multi",
+  mode: string,
 ): ModelCVRow[] {
   if (design === "split_plot_rcbd") {
     const a = result.variance_components?.cv_A;
