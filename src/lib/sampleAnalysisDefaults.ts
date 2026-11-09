@@ -7,6 +7,8 @@ const builtinDesigns: Record<string, GovernedDesignType> = {
   "factorial-rcbd": "factorial_rcbd",
   "split-plot-rcbd": "split_plot_rcbd",
   "bioassay": "factorial_rcbd",
+  met: "rcbd",
+  "met-crossover": "rcbd",
 };
 
 /** Presentation-only defaults at the start of a new analysis context.
