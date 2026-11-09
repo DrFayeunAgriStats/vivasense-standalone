@@ -222,6 +222,27 @@ export interface AnalysisSettings {
   [key: string]: unknown;
 }
 
+/** Authoritative G×E gating plus descriptive Environment × Genotype means.
+ * Returned only for combined ANOVA; no within-environment inference is claimed.
+ */
+export interface GxeProfile {
+  inferential_alpha: number;
+  gxe_f: number | null;
+  gxe_p: number | null;
+  decision: "significant" | "not_significant" | "not_estimable";
+  interaction_governs: boolean;
+  environment_genotype_means: Array<{
+    environment: string;
+    genotype: string;
+    mean: number;
+    n: number;
+  }>;
+  crossover_top_rank_change: boolean | null;
+  means_provenance: string;
+  within_environment_inference: string;
+  genotype_test_denominator: string;
+}
+
 export interface GeneticsResult {
   environment_mode: string;
   /**
@@ -252,6 +273,7 @@ export interface GeneticsResult {
   };
   anova_table?: AnovaTable;
   mean_separation?: MeanSeparation;
+  gxe_profile?: GxeProfile | null;
 
   // ── Governed ANOVA v1 payload (all optional; absent on older responses) ────
 
