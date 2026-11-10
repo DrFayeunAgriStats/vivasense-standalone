@@ -215,6 +215,19 @@ export type InteractionMeansPayload = Record<string, unknown>;
 /** { moving_a_within_b: [...], moving_b_within_a: [...] } */
 export type SimpleEffects = Record<string, unknown>;
 
+export interface OneFactorDescriptiveStats {
+  n?: number | null;
+  grand_mean?: number | null;
+  standard_deviation?: number | null;
+  standard_error?: number | null;
+  min?: number | null;
+  max?: number | null;
+  cv_percent?: number | null;
+  basis?: string | null;
+  standard_error_definition?: string | null;
+  cv_definition?: string | null;
+}
+
 /** Effective inferential + fixed diagnostic alpha provenance. */
 export interface AnalysisSettings {
   inferential_alpha?: number;
@@ -265,6 +278,8 @@ export interface GeneticsResult {
   observation_accounting?: Record<string, unknown> | null;
   experimental_unit_profile?: Record<string, unknown> | null;
   rcbd_design_profile?: Record<string, unknown> | null;
+  descriptive_stats?: OneFactorDescriptiveStats | null;
+  diagnostic_observations?: Array<Record<string, unknown>> | null;
   diagnostic_policy?: Record<string, unknown> | null;
 
   // Factorial v1
