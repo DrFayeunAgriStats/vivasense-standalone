@@ -1,3 +1,4 @@
+vi.mock("@/services/history/historyService", () => ({ recordAnalysis: vi.fn(), recordAnalysisFailure: vi.fn() }));
 /**
  * REL-UI-01 scientific safeguards on the General Correlation page
  * (presentation only; mocked backend).

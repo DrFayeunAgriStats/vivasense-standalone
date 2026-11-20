@@ -1,3 +1,4 @@
+vi.mock("@/services/history/historyService", () => ({ recordAnalysis: vi.fn(), recordAnalysisFailure: vi.fn() }));
 /**
  * REL-UI-01 Phase A (Option B) — General-only page (mocked backend).
  */

@@ -1,3 +1,4 @@
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 /**
  * REL-UI-01 Phase A (Option B) — General correlation (observed variables only).
  *
@@ -335,6 +336,8 @@ export default function GeneralCorrelationAnalysis() {
     if (!file || !canRun) return;
     setIsLoading(true);
     resetResult();
+    const history = { analysisType: "correlation" as const, backendEndpoint: GENERAL_CORRELATION_ENDPOINT,
+      datasetName: file.name, traits, startedAt: performance.now(), parameters: { method, alpha } };
     try {
       const request = buildGeneralCorrelationRequest({
         base64Content: await fileToBase64(file),
@@ -349,7 +352,9 @@ export default function GeneralCorrelationAnalysis() {
         timeoutMs: 60000,
       });
       setResult(response);
+      void recordAnalysis({ ...history, response });
     } catch (err) {
+      void recordAnalysisFailure(history, err);
       setError(err instanceof Error ? err.message : "General correlation failed.");
     } finally {
       setIsLoading(false);

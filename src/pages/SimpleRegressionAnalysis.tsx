@@ -1,3 +1,4 @@
+import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Download } from "lucide-react";
@@ -95,9 +96,14 @@ export default function SimpleRegressionAnalysis() {
     if (!upload || !x || !y || x === y || busy) return;
     resetResult();
     setBusy("analysis");
+    const history = { analysisType: "regression" as const, backendEndpoint: "/analysis/regression",
+      datasetToken: upload.dataset_token, traits: [x, y], startedAt: performance.now(), parameters: { alpha } };
     try {
-      setResult(await fitSimpleRegression(upload.dataset_token, x, y, alpha));
+      const response = await fitSimpleRegression(upload.dataset_token, x, y, alpha);
+      setResult(response);
+      void recordAnalysis({ ...history, response });
     } catch (err) {
+      void recordAnalysisFailure(history, err);
       let message = err instanceof Error ? err.message : "Could not fit the regression.";
       try {
         const parsed = JSON.parse(message);

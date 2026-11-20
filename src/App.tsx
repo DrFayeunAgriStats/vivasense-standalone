@@ -1,3 +1,6 @@
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { recordActivity } from "@/services/activityService";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -21,11 +24,29 @@ function SupportPilot() {
   return user && !loading ? <AskVivaSense key={user.id} /> : null;
 }
 
+function UsageVisit() {
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  const previous = useRef("");
+  useEffect(() => {
+    if (!user) { previous.current = ""; return; }
+    const key = `${user.id}:${pathname}`;
+    if (previous.current === key) return;
+    previous.current = key;
+    const module = pathname.startsWith("/relationship-analysis/general") ? "correlation"
+      : pathname.startsWith("/relationship-analysis/regression") ? "regression"
+      : pathname.startsWith("/data-capture") ? "data_capture" : "workspace";
+    void recordActivity(module, "visit", crypto.randomUUID());
+  }, [user?.id, pathname]);
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <UsageVisit />
           <Routes>
             <Route path="/auth" element={<VivaSenseAuth />} />
             <Route
