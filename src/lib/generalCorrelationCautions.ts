@@ -17,6 +17,10 @@ export const MULTIPLE_TESTING_NOTE =
 export const PAIRWISE_MISSING_NOTE =
   "Each pair uses every row in which both variables are observed (pairwise-complete observations), so different pairs may be based on different observations and sample sizes (n is shown for each pair). Pairwise deletion does not guarantee unbiased estimates when values are not missing completely at random.";
 
+/** REL-UI-03: identical to STRENGTH_CONVENTION_NOTE in general_relationship_export.py. */
+export const STRENGTH_CONVENTION_NOTE =
+  "Strength labels describe the size of the coefficient as displayed (three decimals), not its statistical significance: |coefficient| below 0.100 negligible, 0.100–0.299 very weak, 0.300–0.499 weak, 0.500–0.699 moderate, 0.700–0.899 strong, 0.900 or above very strong. These bands are descriptive conventions; what counts as a meaningful association depends on the variables and the research question.";
+
 /**
  * REL-UI-02: shortened reminders shown with the results. The full texts above
  * stay on the page before the analysis and in the Word report.
@@ -32,6 +36,9 @@ export const RESULTS_MULTIPLICITY_SHORT =
 
 export const RESULTS_PAIRWISE_SHORT =
   "Each pair uses its own pairwise-complete observations (n shown per pair).";
+
+export const RESULTS_STRENGTH_SHORT =
+  "Strength labels (negligible to very strong) describe the size of the displayed coefficient, not its significance.";
 
 export const RESULTS_FULL_CAUTIONS_POINTER =
   "The full cautions appear above the analysis form and in the Word report.";

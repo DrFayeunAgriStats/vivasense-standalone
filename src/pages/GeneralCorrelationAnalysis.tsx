@@ -10,7 +10,8 @@ import { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { AlertCircle, ArrowLeft, Download, FileSpreadsheet, Loader2, ShieldAlert, UploadCloud, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, Download, FileSpreadsheet, Loader2, ScatterChart as ScatterIcon, ShieldAlert, UploadCloud, X } from "lucide-react";
+import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,9 @@ import {
   RESULTS_PAIRWISE_SHORT,
   RESULTS_SCOPE_SHORT,
   RESULTS_SPEARMAN_SHORT,
+  RESULTS_STRENGTH_SHORT,
   SCOPE_CAUTION,
+  STRENGTH_CONVENTION_NOTE,
   SPEARMAN_APPROXIMATION_NOTE,
 } from "@/lib/generalCorrelationCautions";
 import {
@@ -48,6 +51,7 @@ import {
   stateMark,
   type PresentationPair,
 } from "@/lib/generalCorrelationPresentation";
+import { pairScatterData, type ParsedDataset } from "@/lib/generalCorrelationPairData";
 
 interface ColumnInfo {
   name: string;
@@ -177,11 +181,72 @@ export function GeneralInterpretation({ result }: { result: GeneralCorrelationRe
         ))}
       </ul>
       <p>{interp.closing}</p>
+      <p className="text-xs text-muted-foreground" data-testid="general-strength-convention">{STRENGTH_CONVENTION_NOTE}</p>
     </section>
   );
 }
 
-export function GeneralCorrelationResults({ result }: { result: GeneralCorrelationResult }) {
+/**
+ * On-demand scatterplot of one pair, drawn from exactly the pairwise-complete
+ * rows behind its coefficient (withheld if they cannot be reproduced).
+ */
+export function GeneralPairScatterplot({ result, pair, dataset, onClose }: {
+  result: GeneralCorrelationResult;
+  pair: GeneralPairResult;
+  dataset: ParsedDataset | null | undefined;
+  onClose: () => void;
+}) {
+  const sym = coefSymbol(result.method);
+  const data = pairScatterData(dataset, pair.trait_1, pair.trait_2, pair.n);
+  return (
+    <figure id="general-pair-scatterplot" className="space-y-2 rounded-lg border border-border p-3" data-testid="general-pair-scatterplot"
+      aria-label={`Scatterplot of ${pair.trait_2} against ${pair.trait_1}`}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <figcaption className="min-w-0 flex-1 break-words text-sm">
+          <span className="font-semibold">{pair.trait_1} × {pair.trait_2}.</span>{" "}
+          {sym} = {formatR(pair.r)}, <span data-testid="general-pair-scatterplot-n">n = {pair.n}</span> pairwise-complete
+          rows (the same rows used for this coefficient). Each point is one row of the uploaded file.
+          {result.method === "spearman" && " Spearman ρ is computed on the ranks of these values; the plot shows the observed values."}
+        </figcaption>
+        <Button type="button" variant="ghost" size="sm" onClick={onClose}>Close plot</Button>
+      </div>
+      {data.status === "unavailable" ? (
+        <p role="status" className="text-sm text-amber-800" data-testid="general-pair-scatterplot-unavailable">{data.reason}</p>
+      ) : (
+        <div className="h-72 w-full" role="img"
+          aria-label={`Scatterplot of ${pair.trait_2} (vertical axis) against ${pair.trait_1} (horizontal axis), ${data.points.length} points`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 16, bottom: 36, left: 16 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" dataKey="x" name={pair.trait_1} domain={["auto", "auto"]}
+                label={{ value: pair.trait_1, position: "bottom", offset: 12 }} />
+              <YAxis type="number" dataKey="y" name={pair.trait_2} domain={["auto", "auto"]}
+                label={{ value: pair.trait_2, angle: -90, position: "insideLeft" }} />
+              <Tooltip
+                content={({ payload }) => {
+                  const point = payload?.[0]?.payload as { dataRow: number; x: number; y: number } | undefined;
+                  if (!point) return null;
+                  return (
+                    <div className="rounded border border-border bg-background p-2 text-xs shadow">
+                      <p>Data row {point.dataRow}</p>
+                      <p>{pair.trait_1}: {point.x}</p>
+                      <p>{pair.trait_2}: {point.y}</p>
+                    </div>
+                  );
+                }} />
+              <Scatter data={data.points} fill="#1b7872" isAnimationActive={false} />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </figure>
+  );
+}
+
+export function GeneralCorrelationResults({ result, dataset }: { result: GeneralCorrelationResult; dataset?: ParsedDataset | null }) {
+  const [plotKey, setPlotKey] = useState<string | null>(null);
+  const plotPair = plotKey ? result.pair_results.find((p) => `${p.trait_1}|${p.trait_2}` === plotKey) ?? null : null;
+  const canPlot = dataset !== undefined;
   const sym = coefSymbol(result.method);
   const m = result.multiplicity?.n_hypotheses;
   const withheld = result.multiplicity?.n_pairs_inference_withheld ?? 0;
@@ -208,6 +273,7 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
         {result.method === "spearman" && <p data-testid="general-results-spearman">{RESULTS_SPEARMAN_SHORT}</p>}
         <p data-testid="general-results-multiplicity">{RESULTS_MULTIPLICITY_SHORT}</p>
         <p data-testid="general-results-pairwise">{RESULTS_PAIRWISE_SHORT}</p>
+        <p data-testid="general-results-strength">{RESULTS_STRENGTH_SHORT}</p>
         <p>{RESULTS_FULL_CAUTIONS_POINTER}</p>
       </div>
       <GeneralCorrelationMatrix result={result} />
@@ -223,6 +289,7 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
                 {["Variable 1", "Variable 2", sym, "n", "raw p", "FDR-adjusted p", `Significance (adjusted, α = ${result.alpha})`].map((h, i) => (
                   <th key={h} scope="col" className={`border-b border-border px-3 py-2 font-medium ${i >= 2 && i <= 5 ? "text-right" : "text-left"}`}>{h}</th>
                 ))}
+                {canPlot && <th scope="col" className="border-b border-border px-3 py-2 text-left font-medium">Scatterplot</th>}
               </tr>
             </thead>
             <tbody>
@@ -235,12 +302,32 @@ export function GeneralCorrelationResults({ result }: { result: GeneralCorrelati
                   <td className="whitespace-nowrap border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatP(p.p_raw) : NOT_ESTIMABLE_MARK}</td>
                   <td className="whitespace-nowrap border-b border-border px-3 py-2 text-right tabular-nums">{p.estimable ? formatP(p.p_adjusted) : NOT_ESTIMABLE_MARK}</td>
                   <td className="whitespace-nowrap border-b border-border px-3 py-2">{significanceLabel(p)}</td>
+                  {canPlot && (() => {
+                    const key = `${p.trait_1}|${p.trait_2}`;
+                    const open = plotKey === key;
+                    return (
+                      <td className="whitespace-nowrap border-b border-border px-3 py-1.5">
+                        {p.estimable ? (
+                          <Button type="button" variant="outline" size="sm" aria-expanded={open}
+                            aria-controls={open ? "general-pair-scatterplot" : undefined}
+                            aria-label={`${open ? "Hide" : "Show"} scatterplot of ${p.trait_1} and ${p.trait_2}`}
+                            onClick={() => setPlotKey(open ? null : key)}>
+                            <ScatterIcon className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                            {open ? "Hide" : "Plot"}
+                          </Button>
+                        ) : NOT_ESTIMABLE_MARK}
+                      </td>
+                    );
+                  })()}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </figure>
+      {plotPair && (
+        <GeneralPairScatterplot result={result} pair={plotPair} dataset={dataset} onClose={() => setPlotKey(null)} />
+      )}
       <p className="text-xs text-muted-foreground">
         Dataset rows available to this analysis: {result.phenotypic?.n_observations}. The n shown for each pair is the
         number of observations actually used for that coefficient. No genotype means, genetic variance components or
@@ -265,6 +352,8 @@ export default function GeneralCorrelationAnalysis() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [showDesignColumns, setShowDesignColumns] = useState(false);
+  // Parsed upload kept only for the on-demand pair scatterplot.
+  const [dataset, setDataset] = useState<ParsedDataset | null>(null);
 
   // Headers that occur more than once cannot be bound to one column; the backend refuses them too.
   const duplicateHeaders = useMemo(() => {
@@ -312,6 +401,7 @@ export default function GeneralCorrelationAnalysis() {
     const isCurrentFile = () => fileGenerationRef.current === fileGeneration;
     setParseError(null);
     setColumns([]);
+    setDataset(null);
     setTraits([]);
     setShowDesignColumns(false);
     resetResult();
@@ -331,6 +421,7 @@ export default function GeneralCorrelationAnalysis() {
       );
       const dataRows = rows.slice(1);
       if (!isCurrentFile()) return;
+      setDataset({ headers, rows: dataRows.map((row) => (Array.isArray(row) ? row : [])) });
       setColumns(
         headers.map((name, index) => {
           const values = dataRows
@@ -439,7 +530,7 @@ export default function GeneralCorrelationAnalysis() {
               <Button type="button" variant="ghost" size="icon" aria-label="Remove dataset"
                 onClick={() => {
                   fileGenerationRef.current += 1;
-                  setFile(null); setColumns([]); setTraits([]); setParseError(null); setShowDesignColumns(false); resetResult();
+                  setFile(null); setColumns([]); setDataset(null); setTraits([]); setParseError(null); setShowDesignColumns(false); resetResult();
                 }}>
                 <X className="h-4 w-4" />
               </Button>
@@ -563,7 +654,7 @@ export default function GeneralCorrelationAnalysis() {
                 <ul className="list-disc space-y-1 pl-5">{warnings.map((w, i) => <li key={`${w}-${i}`}>{w}</li>)}</ul>
               </div>
             )}
-            <GeneralCorrelationResults result={result} />
+            <GeneralCorrelationResults result={result} dataset={dataset} />
           </section>
         )}
       </div>
