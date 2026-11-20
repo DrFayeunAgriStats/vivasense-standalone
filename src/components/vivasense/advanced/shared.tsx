@@ -103,15 +103,44 @@ export function SummaryCard({
   );
 }
 
-export function InterpretationPanel({ text }: { text: string }) {
+/**
+ * Backend-structured text ("Header\nContent" blocks separated by blank lines) shown exactly as written.
+ * Used where the backend already supplies reviewed section headings (GGE): the keyword re-labelling in
+ * buildScientificInterpretationSections would re-order sentences and attach misleading titles such as
+ * "Breeding implication" or "Recommendation".
+ */
+export function parseStructuredSections(text: string): ScientificInterpretationSection[] {
+  const blocks = text.trim().split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  const out: ScientificInterpretationSection[] = [];
+  for (const b of blocks) {
+    const nl = b.indexOf("\n");
+    if (nl < 0) return [];
+    const title = b.slice(0, nl).trim();
+    const content = b.slice(nl + 1).trim();
+    if (!title || title.length > 70 || /[.!?]$/.test(title) || !content) return [];
+    out.push({ title, content });
+  }
+  return out;
+}
+
+export function InterpretationPanel({
+  text,
+  verbatim = false,
+  title = "AI-assisted academic interpretation",
+}: {
+  text: string;
+  verbatim?: boolean;
+  title?: string;
+}) {
   const { toast } = useToast();
   if (!text) return null;
-  const sections = buildScientificInterpretationSections(text);
+  const structured = verbatim ? parseStructuredSections(text) : [];
+  const sections = structured.length > 0 ? structured : buildScientificInterpretationSections(text);
   return (
     <Card className="bg-primary/[0.03] border-primary/20">
       <CardContent className="p-5">
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="font-serif text-base font-semibold text-foreground">AI-assisted academic interpretation</h4>
+          <h4 className="font-serif text-base font-semibold text-foreground">{title}</h4>
           <Button
             variant="ghost"
             size="sm"

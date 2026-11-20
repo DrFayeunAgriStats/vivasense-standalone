@@ -66,6 +66,7 @@ export function buildStabilityPayload(args: {
   methods?: StabilityMethod[];
   biplotType?: GgeBiplotType;
   ammiComponents?: number;
+  excludeInvalid?: boolean;
 }): StabilityRequest {
   const payload: StabilityRequest = {
     dataset_token: args.datasetToken,
@@ -74,6 +75,7 @@ export function buildStabilityPayload(args: {
   if (args.methods?.length) payload.methods = args.methods;
   if (args.biplotType) payload.biplot_type = args.biplotType;
   if (args.ammiComponents != null) payload.ammi_components = args.ammiComponents;
+  if (args.excludeInvalid) payload.exclude_invalid_observations = true;
   return payload;
 }
 

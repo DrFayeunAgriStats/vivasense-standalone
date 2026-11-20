@@ -59,28 +59,16 @@ function normalize(v: Vec2): Vec2 {
   return { x: v.x / m, y: v.y / m };
 }
 
-function corr(x: number[], y: number[]): number {
-  const n = Math.min(x.length, y.length);
-  if (n < 2) return 0;
-  const mx = x.slice(0, n).reduce((s, v) => s + v, 0) / n;
-  const my = y.slice(0, n).reduce((s, v) => s + v, 0) / n;
-  let num = 0;
-  let dx = 0;
-  let dy = 0;
-  for (let i = 0; i < n; i++) {
-    const xv = x[i] - mx;
-    const yv = y[i] - my;
-    num += xv * yv;
-    dx += xv * xv;
-    dy += yv * yv;
-  }
-  if (dx < EPS || dy < EPS) return 0;
-  return num / Math.sqrt(dx * dy);
-}
-
+/**
+ * Average-environment coordination (Yan 2001; Yan & Tinker 2006).
+ * The AEC abscissa passes through the origin and the average-environment
+ * marker and points toward it. Projection onto it approximates genotype mean
+ * performance by construction, so no data-dependent sign flipping is applied.
+ * If the backend supplied the AEC direction, pass it as `direction`.
+ */
 export function computeAEC(
   environments: EnvironmentPoint[],
-  genotypesForDirection: Pick<GgePoint, "pc1" | "pc2" | "mean">[] = []
+  direction?: { pc1: number; pc2: number } | null
 ): AECModel {
   const n = Math.max(environments.length, 1);
   const avgEnvironment = {
@@ -88,16 +76,9 @@ export function computeAEC(
     y: environments.reduce((s, e) => s + e.pc2, 0) / n,
   };
 
-  let abscissaUnit = normalize(avgEnvironment);
-
-  if (genotypesForDirection.length >= 2) {
-    const proj = genotypesForDirection.map((g) => g.pc1 * abscissaUnit.x + g.pc2 * abscissaUnit.y);
-    const means = genotypesForDirection.map((g) => g.mean);
-    if (corr(proj, means) < 0) {
-      abscissaUnit = { x: -abscissaUnit.x, y: -abscissaUnit.y };
-    }
-  }
-
+  const abscissaUnit = direction
+    ? normalize({ x: direction.pc1, y: direction.pc2 })
+    : normalize(avgEnvironment);
   const ordinateUnit = { x: -abscissaUnit.y, y: abscissaUnit.x };
 
   return {
@@ -133,7 +114,8 @@ export function projectGenotypesToAEC(
 }
 
 export function computeIdealGenotype(
-  projected: GenotypeProjection[]
+  projected: GenotypeProjection[],
+  aec: AECModel
 ): IdealGenotypeModel {
   if (!projected.length) {
     return {
@@ -145,13 +127,15 @@ export function computeIdealGenotype(
     };
   }
 
-  const maxAbscissa = Math.max(...projected.map((p) => p.abscissaScore));
   const axisPointByGenotype = new Map(projected.map((p) => [p.genotype, p.projectionPoint]));
 
-  // The ideal genotype has the highest AEC mean score and zero instability.
+  // Ideal genotype: on the AEC abscissa (positive direction) at the length of
+  // the longest genotype vector, as in metan::gge and GGEBiplotGUI. This
+  // mirrors the backend (gge_biplot.mean_vs_stability).
+  const idealLength = Math.max(...projected.map((p) => mag(p.point)));
   const idealPoint = {
-    x: (projected.find((p) => p.abscissaScore === maxAbscissa)?.projectionPoint.x ?? 0),
-    y: (projected.find((p) => p.abscissaScore === maxAbscissa)?.projectionPoint.y ?? 0),
+    x: aec.abscissaUnit.x * idealLength,
+    y: aec.abscissaUnit.y * idealLength,
   };
 
   const withDistances = projected.map((p) => {
@@ -189,7 +173,7 @@ export function computeIdealGenotype(
 
   return {
     idealPoint,
-    idealAbscissaScore: maxAbscissa,
+    idealAbscissaScore: idealLength,
     idealGenotype,
     rankings,
     ringRadii,

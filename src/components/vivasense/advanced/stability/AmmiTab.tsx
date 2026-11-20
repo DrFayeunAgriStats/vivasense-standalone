@@ -9,6 +9,7 @@ import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   ScatterChart, Scatter, ZAxis, ReferenceLine, LabelList,
 } from "recharts";
+import { VerificationBanner, NoticeList } from "../AnalysisStatus";
 import { fmt, InterpretationPanel, ExportToolbar, downloadCsv, exportChartPng } from "../shared";
 import type { AMMIResults } from "@/types/advancedAnalysis";
 
@@ -35,20 +36,14 @@ function pColor(p: number): string {
   if (p < 0.05) return "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100";
   return "";
 }
-function asvBadge(c: string): string {
-  const s = c.toLowerCase();
-  if (s.includes("highly")) return "bg-emerald-200/70 text-emerald-900 border-emerald-400 dark:bg-emerald-900/40 dark:text-emerald-100";
-  if (s.includes("moderate")) return "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/30";
-  if (s.includes("unstable")) return "bg-red-100 text-red-900 border-red-300 dark:bg-red-900/30";
-  if (s.includes("stable")) return "bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-900/30";
-  return "bg-muted text-muted-foreground";
-}
-
 export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
   const varRef = useRef<HTMLDivElement>(null);
   const biplotRef = useRef<HTMLDivElement>(null);
 
   const anovaRows = useMemo(() => {
+    if (Array.isArray(ammi?.anova) && ammi.anova.length > 0) {
+      return ammi.anova.map((r) => ({ source: r.source, df: r.df, sum_sq: r.ss, mean_sq: r.ms, f_value: r.f ?? undefined, p_value: r.p ?? undefined }));
+    }
     const t = ammi?.anova_table;
     if (!t || !Array.isArray(t.source)) return [];
     return t.source
@@ -130,6 +125,7 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
   const invalidGenoCount = Math.max(0, rawGenotypes.length - biplotGenos.length);
   const invalidEnvCount = Math.max(0, rawEnvironments.length - biplotEnvs.length);
   const stabilityMeasure = Array.isArray(ammi?.stability_measure) ? ammi.stability_measure : [];
+  const genoMean = useMemo(() => Object.fromEntries((ammi?.genotype_scores ?? []).map((g) => [g.genotype, g.mean])), [ammi]);
   const hasBiplot = biplotGenos.length > 0 || biplotEnvs.length > 0;
   const hasVariance = varianceData.length > 0;
   const hasAnova = anovaRows.length > 0;
@@ -187,7 +183,44 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
 
   return (
     <div className="space-y-6">
-      {ammi?.interpretation && <InterpretationPanel text={ammi.interpretation} />}
+      <VerificationBanner status={ammi?.verification_status ?? null} reasons={ammi?.verification_reasons} subject="This AMMI result" />
+      <NoticeList title="Exclusions authorised by the researcher and data notes" items={ammi?.input_notes} tone="amber" />
+      <NoticeList title="Cautions" items={ammi?.cautions} tone="amber" />
+      {ammi?.assumptions && ammi.assumptions.pooled_error_available === false && (
+        <NoticeList title="ANOVA and Gollob tests not computed" items={[ammi.assumptions.pooled_error_reason ?? "No valid replicated design."]} tone="blue" />
+      )}
+      {ammi?.interpretation && <InterpretationPanel text={ammi.interpretation} verbatim title="Interpretation (rule-based and descriptive)" />}
+
+      {Array.isArray(ammi?.ipca_table) && ammi.ipca_table.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="font-serif text-lg">Interaction principal component axes</CardTitle></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Axis</TableHead><TableHead className="text-right">SS</TableHead><TableHead className="text-right">df</TableHead>
+                  <TableHead className="text-right">F (Gollob)</TableHead><TableHead className="text-right" title="Gollob test is liberal: p < α does not establish that an axis is real">p (Gollob, liberal)</TableHead>
+                  <TableHead className="text-right">% of G×E</TableHead><TableHead className="text-right">Cumulative %</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ammi.ipca_table.map((r) => (
+                  <TableRow key={r.axis}>
+                    <TableCell className="font-medium">IPCA{r.axis}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmt(r.ss, 3)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.df}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.f != null ? fmt(r.f, 3) : "—"}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.p != null ? (r.p < 0.001 ? "< 0.001" : fmt(r.p, 3)) : "—"}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.pct_of_interaction.toFixed(1)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.cumulative_pct.toFixed(1)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {ammi.gollob_note && <p className="mt-2 text-xs text-muted-foreground">{ammi.gollob_note}</p>}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Variance explained chart */}
       {hasVariance && (
@@ -242,7 +275,7 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
             </TableHeader>
             <TableBody>
               {anovaRows.map((r) => {
-                const sig = r.p_value < 0.05;
+                const sig = r.p_value != null && r.p_value < 0.05;
                 return (
                   <TableRow key={r.source} className={sig ? "font-medium" : ""}>
                     <TableCell>{r.source}</TableCell>
@@ -251,7 +284,7 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
                     <TableCell className="text-right tabular-nums">{fmt(r.mean_sq, 2)}</TableCell>
                     <TableCell className="text-right tabular-nums">{fmt(r.f_value, 2)}</TableCell>
                     <TableCell className="text-right tabular-nums">
-                      <span className={`px-2 py-0.5 rounded ${pColor(r.p_value)}`}>{fmt(r.p_value, 4)}</span>
+                      <span className={`px-2 py-0.5 rounded ${pColor(r.p_value ?? 1)}`}>{r.p_value != null ? fmt(r.p_value, 4) : "—"}</span>
                     </TableCell>
                   </TableRow>
                 );
@@ -278,7 +311,6 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
                 <TableHead>Genotype</TableHead>
                 <TableHead className="text-right">Mean</TableHead>
                 <TableHead className="text-right">ASV</TableHead>
-                <TableHead>Class</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -286,13 +318,16 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
                 <TableRow key={r.genotype}>
                   <TableCell className="text-right tabular-nums">{r.rank}</TableCell>
                   <TableCell className="font-medium">{r.genotype}</TableCell>
-                  <TableCell className="text-right tabular-nums">{r.mean != null ? fmt(r.mean, 2) : "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums">{r.mean != null ? fmt(r.mean, 2) : (genoMean[r.genotype] != null ? fmt(genoMean[r.genotype], 2) : "—")}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(r.asv, 3)}</TableCell>
-                  <TableCell><Badge variant="outline" className={asvBadge(r.stability_class)}>{r.stability_class}</Badge></TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <p className="mt-2 text-xs text-muted-foreground">
+            ASV ranks describe distance from the origin of the first two IPCA axes only. They ignore mean performance and the remaining axes, assign no
+            stability class and do not rank varieties. {ammi?.asv_convention ?? ""}
+          </p>
         </CardContent>
       </Card>
       )}
