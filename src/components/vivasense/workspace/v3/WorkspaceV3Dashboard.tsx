@@ -11,7 +11,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, ScatterChart } from "lucide-react";
+import { Plus, ScatterChart, Sparkles } from "lucide-react";
+import { advancedBetaEnabled } from "@/lib/advancedRelease";
 import { REGRESSION_PATH, regressionEnabled } from "@/lib/simpleRegression";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -145,6 +146,13 @@ export function WorkspaceV3Dashboard() {
           <Button asChild variant="outline" className="mt-3 w-full sm:w-auto">
             <Link to={REGRESSION_PATH}>
               <ScatterChart className="h-4 w-4" aria-hidden="true" /> Open Simple Linear Regression
+            </Link>
+          </Button>
+        )}
+        {advancedBetaEnabled && (
+          <Button asChild variant="outline" className="mt-3 w-full sm:w-auto">
+            <Link to="/workspace?module=advanced">
+              <Sparkles className="h-4 w-4" aria-hidden="true" /> Advanced Analytics — Experimental Beta
             </Link>
           </Button>
         )}
