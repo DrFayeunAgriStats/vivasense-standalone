@@ -1,61 +1,195 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Download } from "lucide-react";
-import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, Tooltip } from "recharts";
+import {
+  CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis,
+} from "recharts";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  fitSimpleRegression, previewRegression, regressionReport, REGRESSION_SCOPE, type SimpleRegressionResult,
+  fitSimpleRegression, formatNumber, previewRegression, regressionReport, residualPoints, REGRESSION_SCOPE,
+  RESIDUAL_PLOT_DESCRIPTION, type ReportSection, type ResidualPoint, type SimpleRegressionResult,
 } from "@/lib/simpleRegression";
 
 const control = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
+const OBSERVED = "#1b7872";
+const FLAGGED = "#c2410c";
 
 async function downloadWord(result: SimpleRegressionResult) {
-  const { Document, HeadingLevel, Packer, Paragraph, TextRun } = await import("docx");
-  const doc = new Document({
-    sections: [{
-      children: [
-        new Paragraph({ text: "VivaSense Stat | Simple Linear Regression", heading: HeadingLevel.TITLE }),
-        ...regressionReport(result).flatMap(({ title, rows }) => [
-          new Paragraph({ text: title, heading: HeadingLevel.HEADING_1 }),
-          ...rows.map(([label, value]) => new Paragraph({
-            children: [new TextRun({ text: `${label}  `, bold: true }), new TextRun(value)],
-          })),
-        ]),
-      ],
-    }],
-  });
-  const url = URL.createObjectURL(await Packer.toBlob(doc));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "VivaSense_Simple_Linear_Regression.docx";
-  link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const { downloadRegressionWord } = await import("@/lib/regressionWordReport");
+  await downloadRegressionWord(result);
+}
+
+/** Renders nothing: lets a Scatter series draw only its connecting line. */
+const NoDot = () => <g />;
+
+function PointTooltip({ result, active, payload }: {
+  result: SimpleRegressionResult; active?: boolean; payload?: { payload?: ResidualPoint }[];
+}) {
+  const point = payload?.[0]?.payload;
+  if (!active || !point || point.fitted === undefined) return null;
+  return (
+    <div className="rounded border border-border bg-background p-2 text-xs shadow" role="status">
+      <p className="font-medium">{point.sourceRow != null ? `Data row ${point.sourceRow}` : "Data row not available for this result"}</p>
+      <p>{result.x_variable}: {formatNumber(point.x)}</p>
+      <p>{result.y_variable}: {formatNumber(point.y)}</p>
+      <p>Fitted: {formatNumber(point.fitted)}</p>
+      <p>Residual: {formatNumber(point.residual)}</p>
+      {point.leverage != null && <p>Leverage: {formatNumber(point.leverage)}</p>}
+      {point.leverage != null && <p>Cook&apos;s distance: {formatNumber(point.cooksDistance)}</p>}
+      {point.flagged && <p className="font-medium">Flagged by influence screening</p>}
+    </div>
+  );
 }
 
 function RegressionPlot({ result }: { result: SimpleRegressionResult }) {
-  const points = result.plot_data.x.map((x, index) => ({
-    x, observed: result.plot_data.y[index], fitted: result.plot_data.fitted_y[index],
-  }));
+  const points = residualPoints(result);
+  const regular = points.filter((p) => !p.flagged);
+  const flagged = points.filter((p) => p.flagged);
+  const { x, fitted_y } = result.plot_data;
+  // Straight line between the fitted values at the smallest and largest X.
+  const line = x.length ? [{ x: x[0], y: fitted_y[0] }, { x: x[x.length - 1], y: fitted_y[fitted_y.length - 1] }] : [];
   return (
-    <figure className="space-y-2">
+    <figure className="space-y-2" data-testid="regression-fitted-plot">
       <figcaption className="text-sm font-medium">Observed values and fitted line</figcaption>
       <div className="h-72 w-full" role="img" aria-label={`Observed ${result.y_variable} versus ${result.x_variable}, with fitted line`}>
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 10, right: 20, bottom: 35, left: 20 }}>
+          <ScatterChart margin={{ top: 10, right: 16, bottom: 35, left: 16 }}>
+            <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" dataKey="x" name={result.x_variable} domain={["auto", "auto"]}
               label={{ value: result.x_variable, position: "bottom" }} />
-            <YAxis type="number" dataKey="observed" name={result.y_variable} domain={["auto", "auto"]}
+            <YAxis type="number" dataKey="y" name={result.y_variable} domain={["auto", "auto"]}
               label={{ value: result.y_variable, angle: -90, position: "insideLeft" }} />
-            <Tooltip />
-            <Scatter name="Observed values" data={points} fill="#1b7872" isAnimationActive={false} />
-            <Scatter name="Fitted line" data={[points[0], points[points.length - 1]].map(({ x, fitted }) => ({ x, observed: fitted }))}
-              fill="#b65c22" line lineType="joint" isAnimationActive={false} />
+            <Tooltip content={<PointTooltip result={result} />} />
+            <Scatter name="Fitted line" data={line} line={{ stroke: "#b65c22", strokeWidth: 2 }} shape={NoDot}
+              legendType="line" isAnimationActive={false} tooltipType="none" />
+            <Scatter name="Observed values" data={regular} fill={OBSERVED} isAnimationActive={false} />
+            {flagged.length > 0 && (
+              <Scatter name="Flagged observations" data={flagged} fill={FLAGGED} shape="diamond" isAnimationActive={false} />
+            )}
           </ScatterChart>
         </ResponsiveContainer>
       </div>
     </figure>
+  );
+}
+
+function ResidualPlot({ result }: { result: SimpleRegressionResult }) {
+  const points = residualPoints(result).map((p) => ({ ...p, plotX: p.fitted, plotY: p.residual }));
+  const regular = points.filter((p) => !p.flagged);
+  const flagged = points.filter((p) => p.flagged);
+  return (
+    <figure className="space-y-2" data-testid="regression-residual-plot">
+      <figcaption className="text-sm font-medium">Residuals versus fitted values</figcaption>
+      <p className="text-xs text-muted-foreground">{RESIDUAL_PLOT_DESCRIPTION}</p>
+      <div className="h-72 w-full" role="img"
+        aria-label={`Residuals versus fitted values for ${points.length} observations, with a horizontal line at zero`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 10, right: 16, bottom: 35, left: 16 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" dataKey="plotX" name="Fitted value" domain={["auto", "auto"]}
+              label={{ value: `Fitted ${result.y_variable}`, position: "bottom" }} />
+            <YAxis type="number" dataKey="plotY" name="Residual" domain={["auto", "auto"]}
+              label={{ value: "Residual", angle: -90, position: "insideLeft" }} />
+            <ReferenceLine y={0} stroke="#333333" strokeWidth={1.5} ifOverflow="extendDomain"
+              label={{ value: "0", position: "left" }} />
+            <Tooltip content={<PointTooltip result={result} />} />
+            <Scatter name="Residuals" data={regular} fill={OBSERVED} isAnimationActive={false} />
+            {flagged.length > 0 && (
+              <Scatter name="Flagged observations" data={flagged} fill={FLAGGED} shape="diamond" isAnimationActive={false} />
+            )}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+    </figure>
+  );
+}
+
+/** Text alternative to both plots: every observation, keyboard-reachable via <details>. */
+function ObservationTable({ result }: { result: SimpleRegressionResult }) {
+  const points = residualPoints(result);
+  const linked = points.some((p) => p.sourceRow != null);
+  const influence = points.some((p) => p.leverage != null);
+  return (
+    <details className="rounded-md border border-border text-sm" data-testid="regression-observation-table">
+      <summary className="cursor-pointer px-3 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        Observation diagnostics ({points.length} observations)
+      </summary>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-xs">
+          <caption className="sr-only">Per-observation fitted values, residuals and influence diagnostics</caption>
+          <thead className="bg-muted/50">
+            <tr>
+              {[...(linked ? ["Data row"] : []), result.x_variable, result.y_variable, "Fitted", "Residual",
+                ...(influence ? ["Leverage", "Cook's distance", "Flagged"] : [])].map((h) => (
+                <th key={h} scope="col" className="border-b border-border px-2 py-1.5 text-right font-medium first:text-left">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {points.map((p, i) => (
+              <tr key={p.sourceRow ?? `i${i}`} className={p.flagged ? "bg-orange-50 dark:bg-orange-950/20" : undefined}>
+                {linked && <th scope="row" className="border-b border-border px-2 py-1 text-left font-normal">{p.sourceRow}</th>}
+                <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.x)}</td>
+                <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.y)}</td>
+                <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.fitted)}</td>
+                <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.residual)}</td>
+                {influence && <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.leverage)}</td>}
+                {influence && <td className="border-b border-border px-2 py-1 text-right tabular-nums">{formatNumber(p.cooksDistance)}</td>}
+                {influence && <td className="border-b border-border px-2 py-1 text-right">{p.flagged ? "yes" : ""}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  );
+}
+
+function ReportSectionView({ section }: { section: ReportSection }) {
+  return (
+    <section className="space-y-2">
+      <h3 className="font-semibold">{section.title}</h3>
+      {section.rows.length > 0 && (
+        <dl className="divide-y rounded-md border border-border text-sm">
+          {section.rows.map(([label, value]) => (
+            <div key={value + label} className="grid gap-1 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-3">
+              <dt className="font-medium">{label}</dt>
+              <dd className="break-words">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {(section.tables ?? []).map((table) => (
+        <figure key={table.caption} className="space-y-1">
+          <figcaption className="text-xs text-muted-foreground">{table.caption}</figcaption>
+          <div className="overflow-x-auto rounded-md border border-border">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  {table.columns.map((c, i) => (
+                    <th key={c} scope="col" className={`whitespace-nowrap border-b border-border px-3 py-2 font-medium ${i >= table.numericFrom ? "text-right" : "text-left"}`}>{c}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {table.rows.map((row) => (
+                  <tr key={row.join("|")}>
+                    {row.map((v, i) => i === 0 ? (
+                      <th key={i} scope="row" className="whitespace-nowrap border-b border-border px-3 py-2 text-left font-normal">{v}</th>
+                    ) : (
+                      <td key={i} className={`whitespace-nowrap border-b border-border px-3 py-2 tabular-nums ${i >= table.numericFrom ? "text-right" : "text-left"}`}>{v}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </figure>
+      ))}
+      {(section.notes ?? []).map((note) => <p key={note} className="text-sm text-muted-foreground">{note}</p>)}
+    </section>
   );
 }
 
@@ -183,19 +317,13 @@ export default function SimpleRegressionAnalysis() {
                 <Download className="mr-2 h-4 w-4" /> {busy === "export" ? "Preparing report…" : "Download Word report"}
               </Button>
             </div>
-            <RegressionPlot result={result} />
-            {regressionReport(result).map(({ title, rows }) => (
-              <section key={title} className="space-y-2">
-                <h3 className="font-semibold">{title}</h3>
-                <dl className="divide-y rounded-md border border-border text-sm">
-                  {rows.map(([label, value]) => (
-                    <div key={value + label} className="grid gap-1 px-3 py-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-3">
-                      <dt className="font-medium">{label}</dt>
-                      <dd className="break-words">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
+            {regressionReport(result).map((section) => (
+              <div key={section.title} className="space-y-4">
+                {section.title === "Model and slope inference" && <RegressionPlot result={result} />}
+                {section.title === "Residual diagnostics" && <ResidualPlot result={result} />}
+                <ReportSectionView section={section} />
+                {section.title === "Residual diagnostics" && <ObservationTable result={result} />}
+              </div>
             ))}
           </section>
         )}

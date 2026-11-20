@@ -1,0 +1,1404 @@
+{
+ "_note": "Synthetic. Real backend responses (REG-DIAG-02, commit d9705bf) for genetics-module/test_fixtures/reg_diag_synthetic_30.csv; no production data.",
+ "curved_leaf_area": {
+  "status": "success",
+  "analysis_type": "regression",
+  "model_type": "linear",
+  "x_variable": "Days",
+  "y_variable": "LeafArea",
+  "n": 28,
+  "alpha": 0.05,
+  "confidence_level": 0.95,
+  "equation": "LeafArea = 35.5775 + 0.443145 \u00d7 Days",
+  "intercept": 35.57748285897499,
+  "slope": 0.44314457653036027,
+  "r_squared": 0.5719131393903725,
+  "adjusted_r_squared": 0.555448260136156,
+  "correlation_coefficient": 0.7562493896793389,
+  "p_value_slope": 3.240123622416125e-06,
+  "standard_error_slope": 0.07518992929210737,
+  "confidence_interval_slope": {
+   "lower": 0.28858946338095764,
+   "upper": 0.5976996896797628
+  },
+  "direction": "positive",
+  "strength_class": "strong",
+  "significance_class": "significant",
+  "plain_language_effect": "A one-unit higher value of Days is associated with an estimated 0.443145-unit higher value of LeafArea on average in this dataset.",
+  "summary_interpretation": "The fitted line explains 57.19% of the observed response variation. Use fitted values within the observed predictor range. The model does not establish causation or validate predictive accuracy on new data.",
+  "diagnostics": {
+   "residual_normality": {
+    "test_name": "Shapiro-Wilk",
+    "statistic": 0.9215964373159569,
+    "p_value": 0.037991269895198854,
+    "status": "potential_violation",
+    "interpretation": "At alpha=0.05, the residual normality check shows evidence inconsistent with normal residuals."
+   },
+   "heteroscedasticity": {
+    "test_name": "Breusch-Pagan",
+    "statistic": 0.1705451748174469,
+    "p_value": 0.6796277474316947,
+    "status": "no_evidence_of_violation",
+    "interpretation": "At alpha=0.05, the variance check shows no clear evidence of heteroscedasticity."
+   }
+  },
+  "reliability_flags": [
+   "sample_size_ok",
+   "residual_normality_concern"
+  ],
+  "warnings": [
+   "Residual normality diagnostic indicates a potential violation; inspect residuals and consider robust or transformed analysis where scientifically appropriate."
+  ],
+  "plot_data": {
+   "x": [
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    24.0,
+    26.0,
+    28.0,
+    30.0,
+    32.0,
+    34.0,
+    36.0,
+    40.0,
+    42.0,
+    44.0,
+    46.0,
+    48.0,
+    50.0,
+    52.0,
+    54.0,
+    56.0,
+    58.0,
+    60.0,
+    62.0,
+    64.0,
+    66.0,
+    68.0
+   ],
+   "y": [
+    25.14,
+    31.0,
+    34.32,
+    37.6,
+    41.07,
+    43.96,
+    49.89,
+    49.55,
+    52.76,
+    55.49,
+    55.03,
+    57.64,
+    57.52,
+    62.96,
+    61.48,
+    62.47,
+    62.42,
+    59.92,
+    62.68,
+    61.92,
+    61.92,
+    61.04,
+    61.33,
+    57.79,
+    57.53,
+    56.33,
+    53.62,
+    53.68
+   ],
+   "fitted_y": [
+    40.00892862427859,
+    40.89521777733931,
+    41.781506930400035,
+    42.66779608346075,
+    43.55408523652147,
+    44.440374389582196,
+    46.212952695703635,
+    47.09924184876436,
+    47.98553100182508,
+    48.871820154885796,
+    49.75810930794652,
+    50.64439846100724,
+    51.53068761406796,
+    53.3032659201894,
+    54.18955507325012,
+    55.07584422631084,
+    55.962133379371565,
+    56.84842253243228,
+    57.734711685493004,
+    58.62100083855373,
+    59.50728999161444,
+    60.393579144675165,
+    61.27986829773589,
+    62.166157450796604,
+    63.05244660385733,
+    63.93873575691805,
+    64.82502490997877,
+    65.71131406303948
+   ]
+  },
+  "coefficients": [
+   {
+    "term": "intercept",
+    "estimate": 35.57748285897499,
+    "standard_error": 3.2617675089295655,
+    "t_statistic": 10.907424505755369,
+    "p_value": 3.3715596124031615e-11,
+    "ci_lower": 28.872823722361446,
+    "ci_upper": 42.28214199558853
+   },
+   {
+    "term": "slope",
+    "estimate": 0.44314457653036027,
+    "standard_error": 0.07518992929210737,
+    "t_statistic": 5.893669281278029,
+    "p_value": 3.240123622416125e-06,
+    "ci_lower": 0.28858946338095764,
+    "ci_upper": 0.5976996896797628
+   }
+  ],
+  "residual_standard_error": 7.008584179159564,
+  "df_residual": 26,
+  "anova_table": [
+   {
+    "source": "Regression",
+    "df": 1,
+    "sum_of_squares": 1706.2085428944908,
+    "mean_square": 1706.2085428944908,
+    "f_statistic": 34.73533759708033,
+    "p_value": 3.2401236224160952e-06
+   },
+   {
+    "source": "Residual",
+    "df": 26,
+    "sum_of_squares": 1277.1265571055094,
+    "mean_square": 49.12025219636575,
+    "f_statistic": null,
+    "p_value": null
+   },
+   {
+    "source": "Total",
+    "df": 27,
+    "sum_of_squares": 2983.3351000000002,
+    "mean_square": null,
+    "f_statistic": null,
+    "p_value": null
+   }
+  ],
+  "observation_diagnostics": [
+   {
+    "source_row": 1,
+    "x": 10.0,
+    "y": 25.14,
+    "fitted": 40.00892862427859,
+    "residual": -14.868928624278588,
+    "leverage": 0.13684868215524754,
+    "cooks_distance": 0.41336672443244293,
+    "high_leverage": false,
+    "high_influence": true
+   },
+   {
+    "source_row": 2,
+    "x": 12.0,
+    "y": 31.0,
+    "fitted": 40.89521777733931,
+    "residual": -9.895217777339312,
+    "leverage": 0.1236620135155132,
+    "cooks_distance": 0.1604919185438626,
+    "high_leverage": false,
+    "high_influence": true
+   },
+   {
+    "source_row": 3,
+    "x": 14.0,
+    "y": 34.32,
+    "fitted": 41.781506930400035,
+    "residual": -7.461506930400034,
+    "leverage": 0.11139610976832892,
+    "cooks_distance": 0.07994956660587027,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 4,
+    "x": 16.0,
+    "y": 37.6,
+    "fitted": 42.66779608346075,
+    "residual": -5.067796083460749,
+    "leverage": 0.1000509709136947,
+    "cooks_distance": 0.032294841801127336,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 5,
+    "x": 18.0,
+    "y": 41.07,
+    "fitted": 43.55408523652147,
+    "residual": -2.484085236521473,
+    "leverage": 0.08962659695161052,
+    "cooks_distance": 0.006792664873287893,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 6,
+    "x": 20.0,
+    "y": 43.96,
+    "fitted": 44.440374389582196,
+    "residual": -0.48037438958219525,
+    "leverage": 0.08012298788207631,
+    "cooks_distance": 0.0002224163513851035,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 8,
+    "x": 24.0,
+    "y": 49.89,
+    "fitted": 46.212952695703635,
+    "residual": 3.677047304296366,
+    "leverage": 0.063878064420658,
+    "cooks_distance": 0.010032167036742774,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 9,
+    "x": 26.0,
+    "y": 49.55,
+    "fitted": 47.09924184876436,
+    "residual": 2.4507581512356396,
+    "leverage": 0.057136750028773886,
+    "cooks_distance": 0.003929419940355251,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 10,
+    "x": 28.0,
+    "y": 52.76,
+    "fitted": 47.98553100182508,
+    "residual": 4.7744689981749175,
+    "leverage": 0.051316200529439804,
+    "cooks_distance": 0.013230342796938811,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 11,
+    "x": 30.0,
+    "y": 55.49,
+    "fitted": 48.871820154885796,
+    "residual": 6.618179845114206,
+    "leverage": 0.04641641592265575,
+    "cooks_distance": 0.022758341851537207,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 12,
+    "x": 32.0,
+    "y": 55.03,
+    "fitted": 49.75810930794652,
+    "residual": 5.271890692053482,
+    "leverage": 0.0424373962084217,
+    "cooks_distance": 0.013093525122156523,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 13,
+    "x": 34.0,
+    "y": 57.64,
+    "fitted": 50.64439846100724,
+    "residual": 6.995601538992759,
+    "leverage": 0.03937914138673768,
+    "cooks_distance": 0.02125796869868562,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 14,
+    "x": 36.0,
+    "y": 57.52,
+    "fitted": 51.53068761406796,
+    "residual": 5.989312385932045,
+    "leverage": 0.037241651457603706,
+    "cooks_distance": 0.01467093157760543,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 16,
+    "x": 40.0,
+    "y": 62.96,
+    "fitted": 53.3032659201894,
+    "residual": 9.656734079810597,
+    "leverage": 0.03572896627698581,
+    "cooks_distance": 0.036474737101292586,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 17,
+    "x": 42.0,
+    "y": 61.48,
+    "fitted": 54.18955507325012,
+    "residual": 7.290444926749878,
+    "leverage": 0.036353771025501885,
+    "cooks_distance": 0.021180280072557817,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 18,
+    "x": 44.0,
+    "y": 62.47,
+    "fitted": 55.07584422631084,
+    "residual": 7.394155773689157,
+    "leverage": 0.03789934066656801,
+    "cooks_distance": 0.022786479802724573,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 19,
+    "x": 46.0,
+    "y": 62.42,
+    "fitted": 55.962133379371565,
+    "residual": 6.457866620628437,
+    "leverage": 0.040365675200184144,
+    "cooks_distance": 0.01860750876757474,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 20,
+    "x": 48.0,
+    "y": 59.92,
+    "fitted": 56.84842253243228,
+    "residual": 3.071577467567721,
+    "leverage": 0.043752774626350306,
+    "cooks_distance": 0.004595127708784288,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 21,
+    "x": 50.0,
+    "y": 62.68,
+    "fitted": 57.734711685493004,
+    "residual": 4.945288314506996,
+    "leverage": 0.04806063894506651,
+    "cooks_distance": 0.013202726307426891,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 22,
+    "x": 52.0,
+    "y": 61.92,
+    "fitted": 58.62100083855373,
+    "residual": 3.2989991614462753,
+    "leverage": 0.05328926815633271,
+    "cooks_distance": 0.006586868330406918,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 23,
+    "x": 54.0,
+    "y": 61.92,
+    "fitted": 59.50728999161444,
+    "residual": 2.4127100083855595,
+    "leverage": 0.05943866226014895,
+    "cooks_distance": 0.00398120415542,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 24,
+    "x": 56.0,
+    "y": 61.04,
+    "fitted": 60.393579144675165,
+    "residual": 0.6464208553248341,
+    "leverage": 0.06650882125651522,
+    "cooks_distance": 0.00032463769766023743,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 25,
+    "x": 58.0,
+    "y": 61.33,
+    "fitted": 61.27986829773589,
+    "residual": 0.050131702264110345,
+    "leverage": 0.0744997451454315,
+    "cooks_distance": 2.2250307715622827e-06,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 26,
+    "x": 60.0,
+    "y": 57.79,
+    "fitted": 62.166157450796604,
+    "residual": -4.376157450796605,
+    "leverage": 0.08341143392689784,
+    "cooks_distance": 0.019354056800487622,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 27,
+    "x": 62.0,
+    "y": 57.53,
+    "fitted": 63.05244660385733,
+    "residual": -5.522446603857325,
+    "leverage": 0.09324388760091418,
+    "cooks_distance": 0.035205608550515334,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 28,
+    "x": 64.0,
+    "y": 56.33,
+    "fitted": 63.93873575691805,
+    "residual": -7.608735756918051,
+    "leverage": 0.10399710616748056,
+    "cooks_distance": 0.07633730965821381,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 29,
+    "x": 66.0,
+    "y": 53.62,
+    "fitted": 64.82502490997877,
+    "residual": -11.205024909978768,
+    "leverage": 0.11567108962659695,
+    "cooks_distance": 0.1890306594884541,
+    "high_leverage": false,
+    "high_influence": true
+   },
+   {
+    "source_row": 30,
+    "x": 68.0,
+    "y": 53.68,
+    "fitted": 65.71131406303948,
+    "residual": -12.031314063039481,
+    "leverage": 0.12826583797826335,
+    "cooks_distance": 0.24870150602603608,
+    "high_leverage": false,
+    "high_influence": true
+   }
+  ],
+  "influence_screening": {
+   "status": "available",
+   "n_parameters": 2,
+   "leverage_threshold": 0.14285714285714285,
+   "cooks_distance_threshold": 0.14285714285714285,
+   "flagged_source_rows": [
+    1,
+    2,
+    29,
+    30
+   ],
+   "unavailable_reason": null
+  }
+ },
+ "influential_height_alpha_10": {
+  "status": "success",
+  "analysis_type": "regression",
+  "model_type": "linear",
+  "x_variable": "Days",
+  "y_variable": "Height",
+  "n": 28,
+  "alpha": 0.1,
+  "confidence_level": 0.9,
+  "equation": "Height = 7.42681 + 0.75103 \u00d7 Days",
+  "intercept": 7.426807099799056,
+  "slope": 0.7510304755525788,
+  "r_squared": 0.7425511962804958,
+  "adjusted_r_squared": 0.732649319214361,
+  "correlation_coefficient": 0.8617141035636448,
+  "p_value_slope": 3.878508209486579e-09,
+  "standard_error_slope": 0.08672676046536737,
+  "confidence_interval_slope": {
+   "lower": 0.6031077587801782,
+   "upper": 0.8989531923249795
+  },
+  "direction": "positive",
+  "strength_class": "strong",
+  "significance_class": "significant",
+  "plain_language_effect": "A one-unit higher value of Days is associated with an estimated 0.75103-unit higher value of Height on average in this dataset.",
+  "summary_interpretation": "The fitted line explains 74.26% of the observed response variation. Use fitted values within the observed predictor range. The model does not establish causation or validate predictive accuracy on new data.",
+  "diagnostics": {
+   "residual_normality": {
+    "test_name": "Shapiro-Wilk",
+    "statistic": 0.5854663092923647,
+    "p_value": 9.801771003823716e-08,
+    "status": "potential_violation",
+    "interpretation": "At alpha=0.1, the residual normality check shows evidence inconsistent with normal residuals."
+   },
+   "heteroscedasticity": {
+    "test_name": "Breusch-Pagan",
+    "statistic": 3.2215930633009315,
+    "p_value": 0.0726728721974368,
+    "status": "potential_violation",
+    "interpretation": "At alpha=0.1, the variance check shows evidence of heteroscedasticity."
+   }
+  },
+  "reliability_flags": [
+   "sample_size_ok",
+   "residual_normality_concern",
+   "heteroscedasticity_concern"
+  ],
+  "warnings": [
+   "Residual normality diagnostic indicates a potential violation; inspect residuals and consider robust or transformed analysis where scientifically appropriate.",
+   "Breusch-Pagan diagnostic indicates potential heteroscedasticity; standard OLS uncertainty may be unreliable."
+  ],
+  "plot_data": {
+   "x": [
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    24.0,
+    26.0,
+    28.0,
+    30.0,
+    32.0,
+    34.0,
+    36.0,
+    38.0,
+    40.0,
+    42.0,
+    44.0,
+    46.0,
+    48.0,
+    50.0,
+    54.0,
+    56.0,
+    58.0,
+    60.0,
+    62.0,
+    64.0,
+    66.0,
+    68.0
+   ],
+   "y": [
+    12.84,
+    14.41,
+    15.33,
+    13.57,
+    21.64,
+    22.37,
+    22.25,
+    25.41,
+    27.67,
+    28.2,
+    33.39,
+    33.47,
+    37.06,
+    36.7,
+    41.0,
+    42.57,
+    42.9,
+    45.17,
+    47.7,
+    53.66,
+    51.95,
+    55.89,
+    53.1,
+    54.44,
+    57.06,
+    55.32,
+    64.01,
+    22.0
+   ],
+   "fitted_y": [
+    14.937111855324844,
+    16.43917280643,
+    17.94123375753516,
+    19.443294708640316,
+    20.945355659745474,
+    22.44741661085063,
+    25.45153851306095,
+    26.953599464166107,
+    28.455660415271264,
+    29.957721366376422,
+    31.45978231748158,
+    32.96184326858673,
+    34.4639042196919,
+    35.96596517079705,
+    37.46802612190221,
+    38.97008707300736,
+    40.47214802411253,
+    41.974208975217685,
+    43.47626992632284,
+    44.978330877428,
+    47.982452779638315,
+    49.48451373074347,
+    50.98657468184863,
+    52.48863563295379,
+    53.990696584058945,
+    55.4927575351641,
+    56.99481848626926,
+    58.49687943737442
+   ]
+  },
+  "coefficients": [
+   {
+    "term": "intercept",
+    "estimate": 7.426807099799056,
+    "standard_error": 3.716985056108699,
+    "t_statistic": 1.9980728971706332,
+    "p_value": 0.056269205000892164,
+    "ci_lower": 1.0870507806226337,
+    "ci_upper": 13.76656341897548
+   },
+   {
+    "term": "slope",
+    "estimate": 0.7510304755525788,
+    "standard_error": 0.08672676046536737,
+    "t_statistic": 8.659731685152568,
+    "p_value": 3.878508209486579e-09,
+    "ci_lower": 0.6031077587801782,
+    "ci_upper": 0.8989531923249795
+   }
+  ],
+  "residual_standard_error": 8.010580772367824,
+  "df_residual": 26,
+  "anova_table": [
+   {
+    "source": "Regression",
+    "df": 1,
+    "sum_of_squares": 4812.12477363793,
+    "mean_square": 4812.12477363793,
+    "f_statistic": 74.99095285883531,
+    "p_value": 3.878508209486593e-09
+   },
+   {
+    "source": "Residual",
+    "df": 26,
+    "sum_of_squares": 1668.4045120763562,
+    "mean_square": 64.16940431062909,
+    "f_statistic": null,
+    "p_value": null
+   },
+   {
+    "source": "Total",
+    "df": 27,
+    "sum_of_squares": 6480.529285714286,
+    "mean_square": null,
+    "f_statistic": null,
+    "p_value": null
+   }
+  ],
+  "observation_diagnostics": [
+   {
+    "source_row": 1,
+    "x": 10.0,
+    "y": 12.84,
+    "fitted": 14.937111855324844,
+    "residual": -2.097111855324844,
+    "leverage": 0.13526456798392497,
+    "cooks_distance": 0.006198730121685953,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 2,
+    "x": 12.0,
+    "y": 14.41,
+    "fitted": 16.43917280643,
+    "residual": -2.029172806430001,
+    "leverage": 0.12206965840589416,
+    "cooks_distance": 0.005081216219373804,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 3,
+    "x": 14.0,
+    "y": 15.33,
+    "fitted": 17.94123375753516,
+    "residual": -2.6112337575351585,
+    "leverage": 0.1098124581379773,
+    "cooks_distance": 0.007362445431936664,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 4,
+    "x": 16.0,
+    "y": 13.57,
+    "fitted": 19.443294708640316,
+    "residual": -5.873294708640316,
+    "leverage": 0.09849296718017417,
+    "cooks_distance": 0.0325741105670449,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 5,
+    "x": 18.0,
+    "y": 21.64,
+    "fitted": 20.945355659745474,
+    "residual": 0.694644340254527,
+    "leverage": 0.08811118553248498,
+    "cooks_distance": 0.00039839535604862457,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 6,
+    "x": 20.0,
+    "y": 22.37,
+    "fitted": 22.44741661085063,
+    "residual": -0.07741661085063001,
+    "leverage": 0.07866711319490961,
+    "cooks_distance": 4.327831789714493e-06,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 8,
+    "x": 24.0,
+    "y": 22.25,
+    "fitted": 25.45153851306095,
+    "residual": -3.2015385130609495,
+    "leverage": 0.0625920964501005,
+    "cooks_distance": 0.005688813994542246,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 9,
+    "x": 26.0,
+    "y": 25.41,
+    "fitted": 26.953599464166107,
+    "residual": -1.5435994641661068,
+    "leverage": 0.05596115204286672,
+    "cooks_distance": 0.0011657841569257374,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 10,
+    "x": 28.0,
+    "y": 27.67,
+    "fitted": 28.455660415271264,
+    "residual": -0.7856604152712627,
+    "leverage": 0.05026791694574683,
+    "cooks_distance": 0.0002680404950728328,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 11,
+    "x": 30.0,
+    "y": 28.2,
+    "fitted": 29.957721366376422,
+    "residual": -1.7577213663764226,
+    "leverage": 0.04551239115874082,
+    "cooks_distance": 0.001202627482924477,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 12,
+    "x": 32.0,
+    "y": 33.39,
+    "fitted": 31.45978231748158,
+    "residual": 1.9302176825184212,
+    "leverage": 0.041694574681848645,
+    "cooks_distance": 0.0013180328380747732,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 13,
+    "x": 34.0,
+    "y": 33.47,
+    "fitted": 32.96184326858673,
+    "residual": 0.5081567314132656,
+    "leverage": 0.03881446751507034,
+    "cooks_distance": 8.453110467102884e-05,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 14,
+    "x": 36.0,
+    "y": 37.06,
+    "fitted": 34.4639042196919,
+    "residual": 2.5960957803081044,
+    "leverage": 0.0368720696584059,
+    "cooks_distance": 0.002087435090904848,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 15,
+    "x": 38.0,
+    "y": 36.7,
+    "fitted": 35.96596517079705,
+    "residual": 0.7340348292029546,
+    "leverage": 0.035867381111855334,
+    "cooks_distance": 0.00016199493871551566,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 16,
+    "x": 40.0,
+    "y": 41.0,
+    "fitted": 37.46802612190221,
+    "residual": 3.531973878097787,
+    "leverage": 0.03580040187541862,
+    "cooks_distance": 0.0037430960547737936,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 17,
+    "x": 42.0,
+    "y": 42.57,
+    "fitted": 38.97008707300736,
+    "residual": 3.599912926992637,
+    "leverage": 0.036671131949095784,
+    "cooks_distance": 0.003990259637686139,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 18,
+    "x": 44.0,
+    "y": 42.9,
+    "fitted": 40.47214802411253,
+    "residual": 2.427851975887471,
+    "leverage": 0.038479571332886806,
+    "cooks_distance": 0.001911611346399248,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 19,
+    "x": 46.0,
+    "y": 45.17,
+    "fitted": 41.974208975217685,
+    "residual": 3.1957910247823165,
+    "leverage": 0.04122572002679169,
+    "cooks_distance": 0.0035688988661282525,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 20,
+    "x": 48.0,
+    "y": 47.7,
+    "fitted": 43.47626992632284,
+    "residual": 4.22373007367716,
+    "leverage": 0.044909578030810436,
+    "cooks_distance": 0.006843595046591216,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 21,
+    "x": 50.0,
+    "y": 53.66,
+    "fitted": 44.978330877428,
+    "residual": 8.681669122571996,
+    "leverage": 0.049531145344943066,
+    "cooks_distance": 0.032199642241347706,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 23,
+    "x": 54.0,
+    "y": 51.95,
+    "fitted": 47.982452779638315,
+    "residual": 3.9675472203616877,
+    "leverage": 0.06158740790354988,
+    "cooks_distance": 0.008578087611666422,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 24,
+    "x": 56.0,
+    "y": 55.89,
+    "fitted": 49.48451373074347,
+    "residual": 6.405486269256528,
+    "leverage": 0.0690221031480241,
+    "cooks_distance": 0.025459839052046348,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 25,
+    "x": 58.0,
+    "y": 53.1,
+    "fitted": 50.98657468184863,
+    "residual": 2.1134253181513714,
+    "leverage": 0.07739450770261219,
+    "cooks_distance": 0.0031644182392630378,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 26,
+    "x": 60.0,
+    "y": 54.44,
+    "fitted": 52.48863563295379,
+    "residual": 1.9513643670462102,
+    "leverage": 0.08670462156731412,
+    "cooks_distance": 0.0030841711065575273,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 27,
+    "x": 62.0,
+    "y": 57.06,
+    "fitted": 53.990696584058945,
+    "residual": 3.0693034159410573,
+    "leverage": 0.09695244474212994,
+    "cooks_distance": 0.00872688321680549,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 28,
+    "x": 64.0,
+    "y": 55.32,
+    "fitted": 55.4927575351641,
+    "residual": -0.1727575351641022,
+    "leverage": 0.10813797722705962,
+    "cooks_distance": 3.1615415511091776e-05,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 29,
+    "x": 66.0,
+    "y": 64.01,
+    "fitted": 56.99481848626926,
+    "residual": 7.015181513730745,
+    "leverage": 0.12026121902210311,
+    "cooks_distance": 0.059585137977585495,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 30,
+    "x": 68.0,
+    "y": 22.0,
+    "fitted": 58.49687943737442,
+    "residual": -36.49687943737442,
+    "leverage": 0.13332217012726055,
+    "cooks_distance": 1.842215628150776,
+    "high_leverage": false,
+    "high_influence": true
+   }
+  ],
+  "influence_screening": {
+   "status": "available",
+   "n_parameters": 2,
+   "leverage_threshold": 0.14285714285714285,
+   "cooks_distance_threshold": 0.14285714285714285,
+   "flagged_source_rows": [
+    30
+   ],
+   "unavailable_reason": null
+  }
+ },
+ "small_sample_n4": {
+  "status": "success",
+  "analysis_type": "regression",
+  "model_type": "linear",
+  "x_variable": "X",
+  "y_variable": "Y",
+  "n": 4,
+  "alpha": 0.05,
+  "confidence_level": 0.95,
+  "equation": "Y = 0.05 + 2.02 \u00d7 X",
+  "intercept": 0.05000000000000049,
+  "slope": 2.0199999999999996,
+  "r_squared": 0.9705994291151284,
+  "adjusted_r_squared": 0.9558991436726927,
+  "correlation_coefficient": 0.9851900472066942,
+  "p_value_slope": 0.014809952793305752,
+  "standard_error_slope": 0.24859605789312103,
+  "confidence_interval_slope": {
+   "lower": 0.9503774929144622,
+   "upper": 3.089622507085537
+  },
+  "direction": "positive",
+  "strength_class": "strong",
+  "significance_class": "significant",
+  "plain_language_effect": "A one-unit higher value of X is associated with an estimated 2.02-unit higher value of Y on average in this dataset.",
+  "summary_interpretation": "The fitted line explains 97.06% of the observed response variation. Use fitted values within the observed predictor range. The model does not establish causation or validate predictive accuracy on new data.",
+  "diagnostics": {
+   "residual_normality": {
+    "test_name": "Shapiro-Wilk",
+    "statistic": 0.9286458576781457,
+    "p_value": 0.5864633442351164,
+    "status": "no_evidence_of_violation",
+    "interpretation": "At alpha=0.05, the residual normality check shows no clear evidence against normal residuals."
+   },
+   "heteroscedasticity": {
+    "test_name": "Breusch-Pagan",
+    "statistic": 0.43478260869565766,
+    "p_value": 0.5096514779340062,
+    "status": "no_evidence_of_violation",
+    "interpretation": "At alpha=0.05, the variance check shows no clear evidence of heteroscedasticity."
+   }
+  },
+  "reliability_flags": [
+   "small_sample",
+   "high_fit_small_n"
+  ],
+  "warnings": [
+   "Small sample size \u2014 coefficient estimates and diagnostics may be unstable.",
+   "Very high model fit with a small sample \u2014 inspect the scatterplot and diagnostics before interpretation."
+  ],
+  "plot_data": {
+   "x": [
+    1.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "y": [
+    2.0,
+    4.5,
+    5.5,
+    8.4
+   ],
+   "fitted_y": [
+    2.0700000000000003,
+    4.09,
+    6.109999999999999,
+    8.129999999999999
+   ]
+  },
+  "coefficients": [
+   {
+    "term": "intercept",
+    "estimate": 0.05000000000000049,
+    "standard_error": 0.6808083430746131,
+    "t_statistic": 0.07344210820653933,
+    "p_value": 0.9481384721182117,
+    "ci_lower": -2.879281875729891,
+    "ci_upper": 2.9792818757298924
+   },
+   {
+    "term": "slope",
+    "estimate": 2.0199999999999996,
+    "standard_error": 0.24859605789312103,
+    "t_statistic": 8.125631665762208,
+    "p_value": 0.014809952793305752,
+    "ci_lower": 0.9503774929144622,
+    "ci_upper": 3.089622507085537
+   }
+  ],
+  "residual_standard_error": 0.5558776843874919,
+  "df_residual": 2,
+  "anova_table": [
+   {
+    "source": "Regression",
+    "df": 1,
+    "sum_of_squares": 20.402000000000005,
+    "mean_square": 20.402000000000005,
+    "f_statistic": 66.02588996763754,
+    "p_value": 0.014809952793305752
+   },
+   {
+    "source": "Residual",
+    "df": 2,
+    "sum_of_squares": 0.6180000000000001,
+    "mean_square": 0.30900000000000005,
+    "f_statistic": null,
+    "p_value": null
+   },
+   {
+    "source": "Total",
+    "df": 3,
+    "sum_of_squares": 21.020000000000003,
+    "mean_square": null,
+    "f_statistic": null,
+    "p_value": null
+   }
+  ],
+  "observation_diagnostics": [
+   {
+    "source_row": 1,
+    "x": 1.0,
+    "y": 2.0,
+    "fitted": 2.0700000000000003,
+    "residual": -0.07000000000000028,
+    "leverage": null,
+    "cooks_distance": null,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 2,
+    "x": 2.0,
+    "y": 4.5,
+    "fitted": 4.09,
+    "residual": 0.41000000000000014,
+    "leverage": null,
+    "cooks_distance": null,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 3,
+    "x": 3.0,
+    "y": 5.5,
+    "fitted": 6.109999999999999,
+    "residual": -0.6099999999999994,
+    "leverage": null,
+    "cooks_distance": null,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 4,
+    "x": 4.0,
+    "y": 8.4,
+    "fitted": 8.129999999999999,
+    "residual": 0.27000000000000135,
+    "leverage": null,
+    "cooks_distance": null,
+    "high_leverage": false,
+    "high_influence": false
+   }
+  ],
+  "influence_screening": {
+   "status": "unavailable",
+   "n_parameters": 2,
+   "leverage_threshold": null,
+   "cooks_distance_threshold": null,
+   "flagged_source_rows": [],
+   "unavailable_reason": "Leverage and Cook's distance screening needs at least 5 complete observations; this model has 4."
+  }
+ },
+ "leverage_one": {
+  "status": "success",
+  "analysis_type": "regression",
+  "model_type": "linear",
+  "x_variable": "X",
+  "y_variable": "Y",
+  "n": 6,
+  "alpha": 0.05,
+  "confidence_level": 0.95,
+  "equation": "Y = 1.33333 + 0.766667 \u00d7 X",
+  "intercept": 1.3333333333333335,
+  "slope": 0.7666666666666667,
+  "r_squared": 0.9949843260188088,
+  "adjusted_r_squared": 0.993730407523511,
+  "correlation_coefficient": 0.9974890104752075,
+  "p_value_slope": 9.449686610081171e-06,
+  "standard_error_slope": 0.02721655269759087,
+  "confidence_interval_slope": {
+   "lower": 0.6911014021490827,
+   "upper": 0.8422319311842508
+  },
+  "direction": "positive",
+  "strength_class": "strong",
+  "significance_class": "significant",
+  "plain_language_effect": "A one-unit higher value of X is associated with an estimated 0.766667-unit higher value of Y on average in this dataset.",
+  "summary_interpretation": "The fitted line explains 99.50% of the observed response variation. Use fitted values within the observed predictor range. The model does not establish causation or validate predictive accuracy on new data.",
+  "diagnostics": {
+   "residual_normality": {
+    "test_name": "Shapiro-Wilk",
+    "statistic": 0.9764895673849742,
+    "p_value": 0.9328373375630236,
+    "status": "no_evidence_of_violation",
+    "interpretation": "At alpha=0.05, the residual normality check shows no clear evidence against normal residuals."
+   },
+   "heteroscedasticity": {
+    "test_name": "Breusch-Pagan",
+    "statistic": 0.8219178082191794,
+    "p_value": 0.3646200398699614,
+    "status": "no_evidence_of_violation",
+    "interpretation": "At alpha=0.05, the variance check shows no clear evidence of heteroscedasticity."
+   }
+  },
+  "reliability_flags": [
+   "small_sample",
+   "high_fit_small_n"
+  ],
+  "warnings": [
+   "Small sample size \u2014 coefficient estimates and diagnostics may be unstable.",
+   "Very high model fit with a small sample \u2014 inspect the scatterplot and diagnostics before interpretation."
+  ],
+  "plot_data": {
+   "x": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    10.0
+   ],
+   "y": [
+    2.0,
+    2.4,
+    1.8,
+    2.2,
+    2.1,
+    9.0
+   ],
+   "fitted_y": [
+    2.1,
+    2.1,
+    2.1,
+    2.1,
+    2.1,
+    9.0
+   ]
+  },
+  "coefficients": [
+   {
+    "term": "intercept",
+    "estimate": 1.3333333333333335,
+    "standard_error": 0.11385500851066224,
+    "t_statistic": 11.710800875382395,
+    "p_value": 0.00030407650541604915,
+    "ci_lower": 1.0172211522516517,
+    "ci_upper": 1.6494455144150153
+   },
+   {
+    "term": "slope",
+    "estimate": 0.7666666666666667,
+    "standard_error": 0.02721655269759087,
+    "t_statistic": 28.16913204200655,
+    "p_value": 9.449686610081171e-06,
+    "ci_lower": 0.6911014021490827,
+    "ci_upper": 0.8422319311842508
+   }
+  ],
+  "residual_standard_error": 0.22360679774997894,
+  "df_residual": 4,
+  "anova_table": [
+   {
+    "source": "Regression",
+    "df": 1,
+    "sum_of_squares": 39.675,
+    "mean_square": 39.675,
+    "f_statistic": 793.5000000000001,
+    "p_value": 9.449686610081156e-06
+   },
+   {
+    "source": "Residual",
+    "df": 4,
+    "sum_of_squares": 0.19999999999999996,
+    "mean_square": 0.04999999999999999,
+    "f_statistic": null,
+    "p_value": null
+   },
+   {
+    "source": "Total",
+    "df": 5,
+    "sum_of_squares": 39.875,
+    "mean_square": null,
+    "f_statistic": null,
+    "p_value": null
+   }
+  ],
+  "observation_diagnostics": [
+   {
+    "source_row": 1,
+    "x": 1.0,
+    "y": 2.0,
+    "fitted": 2.1,
+    "residual": -0.10000000000000009,
+    "leverage": 0.20000000000000004,
+    "cooks_distance": 0.031250000000000076,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 2,
+    "x": 1.0,
+    "y": 2.4,
+    "fitted": 2.1,
+    "residual": 0.2999999999999998,
+    "leverage": 0.2000000000000001,
+    "cooks_distance": 0.28124999999999994,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 3,
+    "x": 1.0,
+    "y": 1.8,
+    "fitted": 2.1,
+    "residual": -0.30000000000000004,
+    "leverage": 0.2000000000000001,
+    "cooks_distance": 0.28125000000000044,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 4,
+    "x": 1.0,
+    "y": 2.2,
+    "fitted": 2.1,
+    "residual": 0.10000000000000009,
+    "leverage": 0.2000000000000001,
+    "cooks_distance": 0.03125000000000009,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 5,
+    "x": 1.0,
+    "y": 2.1,
+    "fitted": 2.1,
+    "residual": 0.0,
+    "leverage": 0.2000000000000001,
+    "cooks_distance": 0.0,
+    "high_leverage": false,
+    "high_influence": false
+   },
+   {
+    "source_row": 6,
+    "x": 10.0,
+    "y": 9.0,
+    "fitted": 9.0,
+    "residual": 0.0,
+    "leverage": 1.0,
+    "cooks_distance": null,
+    "high_leverage": true,
+    "high_influence": false
+   }
+  ],
+  "influence_screening": {
+   "status": "available",
+   "n_parameters": 2,
+   "leverage_threshold": 0.6666666666666666,
+   "cooks_distance_threshold": 0.6666666666666666,
+   "flagged_source_rows": [
+    6
+   ],
+   "unavailable_reason": null
+  }
+ }
+}
