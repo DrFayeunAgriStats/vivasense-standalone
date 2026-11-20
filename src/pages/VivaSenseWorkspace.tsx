@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
+import { advancedBetaEnabled, advancedBetaNotice } from "@/lib/advancedRelease";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -48,7 +49,7 @@ export default function VivaSenseWorkspace() {
     const params = new URLSearchParams(location.search);
     if (params.get("resume_run")) return;
     const m = params.get("module");
-    if (m === "anova" || m === "genetics" || m === "advanced") {
+    if (m === "anova" || m === "genetics" || (m === "advanced" && advancedBetaEnabled)) {
       setError(null);
       setActiveSection(m);
       setCurrentModule(m);
@@ -480,7 +481,7 @@ export default function VivaSenseWorkspace() {
         )}
 
         {/* Advanced Modules Screen */}
-        {currentModule === "advanced" && (
+        {advancedBetaEnabled && currentModule === "advanced" && (
           <div className="mx-auto max-w-5xl px-6 py-10 md:px-10">
             <nav className="flex items-center gap-1 text-sm text-muted-foreground">
               <button onClick={handleBackToModules} className="hover:text-foreground">Dashboard</button>
@@ -499,6 +500,13 @@ export default function VivaSenseWorkspace() {
                   Fit mixed models, run multivariate analyses, and generate AI-assisted interpretations.
                 </p>
               </div>
+            </div>
+            <div role="note" className="mt-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <strong>Experimental Beta — scientific validation in progress.</strong>{" "}
+              {advancedBetaNotice}
+            </div>
+            <div className="mt-6">
+              <DatasetUpload onDatasetReady={setDatasetContext} datasetContext={datasetContext} />
             </div>
             <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
               {error && (
