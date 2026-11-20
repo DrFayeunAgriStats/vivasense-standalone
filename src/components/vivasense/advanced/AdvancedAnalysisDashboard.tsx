@@ -82,8 +82,22 @@ const MODULES: {
   },
 ];
 
+/**
+ * Production research-beta module readiness. All methods default CLOSED.
+ * Five unreviewed methods have no public activation path in this release.
+ * PCA and stability require their own separately reviewed build-time toggles
+ * and a compatible corrected production backend before activation.
+ */
+export function isAdvancedMethodReady(id: AdvancedModuleId | null): boolean {
+  if (id === "pca") return import.meta.env.VITE_ADVANCED_PCA_BETA === "true";
+  if (id === "stability") return import.meta.env.VITE_ADVANCED_STABILITY_BETA === "true";
+  return false;
+}
+
 export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null, embedded = false }: Props) {
-  const [active, setActive] = useState<AdvancedModuleId | null>(initialModule);
+  const [active, setActive] = useState<AdvancedModuleId | null>(
+    isAdvancedMethodReady(initialModule) ? initialModule : null
+  );
 
   if (active) {
     const Panel = active === "stability" ? StabilityPanel
@@ -123,25 +137,28 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {MODULES.map((m) => {
           const Icon = m.icon;
+          const ready = isAdvancedMethodReady(m.id);
           return (
             <Card
               key={m.id}
-              className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 group"
-              onClick={() => setActive(m.id)}
+              className={ready
+                ? "cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5 group"
+                : "opacity-70"}
+              onClick={ready ? () => setActive(m.id) : undefined}
             >
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="rounded-lg bg-primary/5 p-2.5 group-hover:bg-primary/10 transition-colors">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="text-[10px] uppercase">{m.badge}</Badge>
+                  <Badge variant="secondary" className="text-[10px] uppercase">{ready ? m.badge : "Under validation"}</Badge>
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground text-base mb-1">{m.title}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{m.description}</p>
                 </div>
-                <Button size="sm" variant="outline" className="w-full" onClick={(e) => { e.stopPropagation(); setActive(m.id); }}>
-                  Run Analysis
+                <Button size="sm" variant="outline" className="w-full" disabled={!ready} onClick={(e) => { e.stopPropagation(); if (ready) setActive(m.id); }}>
+                  {ready ? "Run Analysis — Experimental" : "Unavailable pending validation"}
                 </Button>
               </CardContent>
             </Card>
