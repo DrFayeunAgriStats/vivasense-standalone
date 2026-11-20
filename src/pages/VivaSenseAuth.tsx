@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -135,10 +135,10 @@ export default function VivaSenseAuth() {
               <BrandHeader subtitle="Sign in to your workspace" />
               <form onSubmit={handleLogin} className="space-y-4">
                 <FormField label="Email">
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+                  {(id) => <input id={id} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />}
                 </FormField>
                 <FormField label="Password">
-                  <PasswordInput value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword(s => !s)} />
+                  {(id) => <PasswordInput id={id} autoComplete="current-password" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword(s => !s)} />}
                 </FormField>
                 {error && <Alert kind="error">{error}</Alert>}
                 {message && <Alert kind="success">{message}</Alert>}
@@ -163,36 +163,47 @@ export default function VivaSenseAuth() {
               <BrandHeader subtitle="Create your free account" />
               <form onSubmit={handleRegister} className="space-y-3">
                 <FormField label="Full Name *">
-                  <input required value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputCls} />
+                  {(id) => <input id={id} autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputCls} />}
                 </FormField>
                 <FormField label="Email Address *">
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+                  {(id) => <input id={id} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />}
                 </FormField>
                 <FormField label="Institution / University *">
-                  <input required value={institution} onChange={(e) => setInstitution(e.target.value)} className={inputCls} />
+                  {(id) => <input id={id} autoComplete="organization" required value={institution} onChange={(e) => setInstitution(e.target.value)} className={inputCls} />}
                 </FormField>
                 <FormField label="Position *">
-                  <select required value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
-                    <option value="">Select position...</option>
-                    {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-                  </select>
+                  {(id) => (
+                    <select id={id} autoComplete="organization-title" required value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
+                      <option value="">Select position...</option>
+                      {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  )}
                 </FormField>
                 <FormField label="Research Area *">
-                  <input required value={researchArea} onChange={(e) => setResearchArea(e.target.value)}
-                    placeholder="e.g. Plant Breeding, Agronomy, Soil Science" className={inputCls} />
+                  {(id) => (
+                    <input id={id} autoComplete="off" required value={researchArea} onChange={(e) => setResearchArea(e.target.value)}
+                      placeholder="e.g. Plant Breeding, Agronomy, Soil Science" className={inputCls} />
+                  )}
                 </FormField>
                 <FormField label="How did you hear about VivaSense? *">
-                  <select required value={registrationSource} onChange={(e) => setRegistrationSource(e.target.value)} className={inputCls}>
-                    <option value="">Select...</option>
-                    {SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  {(id) => (
+                    <select id={id} autoComplete="off" required value={registrationSource} onChange={(e) => setRegistrationSource(e.target.value)} className={inputCls}>
+                      <option value="">Select...</option>
+                      {SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  )}
                 </FormField>
                 <FormField label="Password *">
-                  <PasswordInput value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword(s => !s)} />
-                  {passwordStrength && <p className={`text-xs mt-1 ${strengthColor}`}>Strength: {passwordStrength}</p>}
+                  {(id) => (
+                    <>
+                      <PasswordInput id={id} autoComplete="new-password" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword(s => !s)}
+                        describedBy={passwordStrength ? `${id}-strength` : undefined} />
+                      {passwordStrength && <p id={`${id}-strength`} className={`text-xs mt-1 ${strengthColor}`}>Strength: {passwordStrength}</p>}
+                    </>
+                  )}
                 </FormField>
                 <FormField label="Confirm Password *">
-                  <PasswordInput value={confirmPassword} onChange={setConfirmPassword} visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(s => !s)} />
+                  {(id) => <PasswordInput id={id} autoComplete="new-password" value={confirmPassword} onChange={setConfirmPassword} visible={showConfirmPassword} onToggle={() => setShowConfirmPassword(s => !s)} />}
                 </FormField>
 
                 <div className="space-y-2 pt-2">
@@ -267,11 +278,17 @@ export default function VivaSenseAuth() {
 const inputCls = "w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring text-sm";
 const primaryBtn = "w-full bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium py-2.5 rounded-md transition-colors";
 
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+/**
+ * Shared labelled field. The label is bound to its control with htmlFor/id so
+ * assistive technology announces the field's name; the id is generated here
+ * and handed to the control through the render function.
+ */
+function FormField({ label, children }: { label: string; children: (id: string) => React.ReactNode }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
-      {children}
+      <label htmlFor={id} className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
+      {children(id)}
     </div>
   );
 }
@@ -292,10 +309,21 @@ function TermsBox({ checked, onChange, text }: { checked: boolean; onChange: (v:
   );
 }
 
-function PasswordInput({ value, onChange, visible, onToggle }: { value: string; onChange: (v: string) => void; visible: boolean; onToggle: () => void }) {
+function PasswordInput({ id, autoComplete, describedBy, value, onChange, visible, onToggle }: {
+  id: string;
+  autoComplete: "current-password" | "new-password";
+  describedBy?: string;
+  value: string;
+  onChange: (v: string) => void;
+  visible: boolean;
+  onToggle: () => void;
+}) {
   return (
     <div className="relative">
       <input
+        id={id}
+        autoComplete={autoComplete}
+        aria-describedby={describedBy}
         type={visible ? "text" : "password"}
         required
         value={value}

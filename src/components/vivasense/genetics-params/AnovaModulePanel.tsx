@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +59,12 @@ import {
   isSessionOnlyPreviewDesign,
   isSessionOnlyPreviewWarning,
 } from "./releaseDisclosures";
+import {
+  anovaReportFilename,
+  anovaRunSetupKey,
+  buildAnovaRunSetup,
+  type AnovaRunSetup,
+} from "./anovaRunIdentity";
 
 const MODULE = "anova" as const;
 
@@ -89,7 +95,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<UploadAnalysisResponse | null>(null);
+  // A completed run is bound to the setup it was submitted with. Headings,
+  // design-dependent rendering, export routing and the filename all read from
+  // `completedRun.setup`, never from the live selectors.
+  const [completedRun, setCompletedRun] = useState<
+    { key: string; setup: AnovaRunSetup; results: UploadAnalysisResponse } | null
+  >(null);
+  // Incremented whenever the setup or dataset changes. An in-flight request
+  // captures the generation it started in and is discarded if it no longer
+  // matches when it settles, so a late response or error cannot repopulate an
+  // invalidated result.
+  const setupGenerationRef = useRef(0);
   const [isDownloading, setIsDownloading] = useState(false);
   // Assumption-driven transformation: which branch feeds the report. Defaults to
   // "transformed" so a flagged violation is not silently ignored; "raw" keeps the
@@ -112,7 +128,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     setMainPlot(sampleMapping.mainPlot);
     setSubPlot(sampleMapping.subPlot);
     setSelectedTraits(initial.traits);
-    setResults(null);
+    setCompletedRun(null);
     setStructuralError(null);
     setShowErrorDetail(false);
     setExportError(null);
@@ -138,6 +154,51 @@ export function AnovaModulePanel({ datasetContext }: Props) {
     ].filter(Boolean) as string[];
     return Array.from(new Set(candidates));
   }, [datasetContext]);
+
+  // ── Mapping + validation ───────────────────────────────────────────────
+  // Only roles the chosen design actually uses are collected, so a column left
+  // over from a previous selection is never sent. That matters most for
+  // Factorial CRD: a stray block would reintroduce the synthetic-block model
+  // that aliased Factor B away.
+  const mapping: ColumnMapping = {
+    treatment: treatmentCol,
+    rep: repColumn,
+    factor_a: factorA,
+    factor_b: factorB,
+    main_plot: mainPlot,
+    sub_plot: subPlot,
+  };
+  const currentSetup: AnovaRunSetup | null = datasetContext
+    ? buildAnovaRunSetup({ design, alpha, mapping, traits: selectedTraits, datasetContext })
+    : null;
+  const currentSetupKey = currentSetup ? anovaRunSetupKey(currentSetup) : null;
+
+  // Any change to dataset, design, active mappings, response variables or
+  // inferential alpha invalidates the displayed result, its errors and any
+  // pending request.
+  const previousSetupKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (previousSetupKeyRef.current === currentSetupKey) return;
+    previousSetupKeyRef.current = currentSetupKey;
+    setupGenerationRef.current += 1;
+    setCompletedRun((prev) => (prev && prev.key === currentSetupKey ? prev : null));
+    setStructuralError(null);
+    setShowErrorDetail(false);
+    setAnalysisError(null);
+    setExportError(null);
+    setIsAnalyzing(false);
+  }, [currentSetupKey]);
+  // A new dataset object is a new context even if its name and token repeat.
+  useEffect(() => {
+    setupGenerationRef.current += 1;
+    setIsAnalyzing(false);
+  }, [datasetContext]);
+
+  // Render-time guard as well as the effects above: a result is shown only
+  // while its key still matches, so no frame shows a stale result.
+  const results =
+    completedRun && completedRun.key === currentSetupKey ? completedRun.results : null;
+  const runSetup = results ? completedRun!.setup : null;
 
   if (!datasetContext) {
     return (
@@ -170,19 +231,6 @@ export function AnovaModulePanel({ datasetContext }: Props) {
   const toggleTrait = (t: string) =>
     setSelectedTraits((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
-  // ── Mapping + validation ───────────────────────────────────────────────
-  // Only roles the chosen design actually uses are collected, so a column left
-  // over from a previous selection is never sent. That matters most for
-  // Factorial CRD: a stray block would reintroduce the synthetic-block model
-  // that aliased Factor B away.
-  const mapping: ColumnMapping = {
-    treatment: treatmentCol,
-    rep: repColumn,
-    factor_a: factorA,
-    factor_b: factorB,
-    main_plot: mainPlot,
-    sub_plot: subPlot,
-  };
   const issue = validateMapping(design, mapping, selectedTraits);
   const validation = issue?.message ?? null;
 
@@ -203,11 +251,17 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
   // ── Run analysis ──────────────────────────────────────────────────────
   const handleAnalyze = async () => {
-    if (validation) return;
+    if (validation || !currentSetup || !currentSetupKey) return;
+    const submittedSetup = currentSetup;
+    const submittedKey = currentSetupKey;
+    setupGenerationRef.current += 1;
+    const generation = setupGenerationRef.current;
+    const isCurrent = () => setupGenerationRef.current === generation;
     setIsAnalyzing(true);
-    setResults(null);
+    setCompletedRun(null);
     setStructuralError(null);
     setAnalysisError(null);
+    setExportError(null);
     // Hoisted so the failure path reports the same fields and elapsed time.
     const startedAt = performance.now();
     const historyBase = {
@@ -217,34 +271,56 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         : "/genetics/analyze-upload?module=anova",
       datasetName: datasetContext.file.name,
       datasetToken: datasetContext.datasetToken ?? null,
-      designType: design,
-      traits: selectedTraits,
+      designType: submittedSetup.design,
+      traits: submittedSetup.traits,
       startedAt,
-      parameters: { design_type: design, alpha, mode: datasetContext.mode },
+      parameters: {
+        design_type: submittedSetup.design,
+        alpha: submittedSetup.alpha,
+        mode: submittedSetup.mode,
+      },
     };
+    const persistenceParameters = (res: UploadAnalysisResponse) => ({
+      ...historyBase.parameters,
+      ...(res.persistence
+        ? {
+            persistence_analysis_run_id: res.persistence.analysis_run_id,
+            persistence_dataset_version_id: res.persistence.dataset_version_id,
+            persistence_study_id: res.persistence.study_id,
+            persistence_outcome: res.persistence.run_outcome,
+          }
+        : {}),
+    });
     try {
-      console.log("[MODULE]", MODULE, "[DESIGN]", design, "[ALPHA]", alpha);
-      console.log("[handleAnalyze] Running ANOVA with traits:", selectedTraits);
+      console.log("[MODULE]", MODULE, "[DESIGN]", submittedSetup.design, "[ALPHA]", submittedSetup.alpha);
+      console.log("[handleAnalyze] Running ANOVA with traits:", submittedSetup.traits);
 
       const request = buildAnovaRequest({
         datasetContext,
-        design,
-        alpha,
+        design: submittedSetup.design,
+        alpha: submittedSetup.alpha,
         mapping,
-        traits: selectedTraits,
+        traits: submittedSetup.traits,
       });
 
       const res = usePersistentRcbd
         ? await runPersistentRcbdAnalysis({
             datasetContext,
-            treatmentColumn: treatmentCol,
-            repColumn,
-            selectedTraits,
-            alpha,
+            treatmentColumn: submittedSetup.mapping.treatment ?? "",
+            repColumn: submittedSetup.mapping.rep ?? "",
+            selectedTraits: submittedSetup.traits,
+            alpha: submittedSetup.alpha,
           })
         : await analyzeUpload(request);
 
-      setResults(res);
+      // History is recorded even for a superseded run: the backend did execute
+      // it (and a persistent RCBD run is durable), so the record stays truthful
+      // and reopenable. Only the on-screen result is discarded.
+      if (!isCurrent()) {
+        void recordAnalysis({ ...historyBase, response: res, parameters: persistenceParameters(res) });
+        return;
+      }
+      setCompletedRun({ key: submittedKey, setup: submittedSetup, results: res });
       // A trait can fail structurally while the HTTP call succeeds — the
       // backend rejects invalid structures before fitting rather than
       // returning a partial model, so surface the reason here.
@@ -256,43 +332,29 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       toast({ title: "ANOVA complete", description: `${pl(successCount, "response variable")} analyzed.` });
 
       // Persist to Research Analysis History (best-effort; never blocks the flow).
-      void recordAnalysis({
-        ...historyBase,
-        response: res,
-        parameters: {
-          ...historyBase.parameters,
-          ...(res.persistence
-            ? {
-                persistence_analysis_run_id: res.persistence.analysis_run_id,
-                persistence_dataset_version_id: res.persistence.dataset_version_id,
-                persistence_study_id: res.persistence.study_id,
-                persistence_outcome: res.persistence.run_outcome,
-              }
-            : {}),
-        },
-      });
+      void recordAnalysis({ ...historyBase, response: res, parameters: persistenceParameters(res) });
     } catch (err: any) {
       void recordAnalysisFailure(historyBase, err);
+      if (!isCurrent()) return;
       const message = err instanceof Error ? err.message : String(err ?? "Analysis failed.");
       setAnalysisError(message);
       toast({ title: "ANOVA failed", description: message, variant: "destructive" });
       sonnerToast.error("ANOVA failed", { description: message });
     } finally {
-      setIsAnalyzing(false);
+      if (isCurrent()) setIsAnalyzing(false);
     }
   };
 
   // ── Download report ───────────────────────────────────────────────────
   const handleDownload = async () => {
-    if (!results) return;
+    if (!results || !runSetup) return;
+    const filename = anovaReportFilename(runSetup);
+    const runIsSplitPlot = runSetup.design === "split_plot_rcbd";
     setExportError(null);
     setIsDownloading(true);
     try {
       if (results.persistence) {
-        await downloadPersistentRcbdReport(
-          results.persistence.analysis_run_id,
-          `VivaSense_ANOVA_rcbd_${new Date().toISOString().slice(0, 10)}.docx`,
-        );
+        await downloadPersistentRcbdReport(results.persistence.analysis_run_id, filename);
         sonnerToast.success("Persistent ANOVA report downloaded");
         return;
       }
@@ -308,7 +370,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
         sonnerToast.success("ANOVA report downloaded");
@@ -317,7 +379,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
 
       const payload = {
         analysis_type: MODULE,
-        design_type: design,
+        design_type: runSetup.design,
         dataset_summary: results.dataset_summary,
         summary_table: results.summary_table,
         trait_results: Object.fromEntries(
@@ -328,7 +390,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
               const result = ar?.result;
               return [trait, {
                 anova_table: result?.anova_table,
-                mean_separation: isSplitPlot ? undefined : result?.mean_separation,
+                mean_separation: runIsSplitPlot ? undefined : result?.mean_separation,
                 grand_mean: result?.grand_mean,
                 n_genotypes: result?.n_genotypes,
                 n_reps: result?.n_reps,
@@ -344,7 +406,7 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `VivaSense_ANOVA_${design}_${new Date().toISOString().slice(0, 10)}.docx`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
       sonnerToast.success("ANOVA report downloaded");
@@ -600,8 +662,19 @@ export function AnovaModulePanel({ datasetContext }: Props) {
       </Card>
 
       {/* Results */}
-      {results && (
-        <div className="space-y-6">
+      {results && runSetup && (() => {
+        // Everything below describes the completed run, so it reads the run's
+        // own setup. These deliberately shadow the live selector values.
+        const design = runSetup.design;
+        const alpha = runSetup.alpha;
+        const isSplitPlot = design === "split_plot_rcbd";
+        const isFactorialFamily = design === "factorial_crd" || design === "factorial_rcbd";
+        const treatmentCol = runSetup.mapping.treatment ?? "";
+        const repColumn = runSetup.mapping.rep ?? "";
+        const mainPlot = runSetup.mapping.main_plot ?? "";
+        const subPlot = runSetup.mapping.sub_plot ?? "";
+        return (
+        <div className="space-y-6" data-testid="anova-run-result" data-run-design={design}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -932,7 +1005,8 @@ export function AnovaModulePanel({ datasetContext }: Props) {
             );
           })}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

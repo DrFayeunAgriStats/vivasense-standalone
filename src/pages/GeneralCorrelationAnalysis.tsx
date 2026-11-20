@@ -6,7 +6,7 @@
  * genetic control exists on this page; genetic analyses stay on the existing,
  * unchanged pages.
  */
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -287,14 +287,31 @@ export default function GeneralCorrelationAnalysis() {
   );
   const canRun = Boolean(file && traits.length >= 2 && !isLoading);
 
+  // Result identity. Every change to the file, selected variables, method or
+  // alpha bumps the analysis generation; a request only applies its response
+  // or error if the generation it started in is still current. Without this a
+  // Pearson response arriving after the user switched to Spearman repopulated
+  // the page (and enabled its Word export) under the Spearman setting.
+  const analysisGenerationRef = useRef(0);
+  // File parsing has its own generation so that overlapping uploads (or a
+  // removal while a parse is pending) cannot install the columns of a file
+  // that is no longer the selected one.
+  const fileGenerationRef = useRef(0);
+
   const resetResult = () => {
+    analysisGenerationRef.current += 1;
     setResult(null);
     setError(null);
     setExportError(null);
+    setIsLoading(false);
   };
 
   const parseFile = async (nextFile: File) => {
+    fileGenerationRef.current += 1;
+    const fileGeneration = fileGenerationRef.current;
+    const isCurrentFile = () => fileGenerationRef.current === fileGeneration;
     setParseError(null);
+    setColumns([]);
     setTraits([]);
     setShowDesignColumns(false);
     resetResult();
@@ -313,6 +330,7 @@ export default function GeneralCorrelationAnalysis() {
         (v, i) => String(v ?? "").trim() || `Column ${i + 1}`,
       );
       const dataRows = rows.slice(1);
+      if (!isCurrentFile()) return;
       setColumns(
         headers.map((name, index) => {
           const values = dataRows
@@ -322,6 +340,7 @@ export default function GeneralCorrelationAnalysis() {
         }),
       );
     } catch (err) {
+      if (!isCurrentFile()) return;
       setColumns([]);
       setParseError(err instanceof Error ? err.message : "Could not parse that dataset.");
     }
@@ -333,8 +352,10 @@ export default function GeneralCorrelationAnalysis() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!file || !canRun) return;
-    setIsLoading(true);
     resetResult();
+    const generation = analysisGenerationRef.current;
+    const isCurrent = () => analysisGenerationRef.current === generation;
+    setIsLoading(true);
     try {
       const request = buildGeneralCorrelationRequest({
         base64Content: await fileToBase64(file),
@@ -348,21 +369,27 @@ export default function GeneralCorrelationAnalysis() {
         jsonBody: request,
         timeoutMs: 60000,
       });
+      if (!isCurrent()) return;
       setResult(response);
     } catch (err) {
+      if (!isCurrent()) return;
       setError(err instanceof Error ? err.message : "General correlation failed.");
     } finally {
-      setIsLoading(false);
+      if (isCurrent()) setIsLoading(false);
     }
   };
 
   const handleWordDownload = async () => {
     if (!result) return;
+    // The export sends exactly this sealed result object; a failure that
+    // settles after the result was invalidated must not attach to a newer one.
+    const generation = analysisGenerationRef.current;
     setIsExporting(true);
     setExportError(null);
     try {
       await downloadGeneralWord(result);
     } catch (err) {
+      if (analysisGenerationRef.current !== generation) return;
       setExportError(err instanceof Error ? err.message : "The Word report could not be generated.");
     } finally {
       setIsExporting(false);
@@ -410,7 +437,10 @@ export default function GeneralCorrelationAnalysis() {
             <div className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
               <span className="flex items-center gap-2"><FileSpreadsheet className="h-4 w-4" />{file.name}</span>
               <Button type="button" variant="ghost" size="icon" aria-label="Remove dataset"
-                onClick={() => { setFile(null); setColumns([]); setTraits([]); setParseError(null); resetResult(); }}>
+                onClick={() => {
+                  fileGenerationRef.current += 1;
+                  setFile(null); setColumns([]); setTraits([]); setParseError(null); setShowDesignColumns(false); resetResult();
+                }}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
