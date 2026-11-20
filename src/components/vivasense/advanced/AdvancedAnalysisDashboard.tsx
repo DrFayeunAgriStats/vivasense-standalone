@@ -1,3 +1,4 @@
+import { advancedBetaBanner, advancedBetaNotice } from "@/lib/advancedRelease";
 import { SampleDatasets } from "@/components/help/SampleDatasets";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -88,6 +89,15 @@ const MODULES: {
  * PCA and stability require their own separately reviewed build-time toggles
  * and a compatible corrected production backend before activation.
  */
+function BetaBanner() {
+  return (
+    <div role="note" data-testid="advanced-beta-banner" className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+      <p className="font-semibold">{advancedBetaBanner}</p>
+      <p className="mt-1 text-xs">{advancedBetaNotice}</p>
+    </div>
+  );
+}
+
 export function isAdvancedMethodReady(id: AdvancedModuleId | null): boolean {
   if (id === "pca") return import.meta.env.VITE_ADVANCED_PCA_BETA === "true";
   if (id === "stability") return import.meta.env.VITE_ADVANCED_STABILITY_BETA === "true";
@@ -109,6 +119,7 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
       : SelectionIndexPanel;
     return (
       <div className="space-y-4">
+        <BetaBanner />
         <Button
           variant="ghost"
           size="sm"
@@ -125,7 +136,8 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
   }
 
   return (
-    <div className={embedded ? "" : "space-y-6"}>
+    <div className={embedded ? "space-y-4" : "space-y-6"}>
+      <BetaBanner />
       {!embedded && (
         <div className="max-w-3xl">
           <h2 className="font-serif text-2xl font-bold text-foreground mb-2">Advanced Analysis</h2>

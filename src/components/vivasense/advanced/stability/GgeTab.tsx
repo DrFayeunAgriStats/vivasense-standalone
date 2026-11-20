@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,10 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Legend, Customized,
 } from "recharts";
-import { Crown, Maximize2, Star } from "lucide-react";
+import { Maximize2, Target } from "lucide-react";
 import { fmt, InterpretationPanel, ExportToolbar, downloadCsv, exportChartPng } from "../shared";
 import type { GGEResults } from "@/types/advancedAnalysis";
-import { convexHull } from "./geometry";
+import { convexHull, sectorBoundaryDirections } from "./geometry";
 import {
   computeAEC,
   computeIdealGenotype,
@@ -67,13 +67,13 @@ export function GgeTab({
 
     const aec = computeAEC(
       biplotEnvs.map((e) => ({ environment: e.environment, mean: e.mean, pc1: e.pc1, pc2: e.pc2 })),
-      biplotGenos.map((g) => ({ mean: g.mean, pc1: g.pc1, pc2: g.pc2 }))
+      gge.mean_vs_stability?.aec_direction ?? null
     );
     const projections = projectGenotypesToAEC(
       biplotGenos.map((g) => ({ genotype: g.genotype, mean: g.mean, pc1: g.pc1, pc2: g.pc2 })),
       aec
     );
-    const ideal = computeIdealGenotype(projections);
+    const ideal = computeIdealGenotype(projections, aec);
     const environmentProjections = biplotEnvs.map((e) => ({
       environment: e.environment,
       mean: e.mean,
@@ -99,7 +99,7 @@ export function GgeTab({
       aecAbscissa: drawAbscissaAxis(aec, maxAbs),
       stabilityAxis: drawStabilityAxis(aec, maxAbs),
     };
-  }, [biplotType, biplotEnvs, biplotGenos]);
+  }, [biplotType, biplotEnvs, biplotGenos, gge.mean_vs_stability?.aec_direction]);
 
   const chartGenos = useMemo(() => {
     if (biplotType === "mean-stability" && meanStabilityModel) {
@@ -133,6 +133,65 @@ export function GgeTab({
     return biplotEnvs.map((e) => ({ ...e, xCoord: e.pc1, yCoord: e.pc2 }));
   }, [biplotType, meanStabilityModel, biplotEnvs]);
 
+  // A biplot must be drawn with EQUAL scaling on both axes; otherwise angles
+  // (sector rays perpendicular to polygon sides, AEC ordinate perpendicular
+  // to the abscissa) and distance circles are visually distorted.
+  const axisExtent = useMemo(() => {
+    const vals = [
+      ...chartGenos.flatMap((g) => [Math.abs(g.xCoord), Math.abs(g.yCoord)]),
+      ...chartEnvs.flatMap((e) => [Math.abs(e.xCoord), Math.abs(e.yCoord)]),
+    ];
+    if (meanStabilityModel) vals.push(Math.abs(meanStabilityModel.ideal.idealAbscissaScore));
+    const m = Math.max(...vals.filter((v) => Number.isFinite(v)), 1e-6);
+    return Number((m * 1.35).toPrecision(3));
+  }, [chartGenos, chartEnvs, meanStabilityModel]);
+  const equalDomain: [number, number] = [-axisExtent, axisExtent];
+  const equalTicks = [-1, -0.5, 0, 0.5, 1].map((k) => Number((k * axisExtent).toPrecision(3)));
+
+  // Clip analytic overlays (rays, AEC, circles) to the square plot area.
+  const PlotClip = ({ id, xScale, yScale, children }: {
+    id: string; xScale: (v: number) => number; yScale: (v: number) => number; children: ReactNode;
+  }) => {
+    const x0 = xScale(-axisExtent), x1 = xScale(axisExtent);
+    const y0 = yScale(axisExtent), y1 = yScale(-axisExtent);
+    return (
+      <g>
+        <defs>
+          <clipPath id={id}>
+            <rect x={Math.min(x0, x1)} y={Math.min(y0, y1)} width={Math.abs(x1 - x0)} height={Math.abs(y1 - y0)} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${id})`}>{children}</g>
+      </g>
+    );
+  };
+
+  // Which-won-where: polygon and sector rays (backend geometry preferred).
+  const wwwGeometry = useMemo(() => {
+    if (biplotType !== "which-won-where") return null;
+    const byName = new Map(biplotGenos.map((g) => [g.genotype, g]));
+    const verts = gge.which_won_where?.polygon_vertices;
+    const hull = verts && verts.length >= 3 && verts.every((v) => byName.has(v))
+      ? verts.map((v) => ({ x: byName.get(v)!.pc1, y: byName.get(v)!.pc2 }))
+      : convexHull(biplotGenos.map((g) => ({ x: g.pc1, y: g.pc2 })));
+    const rays = gge.which_won_where?.sector_boundaries?.length
+      ? gge.which_won_where.sector_boundaries.map((b) => ({ x: b.direction.pc1, y: b.direction.pc2 }))
+      : sectorBoundaryDirections(hull);
+    return { hull, rays };
+  }, [biplotType, biplotGenos, gge.which_won_where]);
+
+  const envEval = biplotType === "discriminativeness" ? gge.environment_evaluation ?? null : null;
+  const cc = gge.engine_crosscheck;
+  const engineNote =
+    gge.engine === "r"
+      ? ` Computed by the R engine${cc ? (cc.status === "agree" ? `; independent cross-check agreed (${cc.n_checks} comparisons).` : "; independent cross-check DISAGREED (see limitations).") : "."}`
+      : gge.engine === "python"
+      ? " Computed by an explicit Python override, not the authoritative R engine."
+      : "";
+  const methodNote = gge.svp
+    ? `Environment-centred, ${gge.scaling === "sd" ? "SD-scaled" : "unscaled"}; singular-value partitioning: ${gge.svp}.${engineNote}`
+    : null;
+
   const xAxisLabel =
     biplotType === "mean-stability"
       ? "AEC abscissa (higher mean ->)"
@@ -144,7 +203,35 @@ export function GgeTab({
 
   return (
     <div className="space-y-6">
-      {gge?.interpretation && <InterpretationPanel text={gge.interpretation} />}
+      {gge?.interpretation && (
+        <InterpretationPanel text={gge.interpretation} verbatim title="Interpretation (rule-based and descriptive)" />
+      )}
+
+      {gge?.verification_status !== "verified" && (
+        <Card className="border-red-400 bg-red-50/60 dark:bg-red-900/10">
+          <CardContent className="p-4 text-sm">
+            <p className="font-semibold text-red-700">UNVERIFIED — not for publication or decisions</p>
+            <p className="text-muted-foreground mt-1">
+              {(gge?.verification_reasons?.length ? gge.verification_reasons.join(" ") : "This result carries no verification status.")}
+              {" "}The numbers shown are the R engine's, but the independent cross-check did not pass or was not performed.
+              Ordinary Word export is blocked until the discrepancy is resolved.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {Array.isArray(gge?.warnings) && gge.warnings.length > 0 && (
+        <Card className="border-amber-300/70 bg-amber-50/40 dark:bg-amber-900/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-serif text-base">Limitations of this biplot</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+              {gge.warnings.map((w, i) => <li key={i}>{w}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Variance summary */}
       <Card>
@@ -167,6 +254,10 @@ export function GgeTab({
           <p className="text-xs text-muted-foreground">
             Cumulative (PC1 + PC2): <span className="font-medium text-foreground">{cumVar.toFixed(1)}%</span>
             {cumVar < 50 && <span className="ml-2 text-amber-600">— below 50%, interpret with caution.</span>}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Percentages are of the genotype + genotype × environment (G + GE) variation.
+            {methodNote && <> {methodNote}</>}
           </p>
         </CardContent>
       </Card>
@@ -234,13 +325,13 @@ export function GgeTab({
                 </div>
                 <div className="max-h-[78vh] overflow-auto rounded-xl border border-border bg-background p-3">
                   <div style={{ width: `${chartZoom * 100}%`, minWidth: 920 }}>
-                    <div className="h-[720px]">
-                      <ResponsiveContainer>
-                        <ScatterChart margin={{ top: 16, right: 30, bottom: 36, left: 16 }}>
+                    <div className="mx-auto max-w-[760px]">
+                      <ResponsiveContainer width="100%" aspect={1}>
+                        <ScatterChart margin={{ top: 12, right: 64, bottom: 64, left: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" dataKey="xCoord" domain={["auto", "auto"]}
-                            label={{ value: xAxisLabel, position: "insideBottom", offset: -16 }} />
-                          <YAxis type="number" dataKey="yCoord" domain={["auto", "auto"]}
+                          <XAxis type="number" dataKey="xCoord" domain={equalDomain} ticks={equalTicks} height={30} allowDataOverflow tickFormatter={(v: number) => fmt(v, 2)}
+                            label={{ value: xAxisLabel, position: "insideBottom", offset: -20 }} />
+                          <YAxis type="number" dataKey="yCoord" domain={equalDomain} ticks={equalTicks} width={60} allowDataOverflow tickFormatter={(v: number) => fmt(v, 2)}
                             label={{ value: yAxisLabel, angle: -90, position: "insideLeft" }} />
                           <ZAxis range={[80, 80]} />
                           <ReferenceLine x={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
@@ -281,7 +372,7 @@ export function GgeTab({
                               );
                             }}
                           />
-                          <Legend />
+                          <Legend verticalAlign="top" height={28} />
                           <Scatter name="Genotypes" data={chartGenos} fill="hsl(var(--primary))" shape="circle" />
                           <Scatter name="Environments" data={chartEnvs} fill="hsl(42 85% 45%)" shape="diamond" />
                         </ScatterChart>
@@ -294,13 +385,13 @@ export function GgeTab({
           </div>
         </CardHeader>
         <CardContent>
-          <div ref={biplotRef} className="w-full h-[520px]">
-            <ResponsiveContainer>
-              <ScatterChart margin={{ top: 16, right: 30, bottom: 36, left: 16 }}>
+          <div ref={biplotRef} className="mx-auto w-full max-w-[620px]">
+            <ResponsiveContainer width="100%" aspect={1}>
+              <ScatterChart margin={{ top: 12, right: 64, bottom: 64, left: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" dataKey="xCoord" domain={["auto", "auto"]}
-                  label={{ value: xAxisLabel, position: "insideBottom", offset: -16 }} />
-                <YAxis type="number" dataKey="yCoord" domain={["auto", "auto"]}
+                <XAxis type="number" dataKey="xCoord" domain={equalDomain} ticks={equalTicks} height={30} allowDataOverflow tickFormatter={(v: number) => fmt(v, 2)}
+                  label={{ value: xAxisLabel, position: "insideBottom", offset: -20 }} />
+                <YAxis type="number" dataKey="yCoord" domain={equalDomain} ticks={equalTicks} width={60} allowDataOverflow tickFormatter={(v: number) => fmt(v, 2)}
                   label={{ value: yAxisLabel, angle: -90, position: "insideLeft" }} />
                 <ZAxis range={[80, 80]} />
                 <ReferenceLine x={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
@@ -341,7 +432,7 @@ export function GgeTab({
                     );
                   }}
                 />
-                <Legend />
+                <Legend verticalAlign="top" height={28} />
 
                 {/* Convex hull polygon for which-won-where */}
                 {biplotType === "which-won-where" && (
@@ -353,19 +444,20 @@ export function GgeTab({
                       const xScale = Object.values(xMap)[0]?.scale;
                       const yScale = Object.values(yMap)[0]?.scale;
                       if (!xScale || !yScale) return null;
-                      const hull = convexHull(biplotGenos.map((g) => ({ x: g.pc1, y: g.pc2, ref: g })));
-                      if (hull.length < 3) return null;
+                      if (!wwwGeometry || wwwGeometry.hull.length < 3) return null;
+                      const { hull, rays } = wwwGeometry;
                       const points = hull.map((p) => `${xScale(p.x)},${yScale(p.y)}`).join(" ");
                       const ox = xScale(0);
                       const oy = yScale(0);
-                      // Spokes from origin to each hull vertex
+                      const L = axisExtent * 1.5;
+                      // Sector boundaries: rays from the origin perpendicular to each polygon side.
                       return (
-                        <g>
-                          <polygon points={points} fill="hsl(var(--primary) / 0.06)" stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" />
-                          {hull.map((p, i) => (
-                            <line key={i} x1={ox} y1={oy} x2={xScale(p.x)} y2={yScale(p.y)} stroke="hsl(var(--primary))" strokeWidth={1} opacity={0.4} />
+                        <PlotClip id="gge-clip-www" xScale={xScale} yScale={yScale}>
+                          <polygon points={points} fill="hsl(var(--primary) / 0.06)" stroke="hsl(var(--primary))" strokeWidth={1.5} />
+                          {rays.map((r, i) => (
+                            <line key={i} x1={ox} y1={oy} x2={xScale(r.x * L)} y2={yScale(r.y * L)} stroke="hsl(var(--primary))" strokeWidth={1} strokeDasharray="5 4" opacity={0.7} />
                           ))}
-                        </g>
+                        </PlotClip>
                       );
                     }}
                   />
@@ -399,7 +491,7 @@ export function GgeTab({
                       const rightY = toY - arrowSize * Math.sin(angle + Math.PI / 6);
 
                       return (
-                        <g>
+                        <PlotClip id="gge-clip-mvs" xScale={xScale} yScale={yScale}>
                           <line
                             x1={fromX}
                             y1={fromY}
@@ -469,9 +561,38 @@ export function GgeTab({
 
                           <circle cx={iCx} cy={iCy} r={5.2} fill="hsl(150 58% 34%)" stroke="white" strokeWidth={1} />
                           <text x={iCx + 10} y={iCy - 9} fontSize={11} fontWeight={700} fill="hsl(150 58% 25%)">
-                            Ideal genotype
+                            Ideal reference point
                           </text>
-                        </g>
+                        </PlotClip>
+                      );
+                    }}
+                  />
+                )}
+
+                {/* AEC + ideal test environment for discriminativeness vs representativeness */}
+                {envEval && (
+                  <Customized
+                    component={(props: { xAxisMap?: Record<string, { scale: (v: number) => number }>; yAxisMap?: Record<string, { scale: (v: number) => number }> }) => {
+                      const xScale = props.xAxisMap ? Object.values(props.xAxisMap)[0]?.scale : undefined;
+                      const yScale = props.yAxisMap ? Object.values(props.yAxisMap)[0]?.scale : undefined;
+                      if (!xScale || !yScale) return null;
+                      const u = envEval.aec_direction;
+                      const L = axisExtent * 1.5;
+                      const ip = envEval.ideal_point;
+                      const ipLen = Math.sqrt(ip.pc1 * ip.pc1 + ip.pc2 * ip.pc2);
+                      const px = (d: number) => Math.abs(xScale(d) - xScale(0));
+                      return (
+                        <PlotClip id="gge-clip-env" xScale={xScale} yScale={yScale}>
+                          <line x1={xScale(-u.pc1 * L)} y1={yScale(-u.pc2 * L)} x2={xScale(u.pc1 * L)} y2={yScale(u.pc2 * L)}
+                            stroke="hsl(210 22% 35%)" strokeWidth={1.6} />
+                          <circle cx={xScale(0)} cy={yScale(0)} r={px(ipLen)} fill="none" stroke="hsl(210 16% 48% / 0.5)" strokeDasharray="4 4" />
+                          {[0.25, 0.5, 0.75].map((k) => (
+                            <circle key={k} cx={xScale(ip.pc1)} cy={yScale(ip.pc2)} r={px(ipLen * k)} fill="none" stroke="hsl(150 58% 34% / 0.45)" strokeDasharray="4 4" />
+                          ))}
+                          <circle cx={xScale(ip.pc1)} cy={yScale(ip.pc2)} r={5} fill="hsl(150 58% 34%)" stroke="white" />
+                          <text x={xScale(ip.pc1) + 8} y={yScale(ip.pc2) - 8} fontSize={11} fontWeight={700} fill="hsl(150 58% 25%)">Ideal reference environment</text>
+                          <text x={xScale(u.pc1 * axisExtent * 0.95)} y={yScale(u.pc2 * axisExtent * 0.95) - 6} fontSize={10} fontWeight={600} fill="hsl(210 22% 30%)">AEC</text>
+                        </PlotClip>
                       );
                     }}
                   />
@@ -518,9 +639,9 @@ export function GgeTab({
           <div className="mt-4 rounded-xl border border-border bg-muted/30 px-4 py-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
               {biplotType === "mean-stability"
-                ? "GGE Biplot Mean vs Stability view showing genotype performance, stability, and ideal genotype ranking across environments."
+                ? "GGE biplot mean-versus-stability view: projection onto the average-environment axis approximates mean performance, distance from it approximates variability, and genotypes are ordered by distance to a geometric reference point. Descriptive only."
                 : biplotType === "which-won-where"
-                ? "GGE Biplot Which-Won-Where view showing sector winners and crossover interaction patterns across environments."
+                ? "GGE biplot which-won-where view: the polygon vertices and the sectors in which the environments fall (rank-2 approximation). Sector groups are provisional."
                 : "GGE Biplot Environment Evaluation view showing discriminating ability and representativeness of test environments."}
             </p>
           </div>
@@ -538,7 +659,7 @@ export function GgeTab({
       {biplotType === "which-won-where" && gge.which_won_where && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="font-serif text-lg">Mega-environments</CardTitle>
+            <CardTitle className="font-serif text-lg">Sector groups (provisional mega-environments)</CardTitle>
             <ExportToolbar
               onCsv={() => {
                 const rows = gge.which_won_where!.mega_environments.map((m) => ({
@@ -557,10 +678,10 @@ export function GgeTab({
                 <Card key={m.id} className="border-primary/30 bg-primary/[0.03]">
                   <CardContent className="p-4 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge variant="secondary">Mega-Env {m.id}</Badge>
-                      <div className="flex items-center gap-1 text-amber-600">
-                        <Star className="h-4 w-4 fill-current" />
-                        <span className="text-sm font-semibold">{m.best_genotype}</span>
+                      <Badge variant="secondary">Sector group {m.id}</Badge>
+                      <div className="flex items-center gap-1 text-muted-foreground" title="Vertex genotype of this sector (biplot winner in the rank-2 approximation)">
+                        <Target className="h-4 w-4" />
+                        <span className="text-sm font-semibold text-foreground">{m.best_genotype}</span>
                       </div>
                     </div>
                     <div className="text-sm">
@@ -568,7 +689,7 @@ export function GgeTab({
                       <span className="font-medium">{m.environments.join(", ")}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-muted-foreground">Mean yield: </span>
+                      <span className="text-muted-foreground">Vertex genotype's observed mean: </span>
                       <span className="font-medium tabular-nums">{fmt(m.mean_yield, 2)}</span>
                     </div>
                   </CardContent>
@@ -578,6 +699,36 @@ export function GgeTab({
             {gge.which_won_where.interpretation && (
               <p className="text-sm text-muted-foreground mt-4 leading-relaxed">{gge.which_won_where.interpretation}</p>
             )}
+            {Array.isArray(gge.which_won_where.environment_assignments) && gge.which_won_where.environment_assignments.length > 0 && (
+              <div className="mt-4 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Environment</TableHead>
+                      <TableHead>Biplot winner (PC1–PC2)</TableHead>
+                      <TableHead>Highest observed mean</TableHead>
+                      <TableHead>Agreement</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {gge.which_won_where.environment_assignments.map((a) => (
+                      <TableRow key={a.environment}>
+                        <TableCell className="font-medium">{a.environment}</TableCell>
+                        <TableCell>{a.biplot_winner ?? "—"}{a.tied_with?.length ? ` (tie: ${a.tied_with.join(", ")})` : ""}</TableCell>
+                        <TableCell>{a.observed_winner}</TableCell>
+                        <TableCell>
+                          {a.agrees_with_observed === false
+                            ? <Badge variant="outline" className="border-amber-400 text-amber-700">Differs</Badge>
+                            : a.agrees_with_observed === true
+                            ? <span className="text-xs text-muted-foreground">Agrees</span>
+                            : <span className="text-xs text-muted-foreground">{a.note ?? "—"}</span>}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -586,7 +737,7 @@ export function GgeTab({
       {biplotType === "mean-stability" && gge.mean_vs_stability && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="font-serif text-lg">Distance from ideal genotype</CardTitle>
+            <CardTitle className="font-serif text-lg">Distance to the ideal reference point</CardTitle>
             <ExportToolbar
               onCsv={() => {
                 const rows = meanStabilityModel
@@ -623,13 +774,13 @@ export function GgeTab({
                     <TableRow key={r.genotype} className={isIdeal ? "bg-emerald-50/40 dark:bg-emerald-900/10" : ""}>
                       <TableCell className="text-right tabular-nums">{r.rank}</TableCell>
                       <TableCell className="font-medium flex items-center gap-1.5">
-                        {isIdeal && <Crown className="h-3.5 w-3.5 text-amber-500" />}
+                        {isIdeal && <Target className="h-3.5 w-3.5 text-muted-foreground" />}
                         {r.genotype}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{fmt(r.distance_from_ideal, 3)}</TableCell>
                       <TableCell>
                         {top5 ? (
-                          <Badge variant="outline" className="border-emerald-400 text-emerald-700 dark:text-emerald-300">Recommended</Badge>
+                          <Badge variant="outline" className="border-emerald-400 text-emerald-700 dark:text-emerald-300">Closest to reference point</Badge>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
                         )}
@@ -639,6 +790,44 @@ export function GgeTab({
                 })}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+      {/* Discriminativeness vs representativeness */}
+      {envEval && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="font-serif text-lg">Test-environment evaluation</CardTitle>
+            <ExportToolbar
+              onCsv={() => downloadCsv(`gge_environment_evaluation_${trait}.csv`, envEval.environments as unknown as Record<string, unknown>[])}
+            />
+          </CardHeader>
+          <CardContent className="overflow-x-auto space-y-3">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">Rank</TableHead>
+                  <TableHead>Environment</TableHead>
+                  <TableHead className="text-right">Vector length (discriminativeness)</TableHead>
+                  <TableHead className="text-right">Observed SD</TableHead>
+                  <TableHead className="text-right">Angle with AEC (°)</TableHead>
+                  <TableHead className="text-right">Distance to ideal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {envEval.environments.map((r) => (
+                  <TableRow key={r.environment} className={r.environment === envEval.ideal_environment ? "bg-emerald-50/40 dark:bg-emerald-900/10" : ""}>
+                    <TableCell className="text-right tabular-nums">{r.rank ?? "—"}</TableCell>
+                    <TableCell className="font-medium">{r.environment}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmt(r.vector_length, 3)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmt(r.observed_sd, 3)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.angle_with_aec_deg == null ? "—" : fmt(r.angle_with_aec_deg, 1)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.distance_from_ideal == null ? "—" : fmt(r.distance_from_ideal, 3)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {envEval.interpretation && <p className="text-sm text-muted-foreground leading-relaxed">{envEval.interpretation}</p>}
           </CardContent>
         </Card>
       )}

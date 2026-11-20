@@ -18,6 +18,7 @@ import {
 import { Loader2, Play, AlertTriangle, Compass } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPca } from "@/lib/advancedAnalysisApi";
+import { VerificationBanner, NoticeList } from "./AnalysisStatus";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PcaResponse } from "@/types/advancedAnalysis";
@@ -32,6 +33,9 @@ export function PcaPanel({ datasetContext }: Props) {
   const allTraits = datasetContext?.availableTraitColumns ?? [];
   const [traits, setTraits] = useState<string[]>(allTraits);
   const [standardize, setStandardize] = useState(true);
+  // Researcher authorisation, OFF by default: otherwise missing means / constant traits REFUSE the analysis and nothing is dropped.
+  const [allowExcludeGenotypes, setAllowExcludeGenotypes] = useState(false);
+  const [allowExcludeTraits, setAllowExcludeTraits] = useState(false);
   const [nComponents, setNComponents] = useState<number>(0); // 0 = let backend decide
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +70,8 @@ export function PcaPanel({ datasetContext }: Props) {
         trait_columns: traits,
         scale: standardize,
         n_components: nComponents > 0 ? nComponents : null,
+        on_missing: allowExcludeGenotypes ? "exclude_genotypes" : "refuse",
+        on_zero_variance: allowExcludeTraits ? "exclude_traits" : "refuse",
       });
       if (res.status !== "success") throw new Error("PCA failed on the server.");
       setResult(res);
@@ -162,6 +168,14 @@ export function PcaPanel({ datasetContext }: Props) {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <label className="flex items-start gap-2 text-xs">
+              <Checkbox checked={allowExcludeGenotypes} onCheckedChange={(v) => setAllowExcludeGenotypes(!!v)} />
+              <span>I authorise excluding genotypes with a missing trait mean (listed in the results). Off: the analysis is refused instead.</span>
+            </label>
+            <label className="flex items-start gap-2 text-xs">
+              <Checkbox checked={allowExcludeTraits} onCheckedChange={(v) => setAllowExcludeTraits(!!v)} />
+              <span>I authorise excluding constant (zero-variance) traits (listed in the results). Off: the analysis is refused instead.</span>
+            </label>
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={standardize} onCheckedChange={(v) => setStandardize(!!v)} />
               Standardize traits (z-score)
@@ -194,7 +208,15 @@ export function PcaPanel({ datasetContext }: Props) {
 
       {result && (
         <>
-          <InterpretationPanel text={result.interpretation} />
+          <VerificationBanner status={result.verification_status ?? null} reasons={result.verification_reasons} subject="This PCA result" />
+          <NoticeList title="Exclusions authorised by the researcher and data notes" items={result.input_notes} tone="amber" />
+          <NoticeList title="Cautions" items={result.warnings} tone="amber" />
+          {result.matrix && (
+            <p className="text-xs text-muted-foreground">
+              PCA of the {result.matrix} matrix of genotype means. {result.sign_convention ? `Component signs are arbitrary (${result.sign_convention}).` : ""}
+            </p>
+          )}
+          <InterpretationPanel text={result.interpretation} verbatim title="Interpretation (descriptive)" />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <SummaryCard label="Traits" value={result.n_traits} />

@@ -35,6 +35,8 @@ async function extractErrorDetail(response: Response): Promise<string> {
   try {
     const body = await response.json();
     if (typeof body?.detail === "string") return body.detail;
+    // machine-readable refusals (e.g. RCBD_STRUCTURE_INVALID) carry an object detail with a human-readable message
+    if (body?.detail && typeof body.detail === "object" && typeof body.detail.message === "string") return body.detail.message;
     if (typeof body?.error === "string") return body.error;
     if (typeof body?.message === "string") return body.message;
     return JSON.stringify(body);

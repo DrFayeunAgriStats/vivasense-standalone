@@ -18,6 +18,7 @@ import type {
   StabilityResponse, StabilityMethod, GgeBiplotType,
 } from "@/types/advancedAnalysis";
 import { DatasetTokenWarning } from "./shared";
+import { NoticeList, MethodErrorsNotice } from "./AnalysisStatus";
 import { ClassicTab } from "./stability/ClassicTab";
 import { AmmiTab } from "./stability/AmmiTab";
 import { GgeTab } from "./stability/GgeTab";
@@ -44,6 +45,8 @@ export function StabilityPanel({ datasetContext }: Props) {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<StabilityResponse | null>(null);
+  // Researcher authorisation: OFF by default. While off, any invalid observation refuses the analysis (nothing is excluded silently).
+  const [excludeInvalid, setExcludeInvalid] = useState(false);
   const [activeTab, setActiveTab] = useState<"classic" | "ammi" | "gge" | "comparison">("classic");
 
   const datasetToken = datasetContext?.datasetToken ?? null;
@@ -89,6 +92,7 @@ export function StabilityPanel({ datasetContext }: Props) {
           methods,
           biplotType: ggeEnabled ? biplotType : undefined,
           ammiComponents: ammiEnabled ? ammiComponents : undefined,
+          excludeInvalid,
         })
       );
       if (res.status !== "success") {
@@ -109,7 +113,7 @@ export function StabilityPanel({ datasetContext }: Props) {
       setResult(res);
       void recordAnalysis({ ...historyBase, response: res });
       // Auto-pick the most informative tab available
-      const hasAmmi = !!res.ammi_results && Array.isArray(res.ammi_results.anova_table?.source);
+      const hasAmmi = !!res.ammi_results && Array.isArray(res.ammi_results.genotype_scores);
       const hasGge = !!res.gge_results && !!res.gge_results.biplot_data;
       if (hasAmmi) setActiveTab("ammi");
       else if (hasGge) setActiveTab("gge");
@@ -125,7 +129,8 @@ export function StabilityPanel({ datasetContext }: Props) {
       void recordAnalysisFailure(historyBase, raw);
       // Friendlier messaging for common backend cases
       let msg = raw;
-      if (/at least 2 environments|n_environments/i.test(raw))
+      if (/exclude_invalid_observations|invalid observation|complete balanced RCBD/i.test(raw)) msg = raw;   // backend refusal: show verbatim (counts, cells, consequences)
+      else if (/at least 2 environments|n_environments/i.test(raw))
         msg = "Stability analysis requires at least 2 environments. Your dataset has only 1.";
       else if (/missing|nan/i.test(raw))
         msg = `Trait "${trait}" has too many missing values. Please select a different trait or clean your data.`;
@@ -141,7 +146,7 @@ export function StabilityPanel({ datasetContext }: Props) {
   const tabsAvailable = useMemo(() => {
     if (!result) return { classic: false, ammi: false, gge: false, comparison: false };
     const hasGenoStab = Array.isArray(result.genotype_stability) && result.genotype_stability.length > 0;
-    const hasAmmi = !!result.ammi_results && Array.isArray(result.ammi_results.anova_table?.source);
+    const hasAmmi = !!result.ammi_results && Array.isArray(result.ammi_results.genotype_scores);
     const hasGge = !!result.gge_results && !!result.gge_results.biplot_data;
     return {
       classic: hasGenoStab,
@@ -165,8 +170,8 @@ export function StabilityPanel({ datasetContext }: Props) {
         </CardHeader>
         <CardContent className="space-y-5">
           <p className="text-sm text-muted-foreground">
-            Compute Eberhart–Russell, Shukla, AMMI and GGE biplot analyses to identify stable, adapted
-            genotypes across environments. Interpretation appears before raw statistics.
+            Compute Eberhart–Russell, Shukla, AMMI and GGE biplot analyses to describe how genotypes
+            respond across environments. The results are exploratory; interpretation appears before raw statistics.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -235,6 +240,16 @@ export function StabilityPanel({ datasetContext }: Props) {
             )}
           </div>
 
+          <label className="flex items-start gap-2 rounded-md border border-dashed p-3 text-xs cursor-pointer select-none">
+            <Checkbox checked={excludeInvalid} onCheckedChange={(v) => setExcludeInvalid(v === true)} />
+            <span>
+              <span className="font-medium">I have reviewed the invalid observations and authorise their exclusion.</span>{" "}
+              Off by default: if the data contain missing, non-numeric or infinite trait values or blank labels, the analysis is refused and
+              nothing is removed. If switched on, those observations are excluded and the exclusion (counts, reasons, affected cells and
+              consequences) is shown with the results.
+            </span>
+          </label>
+
           <Button onClick={handleRun} disabled={isRunning || !trait || methods.length === 0} className="gap-2">
             {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Run Stability Analysis
@@ -263,6 +278,9 @@ export function StabilityPanel({ datasetContext }: Props) {
           </p>
         </div>
       )}
+
+      {result && <NoticeList title="Exclusions authorised by the researcher and data notes" items={result.input_notes} tone="amber" />}
+      {result && <MethodErrorsNotice errors={result.method_errors} />}
 
       {result && (
         <Card>

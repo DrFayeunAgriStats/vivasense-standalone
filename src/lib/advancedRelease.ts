@@ -7,3 +7,6 @@ export const advancedBetaEnabled = import.meta.env.VITE_ADVANCED_BETA_PRODUCTION
 
 export const advancedBetaNotice =
   "Experimental beta: scientific validation is in progress. Results are exploratory, not approved for confirmatory research, publication claims, or genotype-selection decisions. Verify against independent reference calculations.";
+
+/** Exact banner required on every Advanced Analytics screen while scientific validation is in progress. */
+export const advancedBetaBanner = "Experimental Beta — Scientific Validation in Progress.";

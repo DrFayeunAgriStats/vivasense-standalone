@@ -43,3 +43,25 @@ export function spearman(a: number[], b: number[]): number {
   if (da === 0 || db === 0) return 0;
   return num / Math.sqrt(da * db);
 }
+
+/**
+ * Which-won-where sector boundaries (Yan et al. 2000): for each edge A->B of a
+ * CCW convex hull, the boundary is the ray from the origin along the edge's
+ * OUTWARD normal (the perpendicular from the origin to that polygon side).
+ * Mirrors gge_biplot.which_won_where on the backend; used only as a fallback
+ * when the response does not carry `sector_boundaries`.
+ */
+export function sectorBoundaryDirections(hull: Pt[]): Pt[] {
+  if (hull.length < 3) return [];
+  const out: Pt[] = [];
+  for (let i = 0; i < hull.length; i++) {
+    const a = hull[i];
+    const b = hull[(i + 1) % hull.length];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const m = Math.sqrt(dx * dx + dy * dy);
+    if (m < 1e-12) continue;
+    out.push({ x: dy / m, y: -dx / m });
+  }
+  return out;
+}
