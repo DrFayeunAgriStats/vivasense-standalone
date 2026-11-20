@@ -9,9 +9,10 @@
  * deep-link. Nothing is fabricated.
  */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, ScatterChart } from "lucide-react";
+import { REGRESSION_PATH, regressionEnabled } from "@/lib/simpleRegression";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -140,6 +141,13 @@ export function WorkspaceV3Dashboard() {
       {/* Released General Correlation: available on phones and during workspace loading. */}
       <div className="mb-3.5">
         <GeneralCorrelationCard />
+        {regressionEnabled && (
+          <Button asChild variant="outline" className="mt-3 w-full sm:w-auto">
+            <Link to={REGRESSION_PATH}>
+              <ScatterChart className="h-4 w-4" aria-hidden="true" /> Open Simple Linear Regression
+            </Link>
+          </Button>
+        )}
       </div>
 
       {isLoading ? (

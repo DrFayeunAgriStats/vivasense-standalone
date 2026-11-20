@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp, Sigma } from "lucide-react";
+import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp, ScatterChart, Sigma } from "lucide-react";
+import { REGRESSION_PATH, regressionEnabled } from "@/lib/simpleRegression";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -35,7 +36,16 @@ const routeModules = [
     subtitle: "Observed variables · not genetic",
     description: "Ordinary Pearson/Spearman correlation among observed variables. It does not estimate genetic correlation.",
     icon: Sigma,
+    testId: "nav-general-correlation",
   },
+  ...(regressionEnabled ? [{
+    to: REGRESSION_PATH,
+    label: "Simple Linear Regression",
+    subtitle: "One predictor and one response",
+    description: "Fit a straight line between two numeric variables.",
+    icon: ScatterChart,
+    testId: "nav-simple-regression",
+  }] : []),
 ] as const;
 
 export function Layout({ children, footerVariant = "minimal-vivasense", hideSidebar = false, showFooter = false }: LayoutProps) {
@@ -108,7 +118,7 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
                     to={item.to}
                     title={item.description}
                     aria-label={`${item.label} — ${item.subtitle}`}
-                    data-testid="nav-general-correlation"
+                    data-testid={item.testId}
                     className={`flex items-start gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"
