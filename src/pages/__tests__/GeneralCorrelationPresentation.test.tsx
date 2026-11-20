@@ -1,3 +1,4 @@
+vi.mock("@/services/history/historyService", () => ({ recordAnalysis: vi.fn(), recordAnalysisFailure: vi.fn() }));
 /**
  * REL-UI-02 — General Correlation presentation (display only; mocked backend).
  * The interpretation wording mirrors the backend Word report

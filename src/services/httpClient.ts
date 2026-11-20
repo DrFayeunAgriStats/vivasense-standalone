@@ -1,3 +1,5 @@
+import { activityModule, recordActivity } from "./activityService";
+
 export interface ResilientRequestOptions extends RequestInit {
   timeoutMs?: number;
   retries?: number;
@@ -42,6 +44,10 @@ export async function requestWithResilience(
   const method = (init.method ?? "GET").toUpperCase();
   const maxRetries = retries ?? (isIdempotentMethod(method) ? 1 : 0);
 
+  const module = activityModule(url);
+  const operationId = crypto.randomUUID();
+  if (module) void recordActivity(module, "request_started", operationId);
+
   let attempt = 0;
   let delayMs = retryDelayMs;
   let lastError: Error | null = null;
@@ -66,6 +72,7 @@ export async function requestWithResilience(
         continue;
       }
 
+      if (module) void recordActivity(module, response.ok ? "response_received" : "request_failed", operationId);
       return response;
     } catch (err) {
       clearTimeout(timeoutId);
@@ -73,6 +80,7 @@ export async function requestWithResilience(
       lastError = error;
 
       if (!isRetryableError(error) || attempt >= maxRetries) {
+        if (module) void recordActivity(module, "request_failed", operationId);
         if (error.name === "AbortError") {
           throw new Error(`Request timed out after ${timeoutMs}ms`);
         }
