@@ -50,6 +50,35 @@ export function formatR(value: number | null | undefined): string {
   return value.toFixed(3).replace("-", "−");
 }
 
+/**
+ * REL-UI-03 strength convention (identical to vivasense-backend
+ * general_correlation._strength_label): the band is chosen from |coefficient|
+ * AS DISPLAYED by formatR (three decimals), so the printed value and its
+ * label never disagree. Below 0.100 the association is "negligible" and is
+ * described without a direction. The label is re-derived from r rather than
+ * read from the stored `strength` field so previously sealed results follow
+ * the same convention.
+ */
+const STRENGTH_BANDS: ReadonlyArray<[number, string]> = [
+  [0.9, "very strong"],
+  [0.7, "strong"],
+  [0.5, "moderate"],
+  [0.3, "weak"],
+  [0.1, "very weak"],
+];
+
+export function strengthLabel(r: number): string {
+  const displayed = Number(Math.abs(r).toFixed(3));
+  for (const [lower, label] of STRENGTH_BANDS) if (displayed >= lower) return label;
+  return "negligible";
+}
+
+export function strengthPhrase(r: number, direction: string | null | undefined): string {
+  const label = strengthLabel(r);
+  if (label === "negligible" || !direction || direction === "none") return label;
+  return `${label}, ${direction}`;
+}
+
 export function plural(n: number, singular: string, pluralForm?: string): string {
   return `${n} ${n === 1 ? singular : pluralForm ?? `${singular}s`}`;
 }
@@ -162,7 +191,7 @@ export function buildInterpretation(
     if (state === "not_estimable") {
       return { label, state, text: `not estimated – ${p.reason || "insufficient data"}.` };
     }
-    const core = `${sym} = ${formatR(p.r)} (${p.strength}, ${p.direction}), n = ${p.n}`;
+    const core = `${sym} = ${formatR(p.r)} (${strengthPhrase(Number(p.r), p.direction)}), n = ${p.n}`;
     if (state === "not_assessed") {
       return {
         label,
