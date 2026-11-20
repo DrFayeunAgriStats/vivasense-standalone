@@ -5,6 +5,8 @@ import { VivaSenseAuthGuard } from "@/components/vivasense/VivaSenseAuthGuard";
 import VivaSenseAuth from "@/pages/VivaSenseAuth";
 import VivaSenseWorkspace from "@/pages/VivaSenseWorkspace";
 import GeneralCorrelationAnalysis from "@/pages/GeneralCorrelationAnalysis";
+import SimpleRegressionAnalysis from "@/pages/SimpleRegressionAnalysis";
+import { REGRESSION_PATH, regressionEnabled } from "@/lib/simpleRegression";
 import DataCapture from "@/pages/DataCapture";
 import HelpLearning from "@/pages/HelpLearning";
 import { Toaster } from "@/components/ui/toaster";
@@ -42,6 +44,9 @@ function App() {
                 </VivaSenseAuthGuard>
               }
             />
+            {regressionEnabled && (
+              <Route path={REGRESSION_PATH} element={<VivaSenseAuthGuard><SimpleRegressionAnalysis /></VivaSenseAuthGuard>} />
+            )}
             {/* V3 is now the default /workspace overview; keep this path as a
                 redirect so existing /workspace-v2 links/bookmarks still work. */}
             <Route path="/workspace-v2" element={<Navigate to="/workspace" replace />} />
