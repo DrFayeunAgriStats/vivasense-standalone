@@ -34,49 +34,49 @@ const MODULES: {
   {
     id: "stability",
     title: "Stability Analysis",
-    description: "GGE biplot and AMMI framing with stability diagnostics for adaptable genotypes across environments.",
+    description: "Explore genotype response patterns across environments; stability classifications remain provisional.",
     icon: TrendingUp,
     badge: "G×E",
   },
   {
     id: "blup",
     title: "BLUP Predictions",
-    description: "Best Linear Unbiased Predictions of breeding values with reliability and standard errors.",
+    description: "Explore model-based BLUP estimates with their assumptions and uncertainty; not independently validated.",
     icon: Sigma,
     badge: "Mixed model",
   },
   {
     id: "pca",
     title: "Principal Component Analysis",
-    description: "Reduce dimensionality and visualize multivariate genotype patterns through scree and biplots.",
+    description: "Explore multivariate structure through scree and biplots; interpret components cautiously.",
     icon: Compass,
     badge: "Multivariate",
   },
   {
     id: "cluster",
     title: "Cluster Analysis",
-    description: "Hierarchical grouping of genotypes by trait similarity with silhouette and radar profiles.",
+    description: "Explore trait-similarity clusters; grouping does not prove biological distinctness.",
     icon: Network,
     badge: "Grouping",
   },
   {
     id: "path-analysis",
     title: "Path Analysis",
-    description: "Decompose trait correlations into direct and indirect effects with a clear path diagram.",
+    description: "Explore specified path coefficients; association alone does not establish causal effects.",
     icon: GitBranch,
-    badge: "Causal",
+    badge: "Association",
   },
   {
     id: "selection-index",
     title: "Selection Index",
-    description: "Multi-trait genotype ranking using economic weights and selection intensity.",
+    description: "Explore weighted trait scores; breeding recommendations require independent validation.",
     icon: Award,
     badge: "Breeding",
   },
   {
     id: "trait-association",
     title: "Trait Association",
-    description: "Correlation and significance matrix across traits with strongest-pair and data-quality flags.",
+    description: "Explore trait associations with data-quality checks; statistical association is not causation.",
     icon: Link2,
     badge: "Association",
   },
@@ -116,7 +116,7 @@ export function AdvancedAnalysisDashboard({ datasetContext, initialModule = null
         <div className="max-w-3xl">
           <h2 className="font-serif text-2xl font-bold text-foreground mb-2">Advanced Analysis</h2>
           <p className="text-muted-foreground">
-            Multivariate and mixed-model methods for breeding decisions: GGE/AMMI stability framing, BLUPs, PCA, and clustering.
+            Experimental multivariate and mixed-model analyses for exploratory research. Scientific validation remains in progress.
           </p>
         </div>
       )}
