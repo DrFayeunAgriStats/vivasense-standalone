@@ -7,7 +7,7 @@
  */
 
 import { API_BASE } from "./apiConfig";
-import { buildModeHeaders, guardProModule } from "./featureMode";
+import { buildModeHeaders } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
 const ENGINE_BASE: string = API_BASE;
 
@@ -189,7 +189,6 @@ export async function computeCorrelation(
 export async function exportCorrelationWord(
   results: CorrelationResponse
 ): Promise<void> {
-  guardProModule("export-word");
 
   const url = `${ENGINE_BASE}/export/correlation-word`;
   const payload: CorrelationResponse = {

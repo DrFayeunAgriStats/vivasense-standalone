@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Download, Shuffle, MapPin, Info, FileSpreadsheet } from "lucide-react";
 import { vivaSenseRequest } from "@/services/vivasenseApiClient";
-import { getVivaSenseMode, subscribeVivaSenseMode, type VivaSenseMode } from "@/lib/vivasenseGating";
 import { downloadFieldBook } from "@/lib/fieldBookExport";
 
 type Design =
@@ -20,15 +19,15 @@ type Design =
   | "lattice"
   | "alpha_lattice";
 
-const DESIGNS: Array<{ value: Design; label: string; desc: string; requiresPro: boolean }> = [
-  { value: "crd", label: "CRD", desc: "Completely Randomised Design", requiresPro: false },
-  { value: "rcbd", label: "RCBD", desc: "Randomised Complete Block Design", requiresPro: false },
-  { value: "latin_square", label: "Latin Square", desc: "n x n Latin Square Design", requiresPro: true },
-  { value: "split_plot", label: "Split Plot", desc: "Two-level nested design", requiresPro: true },
-  { value: "split_split", label: "Split-Split Plot", desc: "Three-level nested design", requiresPro: true },
-  { value: "factorial_rcbd", label: "Factorial RCBD", desc: "All factor combinations in blocks", requiresPro: true },
-  { value: "lattice", label: "Balanced Lattice", desc: "Incomplete block - perfect square", requiresPro: true },
-  { value: "alpha_lattice", label: "Alpha Lattice", desc: "Flexible incomplete block design", requiresPro: true },
+const DESIGNS: Array<{ value: Design; label: string; desc: string }> = [
+  { value: "crd", label: "CRD", desc: "Completely Randomised Design" },
+  { value: "rcbd", label: "RCBD", desc: "Randomised Complete Block Design" },
+  { value: "latin_square", label: "Latin Square", desc: "n x n Latin Square Design" },
+  { value: "split_plot", label: "Split Plot", desc: "Two-level nested design" },
+  { value: "split_split", label: "Split-Split Plot", desc: "Three-level nested design" },
+  { value: "factorial_rcbd", label: "Factorial RCBD", desc: "All factor combinations in blocks" },
+  { value: "lattice", label: "Balanced Lattice", desc: "Incomplete block - perfect square" },
+  { value: "alpha_lattice", label: "Alpha Lattice", desc: "Flexible incomplete block design" },
 ];
 
 interface FormFieldProps {
@@ -110,7 +109,6 @@ interface LatticeBlockSize {
 }
 
 export function FieldLayoutGenerator() {
-  const [mode, setMode] = useState<VivaSenseMode>(() => getVivaSenseMode());
   const [design, setDesign] = useState<Design>("rcbd");
   const [treatmentsRaw, setTreatmentsRaw] = useState("");
   const [replications, setReplications] = useState(3);
@@ -144,14 +142,7 @@ export function FieldLayoutGenerator() {
   const [error, setError] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  const isPro = mode === "pro";
-  const selectedDesign = useMemo(() => DESIGNS.find((d) => d.value === design), [design]);
   const parseCsv = (s: string) => s.split(/[,\n]+/).map((x) => x.trim()).filter(Boolean);
-
-  useEffect(() => {
-    setMode(getVivaSenseMode());
-    return subscribeVivaSenseMode(setMode);
-  }, []);
 
   // Load the engine's block-size classification once the lattice design is chosen.
   useEffect(() => {
@@ -370,9 +361,6 @@ export function FieldLayoutGenerator() {
   };
 
   const validate = (): string | null => {
-    if (selectedDesign?.requiresPro && !isPro) {
-      return "This design is available in VivaSense Pro only.";
-    }
     if (replications < 2) return "Replications must be >= 2.";
     if (replications > 20 && design !== "lattice") return "Replications must be <= 20.";
     if (plotWidth <= 0 || plotLength <= 0) return "Plot dimensions must be positive.";
@@ -418,7 +406,6 @@ export function FieldLayoutGenerator() {
       const data = await vivaSenseRequest<Partial<FieldLayoutResult>>("/field-layout/generate", {
         method: "POST",
         jsonBody: buildPayload(),
-        headers: { "X-VivaSense-Mode": isPro ? "pro" : "free" },
       });
       if (!data || typeof data !== "object") {
         throw new Error("Unexpected response format from server.");
@@ -576,7 +563,7 @@ export function FieldLayoutGenerator() {
             Configure field layout
           </CardTitle>
           <CardDescription>
-            Generate randomised field layouts for classic and Pro experimental designs.
+            Generate randomised field layouts for available experimental designs — free for all researchers.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -591,32 +578,13 @@ export function FieldLayoutGenerator() {
                 <option
                   key={d.value}
                   value={d.value}
-                  disabled={d.requiresPro && !isPro}
                 >
-                  {d.label} - {d.desc}{d.requiresPro ? " [Pro]" : ""}
+                  {d.label} - {d.desc}
                 </option>
               ))}
             </select>
 
-            {selectedDesign?.requiresPro && !isPro && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: "10px 14px",
-                  background: "#FAEEDA",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  color: "#854F0B",
-                  border: "0.5px solid #F0BC52",
-                }}
-              >
-                <span role="img" aria-label="locked">🔒</span> <strong>Pro feature.</strong> Upgrade to VivaSense Pro to access
-                Latin square, split plot, factorial, lattice and alpha lattice designs.{" "}
-                <a href="https://fieldtoinsightacademy.com.ng" target="_blank" rel="noopener noreferrer" style={{ color: "#854F0B", fontWeight: 600 }}>
-                  Upgrade -&gt;
-                </a>
-              </div>
-            )}
+
           </div>
 
           {(design === "crd" || design === "rcbd") && (
@@ -845,7 +813,6 @@ export function FieldLayoutGenerator() {
               onClick={generate}
               disabled={
                 isLoading ||
-                (selectedDesign?.requiresPro && !isPro) ||
                 (design === "lattice" &&
                   (!!latticeOptionsError || !latticeOptions ||
                     (!!selectedLattice && selectedLattice.status !== "supported")))
