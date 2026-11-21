@@ -244,3 +244,31 @@ describe("D14 provenance and full-precision exports", () => {
     expect(m.analysis.effective_n_components).toBe(5);
   });
 });
+
+// ── D07 presentation (re-audit): overlapping trait labels ────────────────────
+import disjoint from "@/test/fixtures/pca/disjoint_traits_cor.json";
+import { PcaBiplot, BIPLOT_PLOT_SIZE } from "../PcaBiplot";
+import { labelExtent, overlaps } from "@/lib/pcaBiplot";
+
+describe("D07 label collisions (Manus re-audit disjoint_traits fixture)", () => {
+  it.each(["correlation", "distance"] as const)("%s biplot: labels never overlap and arrows keep their exact geometry", (conv) => {
+    const res = disjoint as unknown as PcaResponse;
+    const g = buildBiplot(res, 0, 1, conv)!;
+    const { container } = render(<PcaBiplot geometry={g} varianceExplained={res.variance_explained} title="t" />);
+    const labels = Array.from(container.querySelectorAll('[data-testid="pca-biplot-vector-label"]')).map((t) => ({
+      text: t.textContent ?? "", lx: Number(t.getAttribute("x")), ly: Number(t.getAttribute("y")),
+      anchor: (t.getAttribute("text-anchor") ?? "start") as "start" | "end",
+    }));
+    expect(labels.map((l) => l.text).sort()).toEqual(["Alpha", "Beta", "Gamma"]);
+    for (let i = 0; i < labels.length; i++)
+      for (let j = i + 1; j < labels.length; j++) expect(overlaps(labelExtent(labels[i]), labelExtent(labels[j]))).toBe(false);
+    // Alpha and Beta are nearly parallel here, so at least one label was moved and gets a leader line.
+    expect(container.querySelectorAll('[data-testid="pca-biplot-label-leader"]').length).toBeGreaterThan(0);
+    const px = BIPLOT_PLOT_SIZE / (2 * g.extent);
+    for (const v of g.vectors) {
+      const line = container.querySelector(`[data-trait="${v.trait}"] line:not([data-testid])`)!;
+      expect(Number(line.getAttribute("x2"))).toBeCloseTo(56 + (v.x + g.extent) * px, 9);
+      expect(Number(line.getAttribute("y2"))).toBeCloseTo(20 + (g.extent - v.y) * px, 9);
+    }
+  });
+});

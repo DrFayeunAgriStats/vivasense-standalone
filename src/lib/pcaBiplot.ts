@@ -101,3 +101,48 @@ export function biplotTicks(extent: number, count = 5): number[] {
   for (let t = Math.ceil(-extent / step) * step; t <= extent + 1e-12; t += step) ticks.push(Number(t.toPrecision(12)));
   return ticks;
 }
+
+/**
+ * Collision-free placement of trait labels (Manus PCA re-audit, D07 presentation note).  Only label positions move:
+ * arrows, points and the data-to-pixel scale are untouched.  Labels start just beyond their arrow tip and are pushed
+ * apart vertically, in pixel space, until their estimated boxes no longer overlap.  `moved` reports whether a
+ * label was displaced (the renderer then draws a thin leader from the tip to the label).
+ */
+export interface LabelBox { key: string; x: number; y: number; text: string; anchor: "start" | "end" }
+export interface PlacedLabel extends LabelBox { lx: number; ly: number; moved: boolean }
+
+export const LABEL_FONT_PX = 11;
+const CHAR_W = 0.62 * LABEL_FONT_PX;
+const LINE_H = LABEL_FONT_PX + 3;
+
+export function labelExtent(l: { lx: number; ly: number; text: string; anchor: "start" | "end" }) {
+  const w = l.text.length * CHAR_W;
+  const x0 = l.anchor === "start" ? l.lx : l.lx - w;
+  return { x0, x1: x0 + w, y0: l.ly - LABEL_FONT_PX, y1: l.ly + 3 };
+}
+
+export function overlaps(a: ReturnType<typeof labelExtent>, b: ReturnType<typeof labelExtent>): boolean {
+  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+}
+
+export function layoutLabels(items: LabelBox[], maxIterations = 200): PlacedLabel[] {
+  const placed: PlacedLabel[] = items.map((it) => ({ ...it, lx: it.x, ly: it.y, moved: false }));
+  for (let iter = 0; iter < maxIterations; iter++) {
+    let changed = false;
+    const order = [...placed].sort((p, q) => p.ly - q.ly);
+    for (let i = 0; i < order.length; i++) {
+      for (let j = i + 1; j < order.length; j++) {
+        const a = order[i];
+        const b = order[j];
+        if (!overlaps(labelExtent(a), labelExtent(b))) continue;
+        const need = LINE_H - (b.ly - a.ly);
+        a.ly -= need / 2 + 0.5;
+        b.ly += need / 2 + 0.5;
+        a.moved = b.moved = true;
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return placed;
+}

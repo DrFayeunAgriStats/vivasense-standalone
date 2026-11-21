@@ -1,5 +1,5 @@
 import { forwardRef, useId } from "react";
-import { biplotTicks, type BiplotGeometry } from "@/lib/pcaBiplot";
+import { biplotTicks, layoutLabels, type BiplotGeometry } from "@/lib/pcaBiplot";
 
 /**
  * Equal-unit PCA biplot (Manus PCA audit D07).  One data-to-pixel scale is used for both axes; trait arrows are
@@ -45,6 +45,12 @@ export const PcaBiplot = forwardRef<SVGSVGElement, PcaBiplotProps>(function PcaB
       "positions are a two-dimensional approximation. Signs of components are arbitrary.",
   );
   const height = M.top + BIPLOT_PLOT_SIZE + M.bottom + 18 * (caption.length + 1);
+  // Trait labels are laid out to avoid overlap; arrows and points keep their exact positions.
+  const labels = layoutLabels(g.vectors.map((v) => ({
+    key: v.trait, text: v.trait, anchor: v.x >= 0 ? "start" as const : "end" as const,
+    x: sx(v.x) + (v.x >= 0 ? 6 : -6), y: sy(v.y) + (v.y >= 0 ? -6 : 14),
+  })));
+  const labelFor = Object.fromEntries(labels.map((l) => [l.key, l]));
   const xLabel = `PC${g.a + 1} (${pctA.toFixed(1)}%)`;
   const yLabel = `PC${g.b + 1} (${pctB.toFixed(1)}%)`;
 
@@ -88,8 +94,12 @@ export const PcaBiplot = forwardRef<SVGSVGElement, PcaBiplotProps>(function PcaB
         {g.vectors.map((v) => (
           <g key={`v-${v.trait}`} data-testid="pca-biplot-vector" data-trait={v.trait} data-raw-x={v.rawX} data-raw-y={v.rawY}>
             <line x1={sx(0)} y1={sy(0)} x2={sx(v.x)} y2={sy(v.y)} stroke={COLORS.arrow} strokeWidth={1.8} markerEnd={`url(#${markerId})`} />
-            <text x={sx(v.x) + (v.x >= 0 ? 6 : -6)} y={sy(v.y) + (v.y >= 0 ? -6 : 14)} textAnchor={v.x >= 0 ? "start" : "end"}
-              fontSize={11} fontWeight={600} fill={COLORS.arrow}>{v.trait}</text>
+            {labelFor[v.trait].moved && (
+              <line data-testid="pca-biplot-label-leader" x1={sx(v.x)} y1={sy(v.y)} x2={labelFor[v.trait].lx} y2={labelFor[v.trait].ly - 4}
+                stroke={COLORS.arrow} strokeWidth={0.6} strokeOpacity={0.6} />
+            )}
+            <text data-testid="pca-biplot-vector-label" x={labelFor[v.trait].lx} y={labelFor[v.trait].ly}
+              textAnchor={labelFor[v.trait].anchor} fontSize={11} fontWeight={600} fill={COLORS.arrow}>{v.trait}</text>
           </g>
         ))}
       </g>
