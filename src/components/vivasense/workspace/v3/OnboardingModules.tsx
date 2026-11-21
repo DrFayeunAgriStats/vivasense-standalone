@@ -3,8 +3,9 @@
  * navigates to that module and dismisses the section. Dismissal persists
  * per-user (profiles.onboarding_dismissed) via the parent's onDismiss.
  */
-import { ClipboardList, FlaskConical, LayoutGrid, X } from "lucide-react";
+import { ClipboardList, FlaskConical, LayoutGrid, Sparkles, X } from "lucide-react";
 import type { WorkspaceAction } from "@/lib/workspace/workflowState";
+import { advancedBetaEnabled } from "@/lib/advancedRelease";
 
 interface Props {
   onNavigate: (action: WorkspaceAction) => void;
@@ -21,6 +22,7 @@ const MODULES: {
   { icon: FlaskConical, name: "ANOVA & Mean Separation", desc: "ANOVA for CRD, RCBD, factorial and split-plot experiments", action: "start-analysis", accent: "text-primary bg-primary/10" },
   { icon: LayoutGrid, name: "Field Layout", desc: "Randomise plots and generate field books", action: "field-layout", accent: "text-blue-600 bg-blue-500/10 dark:text-blue-400" },
   { icon: ClipboardList, name: "Data Capture", desc: "Record field observations by study and plot", action: "data-capture", accent: "text-violet-600 bg-violet-500/10 dark:text-violet-400" },
+  ...(advancedBetaEnabled ? [{ icon: Sparkles, name: "Advanced Analytics — Experimental Beta", desc: "PCA, Stability, AMMI and GGE (exploratory)", action: "advanced" as WorkspaceAction, accent: "text-amber-700 bg-amber-500/10 dark:text-amber-400" }] : []),
 ];
 
 export function OnboardingModules({ onNavigate, onDismiss }: Props) {
@@ -36,7 +38,7 @@ export function OnboardingModules({ onNavigate, onDismiss }: Props) {
           Dismiss <X className="h-3 w-3" />
         </button>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {MODULES.map((m) => {
           const Icon = m.icon;
           return (

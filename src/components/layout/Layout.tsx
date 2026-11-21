@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp, ScatterChart, Sigma } from "lucide-react";
+import { FlaskConical, LayoutGrid, Leaf, ClipboardList, CircleHelp, ScatterChart, Sigma, Sparkles } from "lucide-react";
 import { REGRESSION_PATH, regressionEnabled } from "@/lib/simpleRegression";
+import { advancedBetaEnabled } from "@/lib/advancedRelease";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 
@@ -24,6 +25,7 @@ const nav = [
 const modules = [
   { module: "anova", label: "ANOVA & Mean Separation", icon: FlaskConical },
   { module: "field-layout", label: "Field Layout", icon: LayoutGrid },
+  ...(advancedBetaEnabled ? [{ module: "advanced", label: "Advanced Analytics (Beta)", icon: Sparkles }] : []),
 ] as const;
 
 // Verified stand-alone analysis pages (own route, not a /workspace module).
@@ -98,6 +100,8 @@ export function Layout({ children, footerVariant = "minimal-vivasense", hideSide
                   <Link
                     key={item.module}
                     to={`/workspace?module=${item.module}`}
+                    data-testid={item.module === "advanced" ? "nav-advanced-analytics" : undefined}
+                    title={item.module === "advanced" ? "PCA, Stability, AMMI and GGE — exploratory experimental beta" : undefined}
                     className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"
