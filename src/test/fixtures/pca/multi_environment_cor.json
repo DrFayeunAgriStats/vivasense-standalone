@@ -1,0 +1,474 @@
+{
+ "status": "success",
+ "n_traits": 3,
+ "n_genotypes": 4,
+ "variance_explained": [
+  100.0
+ ],
+ "cumulative_variance": [
+  100.0
+ ],
+ "loadings": {
+  "Yield": [
+   0.577350269189626
+  ],
+  "Height": [
+   0.577350269189625
+  ],
+  "Flowering": [
+   0.577350269189626
+  ]
+ },
+ "scores": [
+  {
+   "genotype": "G1",
+   "scores": [
+    2.01246117974981
+   ]
+  },
+  {
+   "genotype": "G2",
+   "scores": [
+    0.670820393249937
+   ]
+  },
+  {
+   "genotype": "G3",
+   "scores": [
+    -0.670820393249937
+   ]
+  },
+  {
+   "genotype": "G4",
+   "scores": [
+    -2.01246117974981
+   ]
+  }
+ ],
+ "biplot_data": {
+  "loadings": {
+   "Yield": [
+    0.577350269189626
+   ],
+   "Height": [
+    0.577350269189625
+   ],
+   "Flowering": [
+    0.577350269189626
+   ]
+  },
+  "scores": [
+   {
+    "genotype": "G1",
+    "scores": [
+     2.01246117974981
+    ]
+   },
+   {
+    "genotype": "G2",
+    "scores": [
+     0.670820393249937
+    ]
+   },
+   {
+    "genotype": "G3",
+    "scores": [
+     -0.670820393249937
+    ]
+   },
+   {
+    "genotype": "G4",
+    "scores": [
+     -2.01246117974981
+    ]
+   }
+  ]
+ },
+ "interpretation": "Method and data\nPCA of the correlation matrix of genotype means for 3 traits and 4 genotypes (traits centred and divided by their standard deviation). The data have 1 non-zero component(s). PC1 explained 100.0% of the total variance. 1 component(s) had an eigenvalue above 1 (Kaiser's rule, a rough guide only); 2 of the 3 trait dimensions have zero variance (exact linear dependence among the traits, or fewer genotypes than traits); they are not reported as components. For comparison, the conventional broken-stick benchmark for 3 traits is 61.1% for PC1 and 27.8% for PC2. A component explaining less than its benchmark is below this descriptive retention guide; this is not a significance test, and the number of components to interpret should not be decided by this rule alone. Genotype means pool all observations of each genotype across the 2 environments (column 'Environment'): each available observation has equal weight, so genotypes observed more often in one environment are weighted towards it. These pooled means are not environment-adjusted genetic values, BLUEs or BLUPs, and this PCA does not estimate or remove genotype \u00d7 environment interaction. Genotypes have unequal numbers of observations across environments, which affects their pooled means.\n\nPC1\nPC1 (100.0%) is most strongly associated with: Yield (correlation with the component = +1.00, strong); Height (correlation with the component = +1.00, strong); Flowering (correlation with the component = +1.00, strong). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary.\n\nAssumptions and limitations\nPCA summarises the covariance structure of the genotype means of this data set. Components are mathematical axes, not biological factors; their signs are arbitrary; loadings and the percentages of variance change with the traits, genotypes and scaling chosen, and are unstable when genotypes are few. The analysis is descriptive and uses no significance test. Association between traits on a component is not evidence of a causal or genetic relationship, and the results alone do not justify selecting, crossing, advancing or releasing any genotype. Only 4 genotypes: loadings and the percentages of variance are unstable. Genotype means pool all observations of each genotype across the 2 environments (column 'Environment'): each available observation has equal weight, so genotypes observed more often in one environment are weighted towards it. These pooled means are not environment-adjusted genetic values, BLUEs or BLUPs, and this PCA does not estimate or remove genotype \u00d7 environment interaction. Genotypes have unequal numbers of observations across environments, which affects their pooled means.",
+ "analysis_context": {
+  "is_single_environment": false,
+  "environment_count": 2,
+  "design_type": "crd"
+ },
+ "matrix": "correlation",
+ "eigenvalues": [
+  3.0
+ ],
+ "correlation_loadings": {
+  "Yield": [
+   1.0
+  ],
+  "Height": [
+   0.999999999999999
+  ],
+  "Flowering": [
+   0.999999999999999
+  ]
+ },
+ "broken_stick_pct": [
+  61.1111111111111,
+  27.7777777777778,
+  11.1111111111111
+ ],
+ "excluded_traits": [],
+ "excluded_genotypes": [],
+ "input_notes": null,
+ "warnings": [
+  "Only 4 genotypes: loadings and the percentages of variance are unstable.",
+  "Genotype means pool all observations of each genotype across the 2 environments (column 'Environment'): each available observation has equal weight, so genotypes observed more often in one environment are weighted towards it. These pooled means are not environment-adjusted genetic values, BLUEs or BLUPs, and this PCA does not estimate or remove genotype \u00d7 environment interaction. Genotypes have unequal numbers of observations across environments, which affects their pooled means."
+ ],
+ "sign_convention": "the loading with the largest absolute value on each component is positive",
+ "verification_status": "verified",
+ "verification_reasons": [],
+ "engine": "r",
+ "verification_coverage": {
+  "status": "agree",
+  "coverage": "complete",
+  "coverage_limitations": [],
+  "tied_blocks": [],
+  "degenerate_axes": [],
+  "n_checks": 21,
+  "discrepancies": [],
+  "checks": [
+   {
+    "check": "matrix type",
+    "pass": true
+   },
+   {
+    "check": "traits used",
+    "pass": true
+   },
+   {
+    "check": "genotypes used",
+    "pass": true
+   },
+   {
+    "check": "rank",
+    "pass": true
+   },
+   {
+    "check": "eigenvalues",
+    "pass": true
+   },
+   {
+    "check": "% variance",
+    "pass": true
+   },
+   {
+    "check": "excluded",
+    "pass": true
+   },
+   {
+    "check": "output array shapes",
+    "pass": true
+   },
+   {
+    "check": "PC1 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 5.551115123125783e-16
+   },
+   {
+    "check": "PC1 score projection",
+    "pass": true,
+    "max_normalised_error": 9.55527841099835e-16
+   },
+   {
+    "check": "PC1 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 1.3322676295501873e-15
+   },
+   {
+    "check": "PC1 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 scores",
+    "pass": true,
+    "max_normalised_error": 2.2066970251086873e-16
+   },
+   {
+    "check": "orthonormal loadings (V'V = I)",
+    "pass": true,
+    "max_normalised_error": 5.551115123125783e-16
+   },
+   {
+    "check": "scores T = ZV",
+    "pass": true,
+    "max_normalised_error": 1.1033485125543439e-16
+   },
+   {
+    "check": "eigen-equation residual",
+    "pass": true,
+    "max_normalised_error": 5.921189464667501e-16
+   },
+   {
+    "check": "score covariance = diag(eigenvalues)",
+    "pass": true,
+    "max_normalised_error": 4.440892098500626e-16
+   },
+   {
+    "check": "scores centred",
+    "pass": true,
+    "max_normalised_error": 0.0
+   },
+   {
+    "check": "correlation-loading identity",
+    "pass": true,
+    "max_normalised_error": 1.221245327087672e-15
+   },
+   {
+    "check": "reconstruction Z = TV'",
+    "pass": true,
+    "max_normalised_error": 1.7199501139797031e-15
+   }
+  ],
+  "tolerances": {
+   "eigenvalue_rtol": 1e-07,
+   "eigenvalue_atol": 1e-09,
+   "geometry": 1e-07,
+   "tie_rtol": 1e-06
+  }
+ },
+ "rank": 1,
+ "null_components": 2,
+ "n_components": 1,
+ "requested_n_components": null,
+ "broken_stick_dimension": 3,
+ "environment_context": {
+  "mode": "multi",
+  "environment_source": "column 'Environment'",
+  "environment_count": 2,
+  "environments": [
+   "E1",
+   "E2"
+  ],
+  "genotypes_not_in_every_environment": [],
+  "unequal_observation_counts": true,
+  "is_single_environment": false,
+  "pooling_statement": "Genotype means pool all observations of each genotype across the 2 environments (column 'Environment'): each available observation has equal weight, so genotypes observed more often in one environment are weighted towards it. These pooled means are not environment-adjusted genetic values, BLUEs or BLUPs, and this PCA does not estimate or remove genotype \u00d7 environment interaction. Genotypes have unequal numbers of observations across environments, which affects their pooled means."
+ },
+ "trait_means": {
+  "Yield": 21.5,
+  "Height": 63.0,
+  "Flowering": 73.5
+ },
+ "trait_sds": {
+  "Yield": 3.87298334620742,
+  "Height": 12.9099444873581,
+  "Flowering": 3.87298334620742
+ },
+ "n_obs_per_cell": {
+  "G1": {
+   "Yield": 5,
+   "Height": 5,
+   "Flowering": 5
+  },
+  "G2": {
+   "Yield": 5,
+   "Height": 5,
+   "Flowering": 5
+  },
+  "G3": {
+   "Yield": 5,
+   "Height": 5,
+   "Flowering": 5
+  },
+  "G4": {
+   "Yield": 5,
+   "Height": 5,
+   "Flowering": 5
+  }
+ },
+ "dataset_dropped_empty_columns": null,
+ "provenance": {
+  "manifest_version": "vivasense-pca-provenance-1",
+  "generated_utc": "2026-11-21T07:30:13.937554+00:00",
+  "backend_commit_sha": "55a70e214826e646fe3473904323777b6f40f7ed",
+  "endpoint": "/analysis/pca",
+  "engines": {
+   "authoritative": "R stats::prcomp (vivasense_pca_engine.R)",
+   "r_engine_version": "pca-r-1.1.0",
+   "r_version": "R version 4.3.3 (2024-02-29)",
+   "crosscheck_engine_version": "pca-py-1.1.0"
+  },
+  "dataset": {
+   "dataset_token": "3907191b-0f7c-46fc-9745-c25cf3e9c902",
+   "file_type": "csv",
+   "design_type": "crd",
+   "mode": "multi",
+   "genotype_column": "Genotype",
+   "environment_source": "column 'Environment'",
+   "n_rows": 20,
+   "uploaded_all_empty_columns": []
+  },
+  "request": {
+   "dataset_token": "3907191b-0f7c-46fc-9745-c25cf3e9c902",
+   "trait_columns": [
+    "Yield",
+    "Height",
+    "Flowering"
+   ],
+   "scale": true,
+   "n_components": null,
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "preprocessing": {
+   "observation_unit": "arithmetic mean of the available observations of each genotype for each trait (equal weight per genotype; no imputation, block, environment or precision adjustment)",
+   "centering": "each trait centred at the mean of its genotype means",
+   "scaling": "divided by the sample SD of the genotype means (n-1)",
+   "constant_trait_rule": "constant when max - min of the genotype means <= 1.42e-14 x max(|mean|) (relative, unit-invariant)",
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "decomposition": {
+   "matrix": "correlation",
+   "rank": 1,
+   "null_components": 2,
+   "requested_n_components": null,
+   "effective_n_components": 1,
+   "loadings": "unit-length eigenvector coefficients V",
+   "correlation_loadings": "correlation between trait and component score: V*sqrt(eigenvalue)/sd_trait",
+   "scores": "T = ZV for the centred (scaled) genotype-mean matrix Z",
+   "sign_convention": "the loading with the largest absolute value on each component is positive",
+   "broken_stick": "conventional p-dimensional benchmark, p = 3 (descriptive; not a significance test)"
+  },
+  "exclusions": {
+   "excluded_traits": [],
+   "excluded_genotypes": []
+  },
+  "environment_context": {
+   "mode": "multi",
+   "environment_source": "column 'Environment'",
+   "environment_count": 2,
+   "environments": [
+    "E1",
+    "E2"
+   ],
+   "genotypes_not_in_every_environment": [],
+   "unequal_observation_counts": true,
+   "is_single_environment": false,
+   "pooling_statement": "Genotype means pool all observations of each genotype across the 2 environments (column 'Environment'): each available observation has equal weight, so genotypes observed more often in one environment are weighted towards it. These pooled means are not environment-adjusted genetic values, BLUEs or BLUPs, and this PCA does not estimate or remove genotype \u00d7 environment interaction. Genotypes have unequal numbers of observations across environments, which affects their pooled means."
+  },
+  "verification": {
+   "status": "verified",
+   "reasons": [],
+   "coverage": {
+    "status": "agree",
+    "coverage": "complete",
+    "coverage_limitations": [],
+    "tied_blocks": [],
+    "degenerate_axes": [],
+    "n_checks": 21,
+    "discrepancies": [],
+    "checks": [
+     {
+      "check": "matrix type",
+      "pass": true
+     },
+     {
+      "check": "traits used",
+      "pass": true
+     },
+     {
+      "check": "genotypes used",
+      "pass": true
+     },
+     {
+      "check": "rank",
+      "pass": true
+     },
+     {
+      "check": "eigenvalues",
+      "pass": true
+     },
+     {
+      "check": "% variance",
+      "pass": true
+     },
+     {
+      "check": "excluded",
+      "pass": true
+     },
+     {
+      "check": "output array shapes",
+      "pass": true
+     },
+     {
+      "check": "PC1 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 5.551115123125783e-16
+     },
+     {
+      "check": "PC1 score projection",
+      "pass": true,
+      "max_normalised_error": 9.55527841099835e-16
+     },
+     {
+      "check": "PC1 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 1.3322676295501873e-15
+     },
+     {
+      "check": "PC1 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 scores",
+      "pass": true,
+      "max_normalised_error": 2.2066970251086873e-16
+     },
+     {
+      "check": "orthonormal loadings (V'V = I)",
+      "pass": true,
+      "max_normalised_error": 5.551115123125783e-16
+     },
+     {
+      "check": "scores T = ZV",
+      "pass": true,
+      "max_normalised_error": 1.1033485125543439e-16
+     },
+     {
+      "check": "eigen-equation residual",
+      "pass": true,
+      "max_normalised_error": 5.921189464667501e-16
+     },
+     {
+      "check": "score covariance = diag(eigenvalues)",
+      "pass": true,
+      "max_normalised_error": 4.440892098500626e-16
+     },
+     {
+      "check": "scores centred",
+      "pass": true,
+      "max_normalised_error": 0.0
+     },
+     {
+      "check": "correlation-loading identity",
+      "pass": true,
+      "max_normalised_error": 1.221245327087672e-15
+     },
+     {
+      "check": "reconstruction Z = TV'",
+      "pass": true,
+      "max_normalised_error": 1.7199501139797031e-15
+     }
+    ],
+    "tolerances": {
+     "eigenvalue_rtol": 1e-07,
+     "eigenvalue_atol": 1e-09,
+     "geometry": 1e-07,
+     "tie_rtol": 1e-06
+    }
+   }
+  }
+ }
+}

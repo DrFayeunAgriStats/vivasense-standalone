@@ -1,0 +1,454 @@
+{
+ "status": "success",
+ "n_traits": 3,
+ "n_genotypes": 6,
+ "variance_explained": [
+  33.3333333333333
+ ],
+ "cumulative_variance": [
+  33.3333333333333
+ ],
+ "loadings": {
+  "Yield": [
+   1.0
+  ],
+  "Height": [
+   0.0
+  ],
+  "Protein": [
+   0.0
+  ]
+ },
+ "scores": [
+  {
+   "genotype": "G00",
+   "scores": [
+    1.58113883008419
+   ]
+  },
+  {
+   "genotype": "G01",
+   "scores": [
+    -1.58113883008419
+   ]
+  },
+  {
+   "genotype": "G02",
+   "scores": [
+    0.0
+   ]
+  },
+  {
+   "genotype": "G03",
+   "scores": [
+    0.0
+   ]
+  },
+  {
+   "genotype": "G04",
+   "scores": [
+    0.0
+   ]
+  },
+  {
+   "genotype": "G05",
+   "scores": [
+    0.0
+   ]
+  }
+ ],
+ "biplot_data": {
+  "loadings": {
+   "Yield": [
+    1.0
+   ],
+   "Height": [
+    0.0
+   ],
+   "Protein": [
+    0.0
+   ]
+  },
+  "scores": [
+   {
+    "genotype": "G00",
+    "scores": [
+     1.58113883008419
+    ]
+   },
+   {
+    "genotype": "G01",
+    "scores": [
+     -1.58113883008419
+    ]
+   },
+   {
+    "genotype": "G02",
+    "scores": [
+     0.0
+    ]
+   },
+   {
+    "genotype": "G03",
+    "scores": [
+     0.0
+    ]
+   },
+   {
+    "genotype": "G04",
+    "scores": [
+     0.0
+    ]
+   },
+   {
+    "genotype": "G05",
+    "scores": [
+     0.0
+    ]
+   }
+  ]
+ },
+ "interpretation": "PARTIALLY VERIFIED: the independent numerical cross-check agreed on everything it could check, but its coverage was incomplete (Components 1-3 have (nearly) equal eigenvalues but only 1 of them were returned, so the returned axes are an arbitrary choice within that tied subspace and cannot be verified.).\n\nMethod and data\nPCA of the correlation matrix of genotype means for 3 traits and 6 genotypes (traits centred and divided by their standard deviation). The data have 3 non-zero component(s). PC1 explained 33.3% and PC2 33.3% (cumulative 66.7%) of the total variance. 0 component(s) had an eigenvalue above 1 (Kaiser's rule, a rough guide only); For comparison, the conventional broken-stick benchmark for 3 traits is 61.1% for PC1 and 27.8% for PC2. A component explaining less than its benchmark is below this descriptive retention guide; this is not a significance test, and the number of components to interpret should not be decided by this rule alone.\n\nPC1\nPC1 (33.3%) is most strongly associated with: Yield (correlation with the component = +1.00, strong); Height (correlation with the component = +0.00, weak); Protein (correlation with the component = +0.00, weak). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary. This component belongs to a group of components with (nearly) equal eigenvalues, so its individual trait summary is not unique.\n\nAssumptions and limitations\nPCA summarises the covariance structure of the genotype means of this data set. Components are mathematical axes, not biological factors; their signs are arbitrary; loadings and the percentages of variance change with the traits, genotypes and scaling chosen, and are unstable when genotypes are few. The analysis is descriptive and uses no significance test. Association between traits on a component is not evidence of a causal or genetic relationship, and the results alone do not justify selecting, crossing, advancing or releasing any genotype. Only 6 genotypes: loadings and the percentages of variance are unstable. Components PC1-PC3 have (nearly) equal eigenvalues: only their joint subspace is determined. The individual axes, their loadings and any trait summary of a single one of these components are arbitrary within that subspace.",
+ "analysis_context": {
+  "is_single_environment": true,
+  "environment_count": 1,
+  "design_type": "crd"
+ },
+ "matrix": "correlation",
+ "eigenvalues": [
+  1.0,
+  1.0,
+  1.0
+ ],
+ "correlation_loadings": {
+  "Yield": [
+   1.0
+  ],
+  "Height": [
+   0.0
+  ],
+  "Protein": [
+   0.0
+  ]
+ },
+ "broken_stick_pct": [
+  61.1111111111111,
+  27.7777777777778,
+  11.1111111111111
+ ],
+ "excluded_traits": [],
+ "excluded_genotypes": [],
+ "input_notes": null,
+ "warnings": [
+  "Only 6 genotypes: loadings and the percentages of variance are unstable.",
+  "Components PC1-PC3 have (nearly) equal eigenvalues: only their joint subspace is determined. The individual axes, their loadings and any trait summary of a single one of these components are arbitrary within that subspace."
+ ],
+ "sign_convention": "the loading with the largest absolute value on each component is positive",
+ "verification_status": "partially_verified",
+ "verification_reasons": [
+  "Components 1-3 have (nearly) equal eigenvalues but only 1 of them were returned, so the returned axes are an arbitrary choice within that tied subspace and cannot be verified."
+ ],
+ "engine": "r",
+ "verification_coverage": {
+  "status": "agree_partial",
+  "coverage": "incomplete",
+  "coverage_limitations": [
+   "Components 1-3 have (nearly) equal eigenvalues but only 1 of them were returned, so the returned axes are an arbitrary choice within that tied subspace and cannot be verified."
+  ],
+  "tied_blocks": [
+   [
+    1,
+    2,
+    3
+   ]
+  ],
+  "degenerate_axes": [
+   1
+  ],
+  "n_checks": 14,
+  "discrepancies": [],
+  "checks": [
+   {
+    "check": "matrix type",
+    "pass": true
+   },
+   {
+    "check": "traits used",
+    "pass": true
+   },
+   {
+    "check": "genotypes used",
+    "pass": true
+   },
+   {
+    "check": "rank",
+    "pass": true
+   },
+   {
+    "check": "eigenvalues",
+    "pass": true
+   },
+   {
+    "check": "% variance",
+    "pass": true
+   },
+   {
+    "check": "excluded",
+    "pass": true
+   },
+   {
+    "check": "output array shapes",
+    "pass": true
+   },
+   {
+    "check": "orthonormal loadings (V'V = I)",
+    "pass": true,
+    "max_normalised_error": 0.0
+   },
+   {
+    "check": "scores T = ZV",
+    "pass": true,
+    "max_normalised_error": 2.808666774861361e-16
+   },
+   {
+    "check": "eigen-equation residual",
+    "pass": true,
+    "max_normalised_error": 2.220446049250313e-16
+   },
+   {
+    "check": "score covariance = diag(eigenvalues)",
+    "pass": true,
+    "max_normalised_error": 4.440892098500626e-16
+   },
+   {
+    "check": "scores centred",
+    "pass": true,
+    "max_normalised_error": 0.0
+   },
+   {
+    "check": "correlation-loading identity",
+    "pass": true,
+    "max_normalised_error": 0.0
+   }
+  ],
+  "tolerances": {
+   "eigenvalue_rtol": 1e-07,
+   "eigenvalue_atol": 1e-09,
+   "geometry": 1e-07,
+   "tie_rtol": 1e-06
+  }
+ },
+ "rank": 3,
+ "null_components": 0,
+ "n_components": 1,
+ "requested_n_components": 1,
+ "broken_stick_dimension": 3,
+ "environment_context": {
+  "mode": "single",
+  "environment_source": null,
+  "environment_count": 1,
+  "is_single_environment": true
+ },
+ "trait_means": {
+  "Yield": 0.0,
+  "Height": 0.0,
+  "Protein": 0.0
+ },
+ "trait_sds": {
+  "Yield": 0.632455532033676,
+  "Height": 0.632455532033676,
+  "Protein": 0.632455532033676
+ },
+ "n_obs_per_cell": {
+  "G00": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  },
+  "G01": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  },
+  "G02": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  },
+  "G03": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  },
+  "G04": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  },
+  "G05": {
+   "Yield": 1,
+   "Height": 1,
+   "Protein": 1
+  }
+ },
+ "dataset_dropped_empty_columns": null,
+ "provenance": {
+  "manifest_version": "vivasense-pca-provenance-1",
+  "generated_utc": "2026-11-21T07:30:13.547102+00:00",
+  "backend_commit_sha": "55a70e214826e646fe3473904323777b6f40f7ed",
+  "endpoint": "/analysis/pca",
+  "engines": {
+   "authoritative": "R stats::prcomp (vivasense_pca_engine.R)",
+   "r_engine_version": "pca-r-1.1.0",
+   "r_version": "R version 4.3.3 (2024-02-29)",
+   "crosscheck_engine_version": "pca-py-1.1.0"
+  },
+  "dataset": {
+   "dataset_token": "ded317ee-7ac1-491a-800e-fd75688f5bdb",
+   "file_type": "csv",
+   "design_type": "crd",
+   "mode": "single",
+   "genotype_column": "Genotype",
+   "environment_source": null,
+   "n_rows": 6,
+   "uploaded_all_empty_columns": []
+  },
+  "request": {
+   "dataset_token": "ded317ee-7ac1-491a-800e-fd75688f5bdb",
+   "trait_columns": [
+    "Yield",
+    "Height",
+    "Protein"
+   ],
+   "scale": true,
+   "n_components": 1,
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "preprocessing": {
+   "observation_unit": "arithmetic mean of the available observations of each genotype for each trait (equal weight per genotype; no imputation, block, environment or precision adjustment)",
+   "centering": "each trait centred at the mean of its genotype means",
+   "scaling": "divided by the sample SD of the genotype means (n-1)",
+   "constant_trait_rule": "constant when max - min of the genotype means <= 1.42e-14 x max(|mean|) (relative, unit-invariant)",
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "decomposition": {
+   "matrix": "correlation",
+   "rank": 3,
+   "null_components": 0,
+   "requested_n_components": 1,
+   "effective_n_components": 1,
+   "loadings": "unit-length eigenvector coefficients V",
+   "correlation_loadings": "correlation between trait and component score: V*sqrt(eigenvalue)/sd_trait",
+   "scores": "T = ZV for the centred (scaled) genotype-mean matrix Z",
+   "sign_convention": "the loading with the largest absolute value on each component is positive",
+   "broken_stick": "conventional p-dimensional benchmark, p = 3 (descriptive; not a significance test)"
+  },
+  "exclusions": {
+   "excluded_traits": [],
+   "excluded_genotypes": []
+  },
+  "environment_context": {
+   "mode": "single",
+   "environment_source": null,
+   "environment_count": 1,
+   "is_single_environment": true
+  },
+  "verification": {
+   "status": "partially_verified",
+   "reasons": [
+    "Components 1-3 have (nearly) equal eigenvalues but only 1 of them were returned, so the returned axes are an arbitrary choice within that tied subspace and cannot be verified."
+   ],
+   "coverage": {
+    "status": "agree_partial",
+    "coverage": "incomplete",
+    "coverage_limitations": [
+     "Components 1-3 have (nearly) equal eigenvalues but only 1 of them were returned, so the returned axes are an arbitrary choice within that tied subspace and cannot be verified."
+    ],
+    "tied_blocks": [
+     [
+      1,
+      2,
+      3
+     ]
+    ],
+    "degenerate_axes": [
+     1
+    ],
+    "n_checks": 14,
+    "discrepancies": [],
+    "checks": [
+     {
+      "check": "matrix type",
+      "pass": true
+     },
+     {
+      "check": "traits used",
+      "pass": true
+     },
+     {
+      "check": "genotypes used",
+      "pass": true
+     },
+     {
+      "check": "rank",
+      "pass": true
+     },
+     {
+      "check": "eigenvalues",
+      "pass": true
+     },
+     {
+      "check": "% variance",
+      "pass": true
+     },
+     {
+      "check": "excluded",
+      "pass": true
+     },
+     {
+      "check": "output array shapes",
+      "pass": true
+     },
+     {
+      "check": "orthonormal loadings (V'V = I)",
+      "pass": true,
+      "max_normalised_error": 0.0
+     },
+     {
+      "check": "scores T = ZV",
+      "pass": true,
+      "max_normalised_error": 2.808666774861361e-16
+     },
+     {
+      "check": "eigen-equation residual",
+      "pass": true,
+      "max_normalised_error": 2.220446049250313e-16
+     },
+     {
+      "check": "score covariance = diag(eigenvalues)",
+      "pass": true,
+      "max_normalised_error": 4.440892098500626e-16
+     },
+     {
+      "check": "scores centred",
+      "pass": true,
+      "max_normalised_error": 0.0
+     },
+     {
+      "check": "correlation-loading identity",
+      "pass": true,
+      "max_normalised_error": 0.0
+     }
+    ],
+    "tolerances": {
+     "eigenvalue_rtol": 1e-07,
+     "eigenvalue_atol": 1e-09,
+     "geometry": 1e-07,
+     "tie_rtol": 1e-06
+    }
+   }
+  }
+ }
+}

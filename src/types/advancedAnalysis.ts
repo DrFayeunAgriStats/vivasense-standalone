@@ -402,9 +402,23 @@ export interface PcaResponse {
   input_notes?: string[] | null;
   warnings?: string[] | null;
   sign_convention?: string | null;
-  verification_status?: "verified" | "unverified" | null;
+  verification_status?: "verified" | "partially_verified" | "unverified" | null;
   verification_reasons?: string[] | null;
   engine?: string | null;
+  /** Manus PCA audit corrections (additive; absent from older responses). */
+  analysis_context?: { is_single_environment?: boolean; environment_count?: number | null; design_type?: string | null } | null;
+  verification_coverage?: Record<string, unknown> | null;
+  rank?: number | null;
+  null_components?: number | null;
+  n_components?: number | null;
+  requested_n_components?: number | null;
+  broken_stick_dimension?: number | null;
+  environment_context?: { environment_count?: number | null; pooling_statement?: string | null; [k: string]: unknown } | null;
+  trait_means?: Record<string, number> | null;
+  trait_sds?: Record<string, number> | null;
+  n_obs_per_cell?: Record<string, Record<string, number>> | null;
+  dataset_dropped_empty_columns?: string[] | null;
+  provenance?: Record<string, unknown> | null;
 }
 
 export interface PcaRequest {
