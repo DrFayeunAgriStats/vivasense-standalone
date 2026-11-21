@@ -227,6 +227,18 @@ describe("D14 provenance and full-precision exports", () => {
     expect(m.figures.biplot).toEqual({ convention: "correlation" });
     expect(JSON.parse(JSON.stringify(m)).results_full_precision.scores[0].scores[0]).toBe(COMPLETE.scores[0].scores[0]);
   });
+  it("manifest records the Experimental Beta status from both the UI and the API, and they agree", () => {
+    // Backend PCA_RELEASE_STATUS (analysis_pca_routes.py): release_status, scientific_validation and notice.
+    const BACKEND_NOTICE = "Experimental beta: scientific validation is in progress. Results are exploratory, not approved for "
+      + "confirmatory research, publication claims, or genotype-selection decisions. Verify against independent reference calculations.";
+    const response = { ...COMPLETE, release_status: "experimental_beta", scientific_validation: "in_progress" };
+    const m = buildPcaManifest({ ...run, response });
+    expect(m.release).toEqual({
+      ui_banner: "Experimental Beta — Scientific Validation in Progress.", ui_notice: BACKEND_NOTICE,
+      api_release_status: "experimental_beta", api_scientific_validation: "in_progress",
+    });
+    expect(buildPcaManifest(run).release.api_release_status).toBeNull();   // older backends: absent, not invented
+  });
   it("CSV rows keep every digit and label the two loading types", () => {
     const rows = pcaLoadingsCsvRows(COMPLETE);
     expect(rows[0].PC1).toBe(COMPLETE.loadings[rows[0].trait as string][0]);

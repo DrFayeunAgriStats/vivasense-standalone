@@ -419,6 +419,10 @@ export interface PcaResponse {
   n_obs_per_cell?: Record<string, Record<string, number>> | null;
   dataset_dropped_empty_columns?: string[] | null;
   provenance?: Record<string, unknown> | null;
+  /** "experimental_beta" while scientific validation is in progress (backend PCA_RELEASE_STATUS). */
+  release_status?: string | null;
+  /** "in_progress": PCA is not scientifically validated. */
+  scientific_validation?: string | null;
 }
 
 export interface PcaRequest {

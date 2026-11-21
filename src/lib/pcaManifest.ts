@@ -7,6 +7,7 @@
  * used for the exported figure.
  */
 import type { PcaResponse } from "@/types/advancedAnalysis";
+import { advancedBetaBanner, advancedBetaNotice } from "@/lib/advancedRelease";
 
 declare const __VIVASENSE_FRONTEND_COMMIT__: string | undefined;
 
@@ -34,6 +35,13 @@ export function buildPcaManifest(run: PcaRunForManifest, extras: { biplot?: Reco
     exported_utc: new Date().toISOString(),
     completed_utc: run.completedAt,
     frontend_commit: frontendCommit(),
+    // Release status as shown in the UI and as reported by the API; the two must agree (Experimental Beta).
+    release: {
+      ui_banner: advancedBetaBanner,
+      ui_notice: advancedBetaNotice,
+      api_release_status: r.release_status ?? null,
+      api_scientific_validation: r.scientific_validation ?? null,
+    },
     backend_provenance: r.provenance ?? null,
     dataset: { name: run.datasetName, dataset_token: run.datasetToken },
     request: run.request,
