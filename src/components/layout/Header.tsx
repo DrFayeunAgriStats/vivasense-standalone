@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { CircleHelp } from "lucide-react";
+import { CircleHelp, Sparkles } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { advancedBetaEnabled } from "@/lib/advancedRelease";
 import { VivaSenseUserMenu } from "@/components/vivasense/VivaSenseUserMenu";
 
 export function Header() {
@@ -15,6 +16,18 @@ export function Header() {
       {/* Account menu with Sign Out — replaces the previously static avatar so
           users can log out and return to /auth to sign in again. */}
       <div className="flex items-center gap-1.5">
+        {advancedBetaEnabled && (
+          <Link
+            to="/workspace?module=advanced"
+            data-testid="header-advanced-analytics"
+            title="Advanced Analytics — PCA, Stability, AMMI and GGE (Experimental Beta)"
+            aria-label="Open Advanced Analytics — Experimental Beta"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Advanced <span className="text-xs text-muted-foreground">(Beta)</span></span>
+          </Link>
+        )}
         <Link
           to="/help"
           className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

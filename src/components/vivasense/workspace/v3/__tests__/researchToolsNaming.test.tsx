@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { OnboardingModules } from "../OnboardingModules";
+import { advancedBetaEnabled } from "@/lib/advancedRelease";
 
 describe("Research Tools naming and navigation", () => {
   it("labels ANOVA distinctly from layout and still opens the same module", () => {
@@ -12,5 +13,9 @@ describe("Research Tools naming and navigation", () => {
     expect(dismiss).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("button", {name:/Field Layout/})).toBeInTheDocument();
     expect(screen.getByRole("button", {name:/Data Capture/})).toBeInTheDocument();
+    if (advancedBetaEnabled) {
+      fireEvent.click(screen.getByRole("button", {name:/Advanced Analytics — Experimental Beta/}));
+      expect(navigate).toHaveBeenCalledWith("advanced");
+    }
   });
 });
