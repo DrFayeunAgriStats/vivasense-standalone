@@ -30,7 +30,7 @@ interface WordExportPreviewModalProps {
 }
 
 /**
- * WordExportPreviewModal — Pro-tier component for exporting analysis results to Word format.
+ * WordExportPreviewModal — free Word export preview for research results.
  * Allows users to customize which sections are included in the export.
  */
 export function WordExportPreviewModal({

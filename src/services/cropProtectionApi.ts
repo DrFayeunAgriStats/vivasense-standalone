@@ -3,7 +3,7 @@
  *
  * The only backend surface this module talks to is
  *   POST /crop-protection/bioassay/analyze
- * routed through vivaSenseRequest, so base URL, Pro/mode headers, auth,
+ * routed through vivaSenseRequest, so base URL, research identity headers, auth,
  * error extraction and JSON handling all follow existing VivaSense conventions.
  *
  * UI components must not call fetch or build backend URLs directly.

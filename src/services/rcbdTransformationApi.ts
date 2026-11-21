@@ -204,7 +204,7 @@ export function selectRcbdTransformedAnalysis(
 
 /**
  * Download the Word report for a selected transformed analysis.
- * Pro-gated like every other export; returns the blob for the caller to save.
+ * Free like every other released export; returns the blob for the caller to save.
  */
 export async function exportSelectedTransformedWord(
   request: SelectedReportRequest

@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prebuild": "node scripts/audit-open-access.mjs"
+    "prebuild": "node scripts/audit-open-access.mjs && VIVASENSE_STRICT_ACCESS_AUDIT=true node scripts/audit-open-access.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

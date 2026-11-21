@@ -1,4 +1,4 @@
-/** VivaSense open access policy: no paid tiers or license-code restrictions.
+/** VivaSense open access policy: no fee tiers or license-code restrictions.
  * Independently unvalidated analyses remain server-disabled.
  */
 export const VIVASENSE_ACCESS_POLICY = "free-for-all-released-methods" as const;
