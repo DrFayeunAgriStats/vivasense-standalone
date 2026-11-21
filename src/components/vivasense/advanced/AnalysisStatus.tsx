@@ -21,6 +21,21 @@ export function VerificationBanner({
       </div>
     );
   }
+  if (status === "partially_verified") {
+    // Manus PCA audit D04: incomplete verification is never presented as fully verified.
+    return (
+      <Card className="border-amber-400 bg-amber-50/60 dark:bg-amber-900/10" data-testid="verification-partial">
+        <CardContent className="p-4 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-amber-800"><ShieldAlert className="h-4 w-4" />PARTIALLY VERIFIED — not fully cross-checked</p>
+          <p className="mt-1 text-muted-foreground">
+            {reasons?.length ? reasons.join(" ") : `${subject} could only be partly verified.`}{" "}
+            Everything the independent cross-check could test agreed with the R engine, but its coverage was incomplete. Do not treat the
+            unverified parts as validated.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="border-red-400 bg-red-50/60 dark:bg-red-900/10">
       <CardContent className="p-4 text-sm">

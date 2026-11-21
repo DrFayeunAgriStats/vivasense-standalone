@@ -1,0 +1,405 @@
+{
+ "status": "success",
+ "n_traits": 5,
+ "n_genotypes": 12,
+ "variance_explained": [
+  75.6047369174922,
+  20.1397836210911,
+  3.14417316991722,
+  0.838075018766614,
+  0.273231272732836
+ ],
+ "cumulative_variance": [
+  75.6047369174922,
+  95.7445205385833,
+  98.8886937085006,
+  99.7267687272672,
+  100.0
+ ],
+ "loadings": {
+  "Yield": [
+   0.509953587176853,
+   0.0323302896444601,
+   -0.0935863859266085,
+   -0.40071828090095,
+   0.754697647417792
+  ],
+  "Height": [
+   0.464761417203874,
+   -0.348856059749704,
+   0.537995804999708,
+   0.604184628271769,
+   0.0884178908218085
+  ],
+  "Flowering": [
+   -0.488580791313941,
+   -0.014683695549369,
+   0.763106256392988,
+   -0.347409858639049,
+   0.240932420023398
+  ],
+  "Protein": [
+   0.169387621945489,
+   0.935669132291452,
+   0.226812765099436,
+   0.210160143800787,
+   -0.0148253820926559
+  ],
+  "Biomass": [
+   0.506498576399581,
+   -0.0395204492559283,
+   0.26081969483484,
+   -0.556349618845847,
+   -0.603610399671965
+  ]
+ },
+ "scores": [
+  {
+   "genotype": "G01",
+   "scores": [
+    -1.74540742106031,
+    -0.477402142179266,
+    -0.612111171470533,
+    0.0697142285139203,
+    -0.183143785594108
+   ]
+  },
+  {
+   "genotype": "G02",
+   "scores": [
+    0.635386039790205,
+    0.00449256835685634,
+    -0.539074713258698,
+    0.24667443735804,
+    0.0826303537559135
+   ]
+  },
+  {
+   "genotype": "G03",
+   "scores": [
+    -2.71786921559814,
+    0.901660937093116,
+    -0.113810902793297,
+    -0.0770011369511716,
+    -0.0147975074444285
+   ]
+  },
+  {
+   "genotype": "G04",
+   "scores": [
+    1.92530485255841,
+    -1.52165170429517,
+    -0.31058451685852,
+    0.0146303240297311,
+    0.00866041587605131
+   ]
+  },
+  {
+   "genotype": "G05",
+   "scores": [
+    -0.226884278862107,
+    1.01453459671838,
+    -0.0738450931372865,
+    0.237242320273322,
+    -0.0145906268114914
+   ]
+  },
+  {
+   "genotype": "G06",
+   "scores": [
+    -0.37007675190876,
+    -0.742688718803566,
+    0.770272238988217,
+    0.0805611288326695,
+    -0.234640335020308
+   ]
+  },
+  {
+   "genotype": "G07",
+   "scores": [
+    3.20844133658122,
+    -0.807355135714754,
+    -0.0488485634242448,
+    -0.181087975243169,
+    0.00456125917504625
+   ]
+  },
+  {
+   "genotype": "G08",
+   "scores": [
+    0.992162002551137,
+    1.52468518954992,
+    0.00957823922381375,
+    -0.237920592794105,
+    0.000729785246829217
+   ]
+  },
+  {
+   "genotype": "G09",
+   "scores": [
+    -2.61440957341285,
+    -1.46635100737779,
+    0.31504437293103,
+    -0.102315023236163,
+    0.194331472746149
+   ]
+  },
+  {
+   "genotype": "G10",
+   "scores": [
+    2.41506573652236,
+    0.855731102490093,
+    0.244676646057794,
+    -0.0940129912989655,
+    0.00061699930056971
+   ]
+  },
+  {
+   "genotype": "G11",
+   "scores": [
+    0.191657815772606,
+    0.470248522514183,
+    0.434198643555368,
+    0.3508951598093,
+    0.124970667945461
+   ]
+  },
+  {
+   "genotype": "G12",
+   "scores": [
+    -1.69337054293377,
+    0.244095791647992,
+    -0.0754951798136407,
+    -0.307379879293409,
+    0.0306713008243169
+   ]
+  }
+ ],
+ "biplot_data": {
+  "loadings": {
+   "Yield": [
+    0.509953587176853,
+    0.0323302896444601,
+    -0.0935863859266085,
+    -0.40071828090095,
+    0.754697647417792
+   ],
+   "Height": [
+    0.464761417203874,
+    -0.348856059749704,
+    0.537995804999708,
+    0.604184628271769,
+    0.0884178908218085
+   ],
+   "Flowering": [
+    -0.488580791313941,
+    -0.014683695549369,
+    0.763106256392988,
+    -0.347409858639049,
+    0.240932420023398
+   ],
+   "Protein": [
+    0.169387621945489,
+    0.935669132291452,
+    0.226812765099436,
+    0.210160143800787,
+    -0.0148253820926559
+   ],
+   "Biomass": [
+    0.506498576399581,
+    -0.0395204492559283,
+    0.26081969483484,
+    -0.556349618845847,
+    -0.603610399671965
+   ]
+  },
+  "scores": [
+   {
+    "genotype": "G01",
+    "scores": [
+     -1.74540742106031,
+     -0.477402142179266,
+     -0.612111171470533,
+     0.0697142285139203,
+     -0.183143785594108
+    ]
+   },
+   {
+    "genotype": "G02",
+    "scores": [
+     0.635386039790205,
+     0.00449256835685634,
+     -0.539074713258698,
+     0.24667443735804,
+     0.0826303537559135
+    ]
+   },
+   {
+    "genotype": "G03",
+    "scores": [
+     -2.71786921559814,
+     0.901660937093116,
+     -0.113810902793297,
+     -0.0770011369511716,
+     -0.0147975074444285
+    ]
+   },
+   {
+    "genotype": "G04",
+    "scores": [
+     1.92530485255841,
+     -1.52165170429517,
+     -0.31058451685852,
+     0.0146303240297311,
+     0.00866041587605131
+    ]
+   },
+   {
+    "genotype": "G05",
+    "scores": [
+     -0.226884278862107,
+     1.01453459671838,
+     -0.0738450931372865,
+     0.237242320273322,
+     -0.0145906268114914
+    ]
+   },
+   {
+    "genotype": "G06",
+    "scores": [
+     -0.37007675190876,
+     -0.742688718803566,
+     0.770272238988217,
+     0.0805611288326695,
+     -0.234640335020308
+    ]
+   },
+   {
+    "genotype": "G07",
+    "scores": [
+     3.20844133658122,
+     -0.807355135714754,
+     -0.0488485634242448,
+     -0.181087975243169,
+     0.00456125917504625
+    ]
+   },
+   {
+    "genotype": "G08",
+    "scores": [
+     0.992162002551137,
+     1.52468518954992,
+     0.00957823922381375,
+     -0.237920592794105,
+     0.000729785246829217
+    ]
+   },
+   {
+    "genotype": "G09",
+    "scores": [
+     -2.61440957341285,
+     -1.46635100737779,
+     0.31504437293103,
+     -0.102315023236163,
+     0.194331472746149
+    ]
+   },
+   {
+    "genotype": "G10",
+    "scores": [
+     2.41506573652236,
+     0.855731102490093,
+     0.244676646057794,
+     -0.0940129912989655,
+     0.00061699930056971
+    ]
+   },
+   {
+    "genotype": "G11",
+    "scores": [
+     0.191657815772606,
+     0.470248522514183,
+     0.434198643555368,
+     0.3508951598093,
+     0.124970667945461
+    ]
+   },
+   {
+    "genotype": "G12",
+    "scores": [
+     -1.69337054293377,
+     0.244095791647992,
+     -0.0754951798136407,
+     -0.307379879293409,
+     0.0306713008243169
+    ]
+   }
+  ]
+ },
+ "interpretation": "Method and data\nPCA of the correlation matrix of genotype means for 5 traits and 12 genotypes (traits centred and divided by their standard deviation). The data have 5 non-zero component(s). PC1 explained 75.6% and PC2 20.1% (cumulative 95.7%) of the total variance. 2 component(s) had an eigenvalue above 1 (Kaiser's rule, a rough guide only); the broken-stick expectation for PC1 is 45.7%, and a component explaining less than its broken-stick value is not distinguishable from random structure.\n\nPC1\nPC1 (75.6%) is most strongly associated with: Yield (correlation with the component = +0.99, strong); Biomass (correlation with the component = +0.98, strong); Flowering (correlation with the component = -0.95, strong); Height (correlation with the component = +0.90, strong); Protein (correlation with the component = +0.33, weak). Traits with the same sign on a component vary together among these genotypes; opposite signs indicate that they vary in opposite directions. The sign of a whole component is arbitrary.\n\nPC2\nPC2 (20.1%) is most strongly associated with: Protein (correlation with the component = +0.94, strong); Height (correlation with the component = -0.35, weak); Biomass (correlation with the component = -0.04, weak); Yield (correlation with the component = +0.03, weak); Flowering (correlation with the component = -0.01, weak). Traits with the same sign on a component vary together among these genotypes; opposite signs indicate that they vary in opposite directions. The sign of a whole component is arbitrary.\n\nAssumptions and limitations\nPCA summarises the covariance structure of the genotype means of this data set. Components are mathematical axes, not biological factors; their signs are arbitrary; loadings and the percentages of variance change with the traits, genotypes and scaling chosen, and are unstable when genotypes are few. The analysis is descriptive and uses no significance test. Association between traits on a component is not evidence of a causal or genetic relationship, and the results alone do not justify selecting, crossing, advancing or releasing any genotype.",
+ "analysis_context": {
+  "is_single_environment": true,
+  "environment_count": 1,
+  "design_type": "crd"
+ },
+ "matrix": "correlation",
+ "eigenvalues": [
+  3.78023684587461,
+  1.00698918105455,
+  0.157208658495861,
+  0.0419037509383307,
+  0.0136615636366418
+ ],
+ "correlation_loadings": {
+  "Yield": [
+   0.991494150896372,
+   0.0324430740438861,
+   -0.0371065781638951,
+   -0.0820286578008571,
+   0.0882110925066842
+  ],
+  "Height": [
+   0.903627777718015,
+   -0.350073046099585,
+   0.213312900080624,
+   0.123679044563713,
+   0.0103345210803483
+  ],
+  "Flowering": [
+   -0.949939384699523,
+   -0.0147349197048622,
+   0.302568174524976,
+   -0.0711162074933905,
+   0.028160829788274
+  ],
+  "Protein": [
+   0.329337493874623,
+   0.938933219384623,
+   0.0899302341190045,
+   0.0430206340485747,
+   -0.00173283056558708
+  ],
+  "Biomass": [
+   0.984776631767007,
+   -0.0396583165680803,
+   0.103413827740521,
+   -0.113887024069221,
+   -0.0705516082972291
+  ]
+ },
+ "broken_stick_pct": [
+  45.6666666666667,
+  25.6666666666667,
+  15.6666666666667,
+  9.0,
+  4.0
+ ],
+ "excluded_traits": [],
+ "excluded_genotypes": [],
+ "input_notes": null,
+ "warnings": null,
+ "sign_convention": "the loading with the largest absolute value on each component is positive",
+ "verification_status": "verified",
+ "verification_reasons": [],
+ "engine": "r"
+}
