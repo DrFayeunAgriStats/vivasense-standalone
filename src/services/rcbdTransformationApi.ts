@@ -22,7 +22,7 @@
  */
 
 import { API_BASE } from "./apiConfig";
-import { buildModeHeaders, guardProModule } from "./featureMode";
+import { buildModeHeaders } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
 
 const ENGINE_BASE: string = API_BASE;
@@ -209,7 +209,6 @@ export function selectRcbdTransformedAnalysis(
 export async function exportSelectedTransformedWord(
   request: SelectedReportRequest
 ): Promise<Blob> {
-  guardProModule("export-word");
   const url = `${ENGINE_BASE}${RCBD_EXPORT_SELECTED_TRANSFORMED_WORD_PATH}`;
   let response: Response;
   try {

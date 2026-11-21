@@ -9,8 +9,8 @@
  * the governance objects must still parse and render exactly as it did.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { buildModeHeaders, getVivaSenseMode, guardProModule } from "../featureMode";
+import { describe, it, expect } from "vitest";
+import { buildModeHeaders } from "../featureMode";
 import type {
   AnovaAlpha,
   GovernedDesignType,
@@ -336,47 +336,23 @@ describe("RCBD governed route paths", () => {
   });
 });
 
-describe("X-VivaSense-Mode behaviour is unchanged", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-  afterEach(() => {
-    localStorage.clear();
-  });
-
-  it("stamps exactly what getVivaSenseMode() reports", () => {
-    // Deliberately asserted against the module's own accessor rather than a
-    // hardcoded value: TEMP_ALL_FEATURES_PERMITTED currently forces "pro"
-    // regardless of the stored mode, and this test must keep passing whether
-    // that override is on or off. What Phase A must not change is the *link*
-    // between the reported mode and the header.
-    expect(buildModeHeaders().get("X-VivaSense-Mode")).toBe(getVivaSenseMode());
-  });
-
-  it("keeps header and guard consistent, so Pro-gated exports are not 403'd", () => {
-    // A "free" header with a bypassing guard is the exact mismatch that makes
-    // the backend reject an export the client believed it was allowed to make.
-    const mode = getVivaSenseMode();
-    if (mode === "pro") {
-      expect(() => guardProModule("export-word")).not.toThrow();
-    } else {
-      expect(() => guardProModule("export-word")).toThrow();
-    }
-  });
-
-  it("is not overridden by a conflicting stored value", () => {
-    const before = buildModeHeaders().get("X-VivaSense-Mode");
-    localStorage.setItem("vivasense_mode", "free");
-    expect(buildModeHeaders().get("X-VivaSense-Mode")).toBe(getVivaSenseMode());
-    localStorage.setItem("vivasense_mode", "pro");
-    expect(buildModeHeaders().get("X-VivaSense-Mode")).toBe(getVivaSenseMode());
-    localStorage.clear();
-    expect(buildModeHeaders().get("X-VivaSense-Mode")).toBe(before);
-  });
-
-  it("preserves caller-supplied headers alongside the mode header", () => {
+describe("open research access — no subscription header", () => {
+  it("never emits a commercial mode header", () => {
     const headers = buildModeHeaders({ "Content-Type": "application/json" });
     expect(headers.get("Content-Type")).toBe("application/json");
-    expect(headers.get("X-VivaSense-Mode")).toBeTruthy();
+    expect(headers.has("X-VivaSense-Mode")).toBe(false);
+  });
+
+  it("removes an obsolete caller-provided tier header", () => {
+    const headers = buildModeHeaders({ "X-VivaSense-Mode": "pro" });
+    expect(headers.has("X-VivaSense-Mode")).toBe(false);
+  });
+
+  it("ignores old local browser tier settings", () => {
+    localStorage.setItem("vivasense_mode", "pro");
+    expect(buildModeHeaders().has("X-VivaSense-Mode")).toBe(false);
+    localStorage.setItem("vivasense_mode", "free");
+    expect(buildModeHeaders().has("X-VivaSense-Mode")).toBe(false);
+    localStorage.removeItem("vivasense_mode");
   });
 });
