@@ -7,7 +7,8 @@ const patterns = [
   /\bPro\b|\bpro\b/,
   /upgrade\s+to|premium\s+plan|subscription\s+plan|paid\s+tier/i,
   /requiresPro|isProMode|guardProModule|ProFeature|syncProAccessFromServer/,
-  /vivasense_pro_access|vivasense-pro-redeem/,
+  /vivasense_pro_access|vivasense-pro-redeem|PRO_FEATURE|pro_required/,
+  /X-VivaSense-Mode|vivasense_mode|VivaSenseMode|free plan|pro plan/i,
 ];
 function walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
