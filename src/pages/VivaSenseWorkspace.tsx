@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { getVivaSenseMode, subscribeVivaSenseMode, isProMode, classifyGeneticsRequest } from "@/lib/vivasenseGating";
 import { advancedBetaEnabled, advancedBetaNotice } from "@/lib/advancedRelease";
 import { ArrowLeft, AlertCircle, LayoutGrid, Sigma, Dna, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +62,6 @@ export default function VivaSenseWorkspace() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
-  const [mode, setMode] = useState(getVivaSenseMode());
   const [currentModule, setCurrentModule] = useState<ModuleType>("selection");
   const [activeSection, setActiveSection] = useState<WorkspaceSection>("overview");
   const [isLoading, setIsLoading] = useState(false);
@@ -122,13 +120,6 @@ export default function VivaSenseWorkspace() {
     advanced: { label: "Advanced Analytics", icon: Sparkles },
   };
 
-  useEffect(() => {
-    const unsubscribe = subscribeVivaSenseMode((newMode: string) => {
-      setMode(newMode as typeof mode);
-    });
-    return unsubscribe;
-  }, []);
-
 
   // ANOVA now runs through the proven /genetics/analyze-upload flow rendered by
   // AnovaModulePanel (design-aware) + AcademicResultsPanel, wired directly into
@@ -152,14 +143,6 @@ export default function VivaSenseWorkspace() {
       : historyType === "correlation" ? "/genetics/correlation"
       : "/analysis/regression";
     try {
-      // Check Pro gating
-      const guard = classifyGeneticsRequest(analysisType);
-      if (guard && !isProMode()) {
-        setError(`${guard.title}: ${guard.description}`);
-        setIsLoading(false);
-        return;
-      }
-
       const file = formData.get("file") as File | null;
       const genotypeValue = (formData.get("genotype") as string | null) || "";
       const repValue = (formData.get("rep") as string | null) || "";

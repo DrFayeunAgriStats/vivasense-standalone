@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { syncProAccessFromServer, setVivaSenseMode, setVivaSenseUser } from "@/services/featureMode";
+import { setVivaSenseUser } from "@/services/featureMode";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
@@ -67,11 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // it is in localStorage before any analysis request can be issued.
           setVivaSenseUser(session.user.email ?? session.user.id);
           setTimeout(() => fetchProfile(session.user.id), 0);
-          setTimeout(() => { void syncProAccessFromServer(); }, 0);
         } else {
           setProfile(null);
           setVivaSenseUser(null);
-          setVivaSenseMode("free", null);
         }
         setLoading(false);
       }
@@ -83,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         setVivaSenseUser(session.user.email ?? session.user.id);
         fetchProfile(session.user.id);
-        void syncProAccessFromServer();
       } else {
         setVivaSenseUser(null);
       }

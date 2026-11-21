@@ -418,8 +418,8 @@ export function isStaleTokenFailure(status: number | null, message: string): boo
 export function describeExportFailure(status: number | null, fallback?: string): string {
   const message = fallback ?? "";
   if (isStaleTokenFailure(status, message)) return STALE_TOKEN_MESSAGE;
-  if (status === 403 || /pro|mode/i.test(message)) {
-    return "Report export is not available in the current product mode.";
+  if (status === 403) {
+    return message || "Report export was refused. Check your sign-in and the method availability notice.";
   }
   return message || "The report could not be generated. Please try again.";
 }

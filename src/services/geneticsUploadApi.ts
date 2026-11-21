@@ -10,7 +10,7 @@
  */
 
 import { API_BASE } from "./apiConfig";
-import { buildModeHeaders, guardProModule } from "./featureMode";
+import { buildModeHeaders } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
 const ENGINE_BASE: string = API_BASE;
 
@@ -426,14 +426,6 @@ export async function analyzeUpload(
   request: UploadAnalysisRequest
 ): Promise<UploadAnalysisResponse> {
   const selectedModule = request.module ?? "genetic_parameters";
-  const hasEnvironmentFactor = (request.environment_column ?? "").trim().length > 0;
-  const isCombinedAnova = selectedModule === "anova" && (request.mode === "multi" || hasEnvironmentFactor);
-
-  if (selectedModule === "genetic_parameters") {
-    guardProModule("genetic-parameters");
-  } else if (isCombinedAnova) {
-    guardProModule("combined-anova");
-  }
 
   // Temporary debug log — remove after integration is confirmed working.
   console.log("[analyzeUpload] request fields:", {
@@ -539,7 +531,6 @@ export async function exportWordReport(
   filename = "vivasense_genetics_report.docx",
   domain?: "plant_breeding" | "agronomy" | "general"
 ): Promise<void> {
-  guardProModule("export-word");
   // Normalise trait_results so every entry has the required "status" field.
   // Guards against state where status was dropped during result construction.
   const normalizedTraitResults: Record<string, TraitResult> = {};
@@ -710,7 +701,6 @@ export interface DescriptiveStatsResponse {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function exportDescriptiveStats(currentData: DescriptiveStatsResponse | Record<string, any>): Promise<void> {
-  guardProModule("export-word");
   const url = `${ENGINE_BASE}/export/descriptive-stats-word`;
 
   // Flatten: prefer fields from currentData.response if present, fall back to root.

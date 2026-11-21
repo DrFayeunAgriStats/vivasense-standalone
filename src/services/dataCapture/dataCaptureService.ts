@@ -343,7 +343,6 @@ export async function generateAndInsertPlots(
   const res = await vivaSenseRequest<{ fieldbook?: Record<string, unknown>[] }>("/field-layout/generate", {
     method: "POST",
     jsonBody: payload,
-    headers: { "X-VivaSense-Mode": "free" },
   });
   const fieldbook = Array.isArray(res.fieldbook) ? res.fieldbook : [];
   if (fieldbook.length === 0) throw new Error("Field layout returned no plots.");

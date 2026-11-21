@@ -22,7 +22,7 @@
  */
 
 import { API_BASE } from "./apiConfig";
-import { buildModeHeaders, guardProModule } from "./featureMode";
+import { buildModeHeaders } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
 
 const ENGINE_BASE: string = API_BASE;
@@ -204,12 +204,11 @@ export function selectRcbdTransformedAnalysis(
 
 /**
  * Download the Word report for a selected transformed analysis.
- * Pro-gated like every other export; returns the blob for the caller to save.
+ * Free like every other released export; returns the blob for the caller to save.
  */
 export async function exportSelectedTransformedWord(
   request: SelectedReportRequest
 ): Promise<Blob> {
-  guardProModule("export-word");
   const url = `${ENGINE_BASE}${RCBD_EXPORT_SELECTED_TRANSFORMED_WORD_PATH}`;
   let response: Response;
   try {

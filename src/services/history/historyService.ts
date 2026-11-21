@@ -10,7 +10,7 @@
  *
  * Writes are best-effort and NEVER throw — a history failure must not break an
  * analysis flow. Persistence is Supabase-only; the Railway backend is untouched.
- * No Pro/subscription checks — history is free for every authenticated user.
+ * History is free for every authenticated user.
  */
 
 import { supabase } from "@/integrations/supabase/client";

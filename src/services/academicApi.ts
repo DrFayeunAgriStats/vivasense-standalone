@@ -9,7 +9,6 @@
 
 import { API_BASE } from "./apiConfig";
 import { buildModeHeaders } from "./featureMode";
-import { guardProModule } from "./featureMode";
 import { requestWithResilience } from "./httpClient";
 
 const ENGINE_BASE: string = API_BASE;
@@ -111,7 +110,6 @@ export interface AcademicInterpretationResponse {
 export async function getAcademicInterpretation(
   request: AcademicInterpretRequest
 ): Promise<AcademicInterpretationResponse> {
-  guardProModule("advanced-interpretation");
   const url = `${ENGINE_BASE}/academic/interpret`;
 
   let response: Response;
