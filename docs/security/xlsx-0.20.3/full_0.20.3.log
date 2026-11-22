@@ -1,0 +1,1342 @@
+
+ RUN  v3.2.7 /tmp/claude-0/sec_fe
+
+ ✓ src/components/vivasense/genetics-params/__tests__/governedSplitPlot.test.ts (67 tests) 24ms
+ ✓ src/components/vivasense/genetics-params/__tests__/governedFactorial.test.ts (81 tests) 19ms
+ ✓ src/components/vivasense/genetics-params/__tests__/governedTransformation.test.ts (48 tests) 15ms
+ ❯ src/components/vivasense/genetics-params/__tests__/anovaDesigns.test.ts (59 tests | 1 failed) 23ms
+   ✓ design vocabulary > offers exactly the five governed designs 2ms
+   ✓ design vocabulary > emits each governed design id from the selector 1ms
+   ✓ design vocabulary > never emits the legacy 'factorial' identifier 1ms
+   ✓ design vocabulary > carries the required user-facing labels 0ms
+   ✓ design vocabulary > does not expose three-factor factorial as a design 0ms
+   ✓ column requirements > CRD needs a treatment and no block 0ms
+   ✓ column requirements > RCBD needs a treatment and a block 0ms
+   ✓ column requirements > Factorial CRD needs both factors and no block 0ms
+   ✓ column requirements > Factorial RCBD needs both factors and a block 0ms
+   ✓ column requirements > Split-Plot needs block, whole-plot and subplot 0ms
+   ✓ request construction — only the design's own roles are sent > Factorial CRD sends NO rep_column even when a block is mapped 0ms
+   ✓ request construction — only the design's own roles are sent > Factorial RCBD requires and sends rep_column 0ms
+   ✓ request construction — only the design's own roles are sent > CRD sends no block 0ms
+   ✓ request construction — only the design's own roles are sent > RCBD sends the block 0ms
+   ✓ request construction — only the design's own roles are sent > Split-Plot sends block, whole plot and subplot and no factor A/B 0ms
+   ✓ request construction — only the design's own roles are sent > never sends factor_c_column — three-factor stays outside the governed path 0ms
+   ✓ request construction — only the design's own roles are sent > activeMapping drops roles the design does not use 0ms
+   ✓ alpha > defaults to 0.05 in the panel's constant 0ms
+   ✓ alpha > sends each permitted alpha exactly 0ms
+   ✓ alpha > sends alpha for every design 0ms
+   ✓ frontend validation > requires at least one response variable 0ms
+   ✓ frontend validation > blocks a missing required factor 0ms
+   ✓ frontend validation > blocks a missing block for RCBD 0ms
+   ✓ frontend validation > blocks a missing block for Factorial RCBD 0ms
+   ✓ frontend validation > blocks a missing block for Split-Plot 0ms
+   ✓ frontend validation > blocks a missing whole-plot or subplot factor 0ms
+   ✓ frontend validation > blocks Factor A = Factor B 0ms
+   ✓ frontend validation > blocks treatment = block 1ms
+   ✓ frontend validation > blocks whole-plot = subplot 0ms
+   ✓ frontend validation > blocks a structural column also chosen as a response 0ms
+   ✓ frontend validation > does NOT require a block for CRD or Factorial CRD 0ms
+   ✓ structural preview — descriptive only > counts levels and blocks from the preview rows 1ms
+   × structural preview — descriptive only > reports expected combinations as a complete-design count, not a verdict 10ms
+     → expected '≥4 visible in preview; full dataset c…' to contain 'if complete'
+   ✓ structural preview — descriptive only > shows the selected alpha 0ms
+   ✓ structural preview — descriptive only > works with no preview rows and claims no counts 0ms
+   ✓ structural preview — descriptive only > never reports an inferential decision 0ms
+   ✓ backend structural error rendering > translates [rcbd_missing_cells] 0ms
+   ✓ backend structural error rendering > translates [rcbd_missing_and_duplicate_cells] 0ms
+   ✓ backend structural error rendering > translates [factorial_crd_missing_cells] 0ms
+   ✓ backend structural error rendering > translates [factorial_rcbd_missing_block_column] 0ms
+   ✓ backend structural error rendering > translates [factorial_rcbd_incomplete_or_duplicated_blocks] 0ms
+   ✓ backend structural error rendering > translates [factorial_factor_level_lost_to_missing_response] 0ms
+   ✓ backend structural error rendering > translates [factorial_missing_structural_identifier] 0ms
+   ✓ backend structural error rendering > translates [split_plot_missing_whole_plot] 0ms
+   ✓ backend structural error rendering > translates [split_plot_incomplete_or_duplicated_subplots] 0ms
+   ✓ backend structural error rendering > translates [split_plot_insufficient_blocks] 0ms
+   ✓ backend structural error rendering > translates [split_plot_insufficient_whole_plot_levels] 0ms
+   ✓ backend structural error rendering > translates [split_plot_insufficient_sub_plot_levels] 0ms
+   ✓ backend structural error rendering > translates [split_plot_missing_structural_identifier] 0ms
+   ✓ backend structural error rendering > recognises a bare snake_case code without brackets 0ms
+   ✓ backend structural error rendering > never invents a reason for an unknown code 0ms
+   ✓ backend structural error rendering > handles an empty error safely 0ms
+   ✓ legacy factorial handling > labels a stored 'factorial' conservatively 0ms
+   ✓ legacy factorial handling > does NOT reinterpret stored 'factorial' as Factorial CRD 0ms
+   ✓ legacy factorial handling > labels governed stored designs with their full names 0ms
+   ✓ legacy factorial handling > does not crash on an unknown or absent stored design 0ms
+   ✓ multi-environment RCBD routing — regression > uses durable RCBD only for single-environment RCBD 0ms
+   ✓ multi-environment RCBD routing — regression > keeps the environment column and nested-replication mapping in the combined request 1ms
+   ✓ multi-environment RCBD routing — regression > retains Location × Year environment construction for multi-environment RCBD 0ms
+ ✓ src/components/vivasense/genetics-params/__tests__/governedOneFactor.test.ts (48 tests) 11ms
+ ✓ src/services/__tests__/governedAnovaContract.test.ts (25 tests) 9ms
+ ✓ src/pages/__tests__/GeneralCorrelationPresentation.test.tsx (15 tests) 712ms
+ ❯ src/components/vivasense/genetics-params/__tests__/designRoleIdentity.test.ts (20 tests | 1 failed) 16ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > refuses one column holding both the treatment and replication roles in CRD 2ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > refuses the same collision in RCBD 1ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > fails visibly rather than silently reassigning either role 0ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > accepts a correct CRD mapping 0ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > accepts a correct RCBD mapping 0ms
+   ✓ W1-INT-02 — treatment and replication roles are distinct > does not count levels to decide which column is the treatment 0ms
+   ✓ W1-INT-02 — alpha cannot mutate design-role state > builds identical role bindings at alpha 0.05 0ms
+   ✓ W1-INT-02 — alpha cannot mutate design-role state > builds identical role bindings at alpha 0.01 0ms
+   ✓ W1-INT-02 — alpha cannot mutate design-role state > builds identical role bindings at alpha 0.1 0ms
+   ✓ W1-INT-02 — alpha cannot mutate design-role state > changes nothing but alpha across 0.05 -> 0.01 -> 0.10 -> 0.05 1ms
+   ✓ W1-INT-02 — alpha cannot mutate design-role state > keeps the replication role bound across alpha changes in RCBD 0ms
+   ✓ W1-INT-02 — the resolved design context is representable before running > states the design, the mapped columns and their level counts 0ms
+   × W1-INT-02 — the resolved design context is representable before running > makes a role swap visible in the design summary before analysis runs 8ms
+     → expected 'Design: Completely Randomized Design …' to contain 'Rep · 3 levels'
+   ✓ W1-INT-02 — the resolved design context is representable before running > reports the replication column and its block count for RCBD 0ms
+   ✓ W1-INT-02 — the resolved design context is representable before running > reports the alpha it was given (0.05) and no other design change 0ms
+   ✓ W1-INT-02 — the resolved design context is representable before running > reports the alpha it was given (0.01) and no other design change 0ms
+   ✓ W1-INT-02 — the resolved design context is representable before running > reports the alpha it was given (0.1) and no other design change 0ms
+   ✓ W1-INT-02 — designs without a treatment role are unaffected > factorial_crd ignores the unused treatment role entirely 0ms
+   ✓ W1-INT-02 — designs without a treatment role are unaffected > factorial_rcbd ignores the unused treatment role entirely 0ms
+   ✓ W1-INT-02 — designs without a treatment role are unaffected > split_plot_rcbd ignores the unused treatment role entirely 0ms
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Study design (Dorcas fixture) > reports the factorial CRD structure the backend measured
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > ANOVA table > shows Treatment, Dose, Treatment × Dose and Error
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx > General correlation page > downloads the Word report by sending the sealed result unchanged to the General export
+Not implemented: navigation to another Document
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > ANOVA table > never shows Rep as an ANOVA source
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > ANOVA table > formats small p-values as <0.001 rather than 0.0000
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/pages/__tests__/GeneralCorrelationAnalysis.test.tsx (8 tests) 742ms
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Interaction-first mean separation > renders the Treatment × Dose matrix with Tukey letters
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Interaction-first mean separation > puts the interaction matrix before the marginal means when it is significant
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Interaction-first mean separation > demotes marginal means with an explicit caution
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Interaction-first mean separation > explains the Tukey letters
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Interaction-first mean separation > states the inference vs display scale when they differ
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Abbott mortality > shows the control as a reference rather than a corrected percentage
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Abbott mortality > shows control mortality prominently
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Abbott mortality > warns when Abbott flooring was applied
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Data-quality warnings > renders the cumulative-mortality decrease with its experimental unit
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/pages/__tests__/GeneralCorrelationSafeguards.test.tsx (7 tests) 492ms
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Data-quality warnings > renders the high-control-mortality advisory without invalidating the run
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Data-quality warnings > puts alerts before the first inferential section
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Diagnostics > reports a failed normality test as questionable, not satisfied
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Regression and correlation > labels a significant increasing dose trend
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts (10 tests) 66ms
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Regression and correlation > states that the control is not included as dose 0
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Regression and correlation > does not label correlation as genotypic or phenotypic
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Co-toxicity — AL + CL -> ALCL > renders the Bliss expectation and observed mixture for dose 0.2 at 48 h
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Co-toxicity — AL + CL -> ALCL > does not call an inconclusive positive deviation synergistic
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Co-toxicity — CL + B -> CLB > renders a supported antagonism at 24 h
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Co-toxicity — CL + B -> CLB > keeps the repeated control at n = 3 under the declared policy
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Co-toxicity — CL + B -> CLB > shows Bliss as the method and never presents Sun–Johnson as active
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Provenance > exposes an Analysis Details panel
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/vivasense/crop-protection/__tests__/results.test.tsx > Domain terminology > uses no genetics vocabulary anywhere in the results
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/components/vivasense/crop-protection/__tests__/results.test.tsx (26 tests) 2802ms
+   ✓ Study design (Dorcas fixture) > reports the factorial CRD structure the backend measured  463ms
+   ✓ ANOVA table > shows Treatment, Dose, Treatment × Dose and Error  338ms
+ ✓ src/components/vivasense/genetics-params/__tests__/transformationWarnings.repro.test.tsx (8 tests) 51ms
+ ✓ src/components/vivasense/genetics-params/__tests__/oct1ReleaseDisclosures.test.ts (11 tests) 7ms
+ ✓ src/components/vivasense/genetics-params/__tests__/meanSeparationAlpha.test.tsx (12 tests) 518ms
+ ✓ src/components/vivasense/crop-protection/__tests__/mapping.test.tsx (7 tests) 777ms
+stderr | src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx > Research Workspace overview > shows the entry with no responsive-hiding class (phones and tablets)
+In HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <QueryClientProvider client={{}}>
+    <MemoryRouter initialEntries={[...]}>
+      <Router basename={undefined} location={{pathname:"...", ...}} navigationType="POP" navigator={{index:0, ...}} ...>
+        <Routes>
+          <RenderedRoute match={{params:{}, ...}} routeContext={{outlet:null, ...}}>
+            <WorkspaceV3Dashboard>
+              <div className="mx-auto w-...">
+                <header className="mb-4 flex ...">
+                  <div>
+                    <h1>
+>                   <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+                      <span className="inline-block">
+                        <Skeleton className="h-4 w-56">
+>                         <div className="animate-pulse rounded-md bg-muted h-4 w-56">
+                  ...
+                ...
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+ ✓ src/components/vivasense/workspace/v3/__tests__/generalCorrelationEntry.test.tsx (6 tests) 343ms
+stderr | src/components/vivasense/crop-protection/__tests__/dynamic-factorial.test.tsx > dynamic factorial crop-protection UI > renders three-factor interaction plots as matching facets
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/components/vivasense/crop-protection/__tests__/dynamic-factorial.test.tsx (5 tests) 573ms
+   ✓ dynamic factorial crop-protection UI > builds up to three factors and explains the validated maximum  488ms
+ ✓ src/components/vivasense/genetics-params/__tests__/facCrd01RequestContract.test.ts (9 tests) 4ms
+ ✓ src/components/help/SampleDatasets.test.ts (5 tests) 6ms
+ ✓ src/services/__tests__/persistenceRcbdRestore.test.ts (2 tests) 8ms
+ ✓ src/components/vivasense/genetics-params/__tests__/anovaSingleEntryPoint.test.ts (9 tests) 10ms
+ ✓ src/components/layout/__tests__/Layout.navigation.test.tsx (6 tests) 270ms
+ ✓ src/components/vivasense/workspace/v3/__tests__/recentAnalysesReopen.test.tsx (4 tests) 310ms
+ ✓ src/pages/__tests__/SimpleRegressionAnalysis.test.tsx (1 test) 315ms
+   ✓ reports the fitted model at the requested alpha and clears it when settings change  312ms
+ ✓ src/services/__tests__/persistenceRcbdApi.test.ts (1 test) 5ms
+ ✓ src/lib/sampleAnalysisDefaults.test.ts (5 tests) 5ms
+ ✓ src/lib/generalWordExport.test.ts (6 tests) 10ms
+ ✓ src/data/helpLearningContent.test.ts (5 tests) 5ms
+ ✓ src/components/vivasense/genetics-params/__tests__/modelCVRows.test.ts (4 tests) 10ms
+ ❯ src/components/vivasense/crop-protection/__tests__/navigation.test.tsx (4 tests | 1 failed) 318ms
+   × Crop Protection navigation > appears in the workspace sidebar 82ms
+     → Unable to find an element with the text: Crop Protection. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-background text-foreground flex flex-col"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"flex items-center gap-2.5"[39m
+          [33mdata-discover[39m=[32m"true"[39m
+          [33mhref[39m=[32m"/"[39m
+        [36m>[39m
+          [36m<img[39m
+            [33malt[39m=[32m"VivaSense"[39m
+            [33mclass[39m=[32m"h-7 w-auto"[39m
+            [33msrc[39m=[32m"/src/assets/brand/lockup-horizontal-standard.svg"[39m
+          [36m/>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:inline"[39m
+          [36m>[39m
+            [0mStatistical Analysis Platform[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"[39m
+            [33mdata-discover[39m=[32m"true"[39m
+            [33mhref[39m=[32m"/help"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-circle-question-mark h-4 w-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 17h.01"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden sm:inline"[39m
+            [36m>[39m
+              [0mHelp[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"sr-only sm:hidden"[39m
+            [36m>[39m
+              [0mHelp & Learning[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-8 rounded-md px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"[39m
+            [33mdata-discover[39m=[32m"true"[39m
+            [33mhref[39m=[32m"/auth"[39m
+          [36m>[39m
+            [0mSign in[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-1"[39m
+      [36m>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r border-border bg-sidebar px-3 py-6 md:block overflow-y-auto"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</p>[39m
+          [36m<nav[39m
+            [33mclass[39m=[32m"flex flex-col gap-0.5"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors bg-primary-soft text-primary"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-leaf h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mResearch Workspace[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/data-capture"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-list h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 11h4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 16h4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8 11h.01"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8 16h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mData Capture[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/help"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-question-mark h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 17h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mHelp & Learning[0m
+            [36m</a>[39m
+          [36m</nav>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-7 px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"[39m
+          [36m>[39m
+            [0mResearch Tools[0m
+          [36m</p>[39m
+          [36m<nav[39m
+            [33mclass[39m=[32m"flex flex-col gap-0.5"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace?module=anova"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-flask-conical h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6.453 15h11.094"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8.5 2h7"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mANOVA & Mean Separation[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace?module=field-layout"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-layout-grid h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"14"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mField Layout[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33maria-label[39m=[32m"General Correlation — Observed variables · not genetic"[39m
+              [33mclass[39m=[32m"flex items-start gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mdata-testid[39m=[32m"nav-general-correlation"[39m
+              [33mhref[39m=[32m"/relationship-analysis/general"[39m
+              [33mtitle[39m=[32m"Ordinary Pearson/Spearman correlation among observed variables. It does not estimate genetic correlation."[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-sigma mt-0.5 h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"flex flex-col"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mGeneral Correlation[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-[11px] leading-tight opacity-80"[39m
+                [36m>[39m
+                  [0mObserved variables · not genetic[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</nav>[39m
+        [36m</aside>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"min-w-0 flex-1 flex flex-col"[39m
+        [36m>[39m
+          [36m<div />[39m
+        [36m</main>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   ✓ Crop Protection navigation > offers Bioassay / Efficacy Analysis and opens it 180ms
+   ✓ Crop Protection navigation > does not advertise workflows the backend cannot run yet 29ms
+   ✓ Crop Protection navigation > deep-links straight into the bioassay workflow 24ms
+ ✓ src/components/vivasense/genetics-params/__tests__/liveBrowserRepair.test.tsx (1 test) 464ms
+   ✓ live-browser dataset-switch regression > clears stale response and preselects the new dataset’s sole trait  463ms
+ ✓ src/lib/generalCorrelationContract.test.ts (4 tests) 7ms
+ ✓ src/lib/statisticsHelp.test.ts (6 tests) 7ms
+ ✓ src/components/vivasense/genetics-params/__tests__/gxeResultsScreen.test.ts (3 tests) 5ms
+ ✓ src/components/vivasense/genetics-params/__tests__/anovaDesignsPreview.test.ts (2 tests) 4ms
+ ✓ src/lib/anovaPresentation.test.ts (3 tests) 3ms
+ ✓ src/components/vivasense/genetics-params/__tests__/metLabels.test.ts (2 tests) 4ms
+ ✓ src/components/vivasense/workspace/v3/__tests__/researchToolsNaming.test.tsx (1 test) 224ms
+ ✓ src/lib/workspace/stageDates.test.ts (2 tests) 2ms
+ ✓ src/lib/workspace/metricsConfig.test.ts (2 tests) 3ms
+stderr | src/components/ui/__tests__/toaster.test.tsx > application toast renderer > renders errors emitted through the shared useToast store
+An update to Toaster inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ src/components/ui/__tests__/toaster.test.tsx (1 test) 204ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/vivasense/crop-protection/__tests__/navigation.test.tsx > Crop Protection navigation > appears in the workspace sidebar
+TestingLibraryElementError: Unable to find an element with the text: Crop Protection. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-background text-foreground flex flex-col"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-6 backdrop-blur"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33mclass[39m=[32m"flex items-center gap-2.5"[39m
+          [33mdata-discover[39m=[32m"true"[39m
+          [33mhref[39m=[32m"/"[39m
+        [36m>[39m
+          [36m<img[39m
+            [33malt[39m=[32m"VivaSense"[39m
+            [33mclass[39m=[32m"h-7 w-auto"[39m
+            [33msrc[39m=[32m"/src/assets/brand/lockup-horizontal-standard.svg"[39m
+          [36m/>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground md:inline"[39m
+          [36m>[39m
+            [0mStatistical Analysis Platform[0m
+          [36m</span>[39m
+        [36m</a>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1.5"[39m
+        [36m>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"[39m
+            [33mdata-discover[39m=[32m"true"[39m
+            [33mhref[39m=[32m"/help"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-circle-question-mark h-4 w-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 17h.01"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"hidden sm:inline"[39m
+            [36m>[39m
+              [0mHelp[0m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"sr-only sm:hidden"[39m
+            [36m>[39m
+              [0mHelp & Learning[0m
+            [36m</span>[39m
+          [36m</a>[39m
+          [36m<a[39m
+            [33mclass[39m=[32m"inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-8 rounded-md px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"[39m
+            [33mdata-discover[39m=[32m"true"[39m
+            [33mhref[39m=[32m"/auth"[39m
+          [36m>[39m
+            [0mSign in[0m
+          [36m</a>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-1"[39m
+      [36m>[39m
+        [36m<aside[39m
+          [33mclass[39m=[32m"sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 shrink-0 border-r border-border bg-sidebar px-3 py-6 md:block overflow-y-auto"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"[39m
+          [36m>[39m
+            [0mWorkspace[0m
+          [36m</p>[39m
+          [36m<nav[39m
+            [33mclass[39m=[32m"flex flex-col gap-0.5"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors bg-primary-soft text-primary"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-leaf h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mResearch Workspace[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/data-capture"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-list h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 11h4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 16h4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8 11h.01"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8 16h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mData Capture[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/help"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-question-mark h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 17h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mHelp & Learning[0m
+            [36m</a>[39m
+          [36m</nav>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-7 px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground"[39m
+          [36m>[39m
+            [0mResearch Tools[0m
+          [36m</p>[39m
+          [36m<nav[39m
+            [33mclass[39m=[32m"flex flex-col gap-0.5"[39m
+          [36m>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace?module=anova"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-flask-conical h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6.453 15h11.094"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M8.5 2h7"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mANOVA & Mean Separation[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33mclass[39m=[32m"flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mhref[39m=[32m"/workspace?module=field-layout"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-layout-grid h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"14"[39m
+                  [33my[39m=[32m"14"[39m
+                [36m/>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"7"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"7"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"14"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0mField Layout[0m
+            [36m</a>[39m
+            [36m<a[39m
+              [33maria-label[39m=[32m"General Correlation — Observed variables · not genetic"[39m
+              [33mclass[39m=[32m"flex items-start gap-2.5 rounded-md px-3 py-2 text-sm transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"[39m
+              [33mdata-discover[39m=[32m"true"[39m
+              [33mdata-testid[39m=[32m"nav-general-correlation"[39m
+              [33mhref[39m=[32m"/relationship-analysis/general"[39m
+              [33mtitle[39m=[32m"Ordinary Pearson/Spearman correlation among observed variables. It does not estimate genetic correlation."[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-sigma mt-0.5 h-4 w-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"flex flex-col"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mGeneral Correlation[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-[11px] leading-tight opacity-80"[39m
+                [36m>[39m
+                  [0mObserved variables · not genetic[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</a>[39m
+          [36m</nav>[39m
+        [36m</aside>[39m
+        [36m<main[39m
+          [33mclass[39m=[32m"min-w-0 flex-1 flex flex-col"[39m
+        [36m>[39m
+          [36m<div />[39m
+        [36m</main>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/vivasense/crop-protection/__tests__/navigation.test.tsx:28:19
+     26|       </MemoryRouter>
+     27|     );
+     28|     expect(screen.getByText("Crop Protection")).toBeInTheDocument();
+       |                   ^
+     29|   });
+     30| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/components/vivasense/genetics-params/__tests__/anovaDesigns.test.ts > structural preview — descriptive only > reports expected combinations as a complete-design count, not a verdict
+AssertionError: expected '≥4 visible in preview; full dataset c…' to contain 'if complete'
+
+Expected: [32m"[7mif complet[27me"[39m
+Received: [31m"[7m≥4 visible in preview; full dataset checked by engin[27me"[39m
+
+ ❯ src/components/vivasense/genetics-params/__tests__/anovaDesigns.test.ts:277:24
+    275|     expect(preview.expectedCombinations).toBe(4);
+    276|     const row = preview.rows.find((r) => r.label === "Treatment combin…
+    277|     expect(row?.value).toContain("if complete");
+       |                        ^
+    278|   });
+    279| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/components/vivasense/genetics-params/__tests__/designRoleIdentity.test.ts > W1-INT-02 — the resolved design context is representable before running > makes a role swap visible in the design summary before analysis runs
+AssertionError: expected 'Design: Completely Randomized Design …' to contain 'Rep · 3 levels'
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- Rep · 3 levels[39m
+[31m+ Design: Completely Randomized Design (CRD)[39m
+[31m+ [7mTreatment / Factor: [27mRep · [7m≥[27m3 levels[7m visible in preview[27m[39m
+[31m+ Treatment combinations: ≥3 visible in preview; full dataset checked by engine[39m
+[31m+ Inferential α: 0.05[39m
+
+ ❯ src/components/vivasense/genetics-params/__tests__/designRoleIdentity.test.ts:169:20
+    167|     expect(preview.levelCounts.treatment).toBe(3);
+    168|     const asText = preview.rows.map((r) => `${r.label}: ${r.value}`).j…
+    169|     expect(asText).toContain(`${REP} · 3 levels`);
+       |                    ^
+    170|   });
+    171| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 39 passed (42)
+      Tests  3 failed | 548 passed (551)
+   Start at  13:44:36
+   Duration  19.88s (transform 1.94s, setup 4.58s, collect 7.81s, tests 9.40s, environment 26.42s, prepare 2.88s)
+

@@ -1,0 +1,5 @@
+tsc exit=0
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/xlsx/xlsx.mjs is dynamically imported by src/components/help/SampleDatasets.tsx but also statically imported by src/components/vivasense/VivaSenseForm.tsx, src/components/vivasense/VivaSenseGeneticsForm.tsx, src/components/vivasense/results/TableDownloadMenu.tsx, src/lib/dataCapture/collectedDataExport.ts, src/lib/environmentValidation.ts, ..., dynamic import will not move module into another chunk.
+[plugin builtin:vite-reporter] 
+✓ built in 1.51s
+build exit=0
