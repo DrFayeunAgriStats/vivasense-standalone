@@ -284,3 +284,33 @@ describe("D07 label collisions (Manus re-audit disjoint_traits fixture)", () => 
     }
   });
 });
+
+// ── D03 closure review: verification scope is explicit ──────────────────────
+describe("verification scope (metadata is never presented as numerically verified)", () => {
+  const SCOPE = {
+    numerically_verified: ["eigenvalues", "loadings", "scores"],
+    metadata_consistency_checked: ["null_components", "n_components", "trait_means"],
+    not_verified: ["interpretation", "environment_context"],
+  };
+  it("lists numerically verified, consistency-checked and unverified fields separately", async () => {
+    const withScope = { ...COMPLETE, verification_status: "verified",
+      verification_coverage: { ...(COMPLETE.verification_coverage ?? {}), verification_scope: SCOPE } };
+    runPca.mockResolvedValueOnce(withScope);
+    render(<PcaPanel datasetContext={A} />);
+    await act(async () => { fireEvent.click(runButton()); });
+    const scope = await screen.findByTestId("verification-scope");
+    expect(scope).toHaveTextContent("Numerically verified: eigenvalues, loadings, scores");
+    expect(scope).toHaveTextContent("Consistency-checked only: null_components, n_components, trait_means");
+    expect(scope).toHaveTextContent("Not verified: interpretation, environment_context");
+    expect(screen.queryByText(/the R result was reproduced by an independent implementation\./)).toBeNull();
+  });
+  it("an older response without a scope keeps the generic wording and shows no scope list", async () => {
+    const legacy = { ...COMPLETE, verification_status: "verified",
+      verification_coverage: { ...(COMPLETE.verification_coverage ?? {}), verification_scope: undefined } };
+    runPca.mockResolvedValueOnce(legacy);
+    render(<PcaPanel datasetContext={A} />);
+    await act(async () => { fireEvent.click(runButton()); });
+    expect(await screen.findByText(/the R result was reproduced by an independent implementation\./)).toBeInTheDocument();
+    expect(screen.queryByTestId("verification-scope")).toBeNull();
+  });
+});

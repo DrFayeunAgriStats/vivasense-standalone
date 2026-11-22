@@ -17,7 +17,7 @@ import {
 import { Loader2, Play, AlertTriangle, Compass, FileJson } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { runPca } from "@/lib/advancedAnalysisApi";
-import { VerificationBanner, NoticeList } from "./AnalysisStatus";
+import { VerificationBanner, NoticeList, type VerificationScope } from "./AnalysisStatus";
 import { recordAnalysis, recordAnalysisFailure } from "@/services/history/historyService";
 import type { DatasetContext } from "@/types/geneticsUpload";
 import type { PcaResponse } from "@/types/advancedAnalysis";
@@ -250,7 +250,8 @@ export function PcaPanel({ datasetContext }: Props) {
 
       {result && run && (
         <div className="space-y-6" data-testid="pca-result" data-result-dataset-token={run.datasetToken}>
-          <VerificationBanner status={result.verification_status ?? null} reasons={result.verification_reasons} subject="This PCA result" />
+          <VerificationBanner status={result.verification_status ?? null} reasons={result.verification_reasons} subject="This PCA result"
+            scope={(result.verification_coverage?.verification_scope as VerificationScope | undefined) ?? null} />
           <NoticeList title="Exclusions authorised by the researcher and data notes" items={result.input_notes} tone="amber" />
           <NoticeList title="Cautions" items={result.warnings} tone="amber" />
           {result.matrix && (
