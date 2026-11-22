@@ -1,0 +1,4 @@
+0.18.5: ('Results', [['Genotype', '  Yield  ', 'Leaf area (cm²)', 'Code', 'Note'], ['G01', 3.08, 12.5, '007', None], ['Génotype-ü', -0.5, 1e-12, 'N/A', 'a,b']])
+0.20.3: ('Results', [['Genotype', '  Yield  ', 'Leaf area (cm²)', 'Code', 'Note'], ['G01', 3.08, 12.5, '007', None], ['Génotype-ü', -0.5, 1e-12, 'N/A', 'a,b']])
+write parity (openpyxl read-back identical): True
+total JS bytes: 0.18.5 build 2,569,964  0.20.3 build 2,636,381  difference +66,417 (+2.58%)

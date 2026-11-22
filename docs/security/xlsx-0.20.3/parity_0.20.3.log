@@ -1,0 +1,20 @@
+# xlsx 0.20.3
+
+ RUN  v3.2.7 /tmp/claude-0/sec_fe
+
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > golden file was produced by 0.18.5 1ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > parses mixed.csv identically 1ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > parses mixed_bom.csv identically 1ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > parses mixed.xlsx identically 0ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > parses mixed.xls identically 0ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > read parity with the golden results of xlsx@0.18.5 > reads the workbook structure (both sheets) and keeps padded and Unicode headers verbatim 1ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > global prototype integrity > parsing hostile.xlsx leaves Object.prototype unchanged 4ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > global prototype integrity > parsing hostile.xls leaves Object.prototype unchanged 2ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > global prototype integrity > parsing hostile.csv leaves Object.prototype unchanged 1ms
+ ✓ src/lib/__tests__/spreadsheetParserSecurity.test.ts > parse-time smoke budget > parses long, quote-heavy CSV cells within 3 s 8ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  13:44:29
+   Duration  1.10s (transform 42ms, setup 122ms, collect 60ms, tests 49ms, environment 615ms, prepare 58ms)
+
