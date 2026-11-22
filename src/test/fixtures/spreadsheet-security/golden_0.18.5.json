@@ -1,0 +1,367 @@
+{
+ "generated_with": "0.18.5",
+ "results": {
+  "mixed.csv": {
+   "sheetNames": [
+    "Sheet1"
+   ],
+   "rowsHeader1": [
+    [
+     "Genotype",
+     "  Yield  ",
+     "Plant height (cm)",
+     "Leaf area (cm²)",
+     "Empty",
+     "Code",
+     "Planting date"
+    ],
+    [
+     "G01",
+     3.08,
+     108,
+     125,
+     "",
+     7,
+     46095
+    ],
+    [
+     "G02",
+     3.2,
+     110,
+     13.1,
+     "",
+     10,
+     46096
+    ],
+    [
+     "Génotype-ü",
+     -0.5,
+     1e-12,
+     "",
+     "",
+     "N/A",
+     46097.354166666664
+    ],
+    [
+     "G04",
+     1234567.891,
+     0,
+     "x",
+     "",
+     1000,
+     ""
+    ]
+   ],
+   "rowsObjects": [
+    {
+     "Genotype": "G01",
+     "  Yield  ": 3.08,
+     "Plant height (cm)": 108,
+     "Leaf area (cm²)": 125,
+     "Empty": "",
+     "Code": 7,
+     "Planting date": 46095
+    },
+    {
+     "Genotype": "G02",
+     "  Yield  ": 3.2,
+     "Plant height (cm)": 110,
+     "Leaf area (cm²)": 13.1,
+     "Empty": "",
+     "Code": 10,
+     "Planting date": 46096
+    },
+    {
+     "Genotype": "Génotype-ü",
+     "  Yield  ": -0.5,
+     "Plant height (cm)": 1e-12,
+     "Leaf area (cm²)": "",
+     "Empty": "",
+     "Code": "N/A",
+     "Planting date": 46097.354166666664
+    },
+    {
+     "Genotype": "G04",
+     "  Yield  ": 1234567.891,
+     "Plant height (cm)": 0,
+     "Leaf area (cm²)": "x",
+     "Empty": "",
+     "Code": 1000,
+     "Planting date": ""
+    }
+   ]
+  },
+  "mixed_bom.csv": {
+   "sheetNames": [
+    "Sheet1"
+   ],
+   "rowsHeader1": [
+    [
+     "Genotype",
+     "  Yield  ",
+     "Plant height (cm)",
+     "Leaf area (cm²)",
+     "Empty",
+     "Code",
+     "Planting date"
+    ],
+    [
+     "G01",
+     3.08,
+     108,
+     125,
+     "",
+     7,
+     46095
+    ],
+    [
+     "G02",
+     3.2,
+     110,
+     13.1,
+     "",
+     10,
+     46096
+    ],
+    [
+     "Génotype-ü",
+     -0.5,
+     1e-12,
+     "",
+     "",
+     "N/A",
+     46097.354166666664
+    ],
+    [
+     "G04",
+     1234567.891,
+     0,
+     "x",
+     "",
+     1000,
+     ""
+    ]
+   ],
+   "rowsObjects": [
+    {
+     "Genotype": "G01",
+     "  Yield  ": 3.08,
+     "Plant height (cm)": 108,
+     "Leaf area (cm²)": 125,
+     "Empty": "",
+     "Code": 7,
+     "Planting date": 46095
+    },
+    {
+     "Genotype": "G02",
+     "  Yield  ": 3.2,
+     "Plant height (cm)": 110,
+     "Leaf area (cm²)": 13.1,
+     "Empty": "",
+     "Code": 10,
+     "Planting date": 46096
+    },
+    {
+     "Genotype": "Génotype-ü",
+     "  Yield  ": -0.5,
+     "Plant height (cm)": 1e-12,
+     "Leaf area (cm²)": "",
+     "Empty": "",
+     "Code": "N/A",
+     "Planting date": 46097.354166666664
+    },
+    {
+     "Genotype": "G04",
+     "  Yield  ": 1234567.891,
+     "Plant height (cm)": 0,
+     "Leaf area (cm²)": "x",
+     "Empty": "",
+     "Code": 1000,
+     "Planting date": ""
+    }
+   ]
+  },
+  "mixed.xlsx": {
+   "sheetNames": [
+    "Data",
+    "Second"
+   ],
+   "rowsHeader1": [
+    [
+     "Genotype",
+     "  Yield  ",
+     "Plant height (cm)",
+     "Leaf area (cm²)",
+     "Empty",
+     "Code",
+     "Planting date"
+    ],
+    [
+     "G01",
+     3.08,
+     108,
+     "12,5",
+     "",
+     "007",
+     46095
+    ],
+    [
+     "G02",
+     3.2,
+     110,
+     "13.1",
+     "",
+     "010",
+     46096
+    ],
+    [
+     "Génotype-ü",
+     -0.5,
+     1e-12,
+     "",
+     "",
+     "N/A",
+     46097.35416666666
+    ],
+    [
+     "G04",
+     1234567.891,
+     0,
+     "x",
+     "",
+     "1e3",
+     ""
+    ]
+   ],
+   "rowsObjects": [
+    {
+     "Genotype": "G01",
+     "  Yield  ": 3.08,
+     "Plant height (cm)": 108,
+     "Leaf area (cm²)": "12,5",
+     "Empty": "",
+     "Code": "007",
+     "Planting date": 46095
+    },
+    {
+     "Genotype": "G02",
+     "  Yield  ": 3.2,
+     "Plant height (cm)": 110,
+     "Leaf area (cm²)": "13.1",
+     "Empty": "",
+     "Code": "010",
+     "Planting date": 46096
+    },
+    {
+     "Genotype": "Génotype-ü",
+     "  Yield  ": -0.5,
+     "Plant height (cm)": 1e-12,
+     "Leaf area (cm²)": "",
+     "Empty": "",
+     "Code": "N/A",
+     "Planting date": 46097.35416666666
+    },
+    {
+     "Genotype": "G04",
+     "  Yield  ": 1234567.891,
+     "Plant height (cm)": 0,
+     "Leaf area (cm²)": "x",
+     "Empty": "",
+     "Code": "1e3",
+     "Planting date": ""
+    }
+   ]
+  },
+  "mixed.xls": {
+   "sheetNames": [
+    "Data",
+    "Second"
+   ],
+   "rowsHeader1": [
+    [
+     "Genotype",
+     "  Yield  ",
+     "Plant height (cm)",
+     "Leaf area (cm²)",
+     "Empty",
+     "Code",
+     "Planting date"
+    ],
+    [
+     "G01",
+     3.08,
+     108,
+     "12,5",
+     "",
+     "007",
+     46095
+    ],
+    [
+     "G02",
+     3.2,
+     110,
+     "13.1",
+     "",
+     "010",
+     46096
+    ],
+    [
+     "Génotype-ü",
+     -0.5,
+     1e-12,
+     "",
+     "",
+     "N/A",
+     46097.35416666666
+    ],
+    [
+     "G04",
+     1234567.891,
+     0,
+     "x",
+     "",
+     "1e3",
+     ""
+    ]
+   ],
+   "rowsObjects": [
+    {
+     "Genotype": "G01",
+     "  Yield  ": 3.08,
+     "Plant height (cm)": 108,
+     "Leaf area (cm²)": "12,5",
+     "Empty": "",
+     "Code": "007",
+     "Planting date": 46095
+    },
+    {
+     "Genotype": "G02",
+     "  Yield  ": 3.2,
+     "Plant height (cm)": 110,
+     "Leaf area (cm²)": "13.1",
+     "Empty": "",
+     "Code": "010",
+     "Planting date": 46096
+    },
+    {
+     "Genotype": "Génotype-ü",
+     "  Yield  ": -0.5,
+     "Plant height (cm)": 1e-12,
+     "Leaf area (cm²)": "",
+     "Empty": "",
+     "Code": "N/A",
+     "Planting date": 46097.35416666666
+    },
+    {
+     "Genotype": "G04",
+     "  Yield  ": 1234567.891,
+     "Plant height (cm)": 0,
+     "Leaf area (cm²)": "x",
+     "Empty": "",
+     "Code": "1e3",
+     "Planting date": ""
+    }
+   ]
+  }
+ }
+}
