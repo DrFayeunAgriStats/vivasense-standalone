@@ -1,0 +1,611 @@
+{
+ "status": "success",
+ "n_traits": 3,
+ "n_genotypes": 8,
+ "variance_explained": [
+  71.2117245045277,
+  28.7882754954723
+ ],
+ "cumulative_variance": [
+  71.2117245045277,
+  100.0
+ ],
+ "loadings": {
+  "Yield": [
+   0.452854099533527,
+   0.806593619878351
+  ],
+  "Height": [
+   0.572279208534703,
+   -0.589706909776083
+  ],
+  "Dependent": [
+   0.683680972394707,
+   -0.040650866336165
+  ]
+ },
+ "scores": [
+  {
+   "genotype": "G00",
+   "scores": [
+    -1.38236739081382,
+    -0.995368989842871
+   ]
+  },
+  {
+   "genotype": "G01",
+   "scores": [
+    -1.95580494050173,
+    -0.167279330805856
+   ]
+  },
+  {
+   "genotype": "G02",
+   "scores": [
+    -0.269643280375301,
+    -0.607819549626629
+   ]
+  },
+  {
+   "genotype": "G03",
+   "scores": [
+    -0.843080830063214,
+    0.220270109410386
+   ]
+  },
+  {
+   "genotype": "G04",
+   "scores": [
+    1.74692051398895,
+    -0.727722060553501
+   ]
+  },
+  {
+   "genotype": "G05",
+   "scores": [
+    1.17348296430104,
+    0.100367598483514
+   ]
+  },
+  {
+   "genotype": "G06",
+   "scores": [
+    1.95580494050173,
+    0.167279330805856
+   ]
+  },
+  {
+   "genotype": "G07",
+   "scores": [
+    -0.425311977037657,
+    2.0102728921291
+   ]
+  }
+ ],
+ "biplot_data": {
+  "loadings": {
+   "Yield": [
+    0.452854099533527,
+    0.806593619878351
+   ],
+   "Height": [
+    0.572279208534703,
+    -0.589706909776083
+   ],
+   "Dependent": [
+    0.683680972394707,
+    -0.040650866336165
+   ]
+  },
+  "scores": [
+   {
+    "genotype": "G00",
+    "scores": [
+     -1.38236739081382,
+     -0.995368989842871
+    ]
+   },
+   {
+    "genotype": "G01",
+    "scores": [
+     -1.95580494050173,
+     -0.167279330805856
+    ]
+   },
+   {
+    "genotype": "G02",
+    "scores": [
+     -0.269643280375301,
+     -0.607819549626629
+    ]
+   },
+   {
+    "genotype": "G03",
+    "scores": [
+     -0.843080830063214,
+     0.220270109410386
+    ]
+   },
+   {
+    "genotype": "G04",
+    "scores": [
+     1.74692051398895,
+     -0.727722060553501
+    ]
+   },
+   {
+    "genotype": "G05",
+    "scores": [
+     1.17348296430104,
+     0.100367598483514
+    ]
+   },
+   {
+    "genotype": "G06",
+    "scores": [
+     1.95580494050173,
+     0.167279330805856
+    ]
+   },
+   {
+    "genotype": "G07",
+    "scores": [
+     -0.425311977037657,
+     2.0102728921291
+    ]
+   }
+  ]
+ },
+ "interpretation": "Method and data\nPCA of the correlation matrix of genotype means for 3 traits and 8 genotypes (traits centred and divided by their standard deviation). The data have 2 non-zero component(s). PC1 explained 71.2% and PC2 28.8% (cumulative 100.0%) of the total variance. 1 component(s) had an eigenvalue above 1 (Kaiser's rule, a rough guide only); 1 of the 3 trait dimensions have zero variance (exact linear dependence among the traits, or fewer genotypes than traits); they are not reported as components. For comparison, the conventional broken-stick benchmark for 3 traits is 61.1% for PC1 and 27.8% for PC2. A component explaining less than its benchmark is below this descriptive retention guide; this is not a significance test, and the number of components to interpret should not be decided by this rule alone.\n\nPC1\nPC1 (71.2%) is most strongly associated with: Dependent (correlation with the component = +1.00, strong); Height (correlation with the component = +0.84, strong); Yield (correlation with the component = +0.66, moderate). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary.\n\nPC2\nPC2 (28.8%) is most strongly associated with: Yield (correlation with the component = +0.75, strong); Height (correlation with the component = -0.55, moderate); Dependent (correlation with the component = -0.04, weak). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary.\n\nAssumptions and limitations\nPCA summarises the covariance structure of the genotype means of this data set. Components are mathematical axes, not biological factors; their signs are arbitrary; loadings and the percentages of variance change with the traits, genotypes and scaling chosen, and are unstable when genotypes are few. The analysis is descriptive and uses no significance test. Association between traits on a component is not evidence of a causal or genetic relationship, and the results alone do not justify selecting, crossing, advancing or releasing any genotype. Only 8 genotypes: loadings and the percentages of variance are unstable.",
+ "analysis_context": {
+  "is_single_environment": true,
+  "environment_count": 1,
+  "design_type": "crd"
+ },
+ "matrix": "correlation",
+ "eigenvalues": [
+  2.13635173513583,
+  0.86364826486417
+ ],
+ "correlation_loadings": {
+  "Yield": [
+   0.661903507529888,
+   0.74958905189419
+  ],
+  "Height": [
+   0.836458399748911,
+   -0.548030423872153
+  ],
+  "Dependent": [
+   0.99928615888791,
+   -0.0377779387347485
+  ]
+ },
+ "broken_stick_pct": [
+  61.1111111111111,
+  27.7777777777778,
+  11.1111111111111
+ ],
+ "excluded_traits": [],
+ "excluded_genotypes": [],
+ "input_notes": null,
+ "warnings": [
+  "Only 8 genotypes: loadings and the percentages of variance are unstable."
+ ],
+ "sign_convention": "the loading with the largest absolute value on each component is positive",
+ "verification_status": "verified",
+ "verification_reasons": [],
+ "engine": "r",
+ "verification_coverage": {
+  "status": "agree",
+  "coverage": "complete",
+  "coverage_limitations": [],
+  "tied_blocks": [],
+  "degenerate_axes": [],
+  "n_checks": 27,
+  "discrepancies": [],
+  "checks": [
+   {
+    "check": "matrix type",
+    "pass": true
+   },
+   {
+    "check": "traits used",
+    "pass": true
+   },
+   {
+    "check": "genotypes used",
+    "pass": true
+   },
+   {
+    "check": "rank",
+    "pass": true
+   },
+   {
+    "check": "eigenvalues",
+    "pass": true
+   },
+   {
+    "check": "% variance",
+    "pass": true
+   },
+   {
+    "check": "excluded",
+    "pass": true
+   },
+   {
+    "check": "output array shapes",
+    "pass": true
+   },
+   {
+    "check": "PC1 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 7.216449660063518e-16
+   },
+   {
+    "check": "PC1 score projection",
+    "pass": true,
+    "max_normalised_error": 2.2417901774747916e-15
+   },
+   {
+    "check": "PC1 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 5.551115123125783e-16
+   },
+   {
+    "check": "PC1 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 scores",
+    "pass": true,
+    "max_normalised_error": 2.1570901096575205e-15
+   },
+   {
+    "check": "PC2 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 2.7755575615628914e-16
+   },
+   {
+    "check": "PC2 score projection",
+    "pass": true,
+    "max_normalised_error": 4.1082009755680826e-16
+   },
+   {
+    "check": "PC2 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 3.3306690738754696e-16
+   },
+   {
+    "check": "PC2 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC2 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC2 scores",
+    "pass": true,
+    "max_normalised_error": 2.209099130714155e-16
+   },
+   {
+    "check": "orthonormal loadings (V'V = I)",
+    "pass": true,
+    "max_normalised_error": 2.3592239273284576e-16
+   },
+   {
+    "check": "scores T = ZV",
+    "pass": true,
+    "max_normalised_error": 2.3195540872498633e-15
+   },
+   {
+    "check": "eigen-equation residual",
+    "pass": true,
+    "max_normalised_error": 7.275544606779817e-16
+   },
+   {
+    "check": "score covariance = diag(eigenvalues)",
+    "pass": true,
+    "max_normalised_error": 2.494472436610223e-15
+   },
+   {
+    "check": "scores centred",
+    "pass": true,
+    "max_normalised_error": 1.3806869566963472e-16
+   },
+   {
+    "check": "correlation-loading identity",
+    "pass": true,
+    "max_normalised_error": 6.661338147750939e-16
+   },
+   {
+    "check": "reconstruction Z = TV'",
+    "pass": true,
+    "max_normalised_error": 2.1950087853241224e-15
+   }
+  ],
+  "tolerances": {
+   "eigenvalue_rtol": 1e-07,
+   "eigenvalue_atol": 1e-09,
+   "geometry": 1e-07,
+   "tie_rtol": 1e-06
+  }
+ },
+ "rank": 2,
+ "null_components": 1,
+ "n_components": 2,
+ "requested_n_components": null,
+ "broken_stick_dimension": 3,
+ "environment_context": {
+  "mode": "single",
+  "environment_source": null,
+  "environment_count": 1,
+  "is_single_environment": true
+ },
+ "trait_means": {
+  "Yield": 4.5,
+  "Height": 5.5,
+  "Dependent": 25.5
+ },
+ "trait_sds": {
+  "Yield": 2.44948974278318,
+  "Height": 2.44948974278318,
+  "Dependent": 9.39604780137448
+ },
+ "n_obs_per_cell": {
+  "G00": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G01": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G02": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G03": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G04": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G05": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G06": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  },
+  "G07": {
+   "Yield": 1,
+   "Height": 1,
+   "Dependent": 1
+  }
+ },
+ "dataset_dropped_empty_columns": null,
+ "provenance": {
+  "manifest_version": "vivasense-pca-provenance-1",
+  "generated_utc": "2026-11-21T07:30:13.186707+00:00",
+  "backend_commit_sha": "55a70e214826e646fe3473904323777b6f40f7ed",
+  "endpoint": "/analysis/pca",
+  "engines": {
+   "authoritative": "R stats::prcomp (vivasense_pca_engine.R)",
+   "r_engine_version": "pca-r-1.1.0",
+   "r_version": "R version 4.3.3 (2024-02-29)",
+   "crosscheck_engine_version": "pca-py-1.1.0"
+  },
+  "dataset": {
+   "dataset_token": "6b544c07-ba8a-4841-98c6-6f5fe32115d3",
+   "file_type": "csv",
+   "design_type": "crd",
+   "mode": "single",
+   "genotype_column": "Genotype",
+   "environment_source": null,
+   "n_rows": 8,
+   "uploaded_all_empty_columns": []
+  },
+  "request": {
+   "dataset_token": "6b544c07-ba8a-4841-98c6-6f5fe32115d3",
+   "trait_columns": [
+    "Yield",
+    "Height",
+    "Dependent"
+   ],
+   "scale": true,
+   "n_components": null,
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "preprocessing": {
+   "observation_unit": "arithmetic mean of the available observations of each genotype for each trait (equal weight per genotype; no imputation, block, environment or precision adjustment)",
+   "centering": "each trait centred at the mean of its genotype means",
+   "scaling": "divided by the sample SD of the genotype means (n-1)",
+   "constant_trait_rule": "constant when max - min of the genotype means <= 1.42e-14 x max(|mean|) (relative, unit-invariant)",
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "decomposition": {
+   "matrix": "correlation",
+   "rank": 2,
+   "null_components": 1,
+   "requested_n_components": null,
+   "effective_n_components": 2,
+   "loadings": "unit-length eigenvector coefficients V",
+   "correlation_loadings": "correlation between trait and component score: V*sqrt(eigenvalue)/sd_trait",
+   "scores": "T = ZV for the centred (scaled) genotype-mean matrix Z",
+   "sign_convention": "the loading with the largest absolute value on each component is positive",
+   "broken_stick": "conventional p-dimensional benchmark, p = 3 (descriptive; not a significance test)"
+  },
+  "exclusions": {
+   "excluded_traits": [],
+   "excluded_genotypes": []
+  },
+  "environment_context": {
+   "mode": "single",
+   "environment_source": null,
+   "environment_count": 1,
+   "is_single_environment": true
+  },
+  "verification": {
+   "status": "verified",
+   "reasons": [],
+   "coverage": {
+    "status": "agree",
+    "coverage": "complete",
+    "coverage_limitations": [],
+    "tied_blocks": [],
+    "degenerate_axes": [],
+    "n_checks": 27,
+    "discrepancies": [],
+    "checks": [
+     {
+      "check": "matrix type",
+      "pass": true
+     },
+     {
+      "check": "traits used",
+      "pass": true
+     },
+     {
+      "check": "genotypes used",
+      "pass": true
+     },
+     {
+      "check": "rank",
+      "pass": true
+     },
+     {
+      "check": "eigenvalues",
+      "pass": true
+     },
+     {
+      "check": "% variance",
+      "pass": true
+     },
+     {
+      "check": "excluded",
+      "pass": true
+     },
+     {
+      "check": "output array shapes",
+      "pass": true
+     },
+     {
+      "check": "PC1 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 7.216449660063518e-16
+     },
+     {
+      "check": "PC1 score projection",
+      "pass": true,
+      "max_normalised_error": 2.2417901774747916e-15
+     },
+     {
+      "check": "PC1 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 5.551115123125783e-16
+     },
+     {
+      "check": "PC1 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 scores",
+      "pass": true,
+      "max_normalised_error": 2.1570901096575205e-15
+     },
+     {
+      "check": "PC2 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 2.7755575615628914e-16
+     },
+     {
+      "check": "PC2 score projection",
+      "pass": true,
+      "max_normalised_error": 4.1082009755680826e-16
+     },
+     {
+      "check": "PC2 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 3.3306690738754696e-16
+     },
+     {
+      "check": "PC2 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC2 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC2 scores",
+      "pass": true,
+      "max_normalised_error": 2.209099130714155e-16
+     },
+     {
+      "check": "orthonormal loadings (V'V = I)",
+      "pass": true,
+      "max_normalised_error": 2.3592239273284576e-16
+     },
+     {
+      "check": "scores T = ZV",
+      "pass": true,
+      "max_normalised_error": 2.3195540872498633e-15
+     },
+     {
+      "check": "eigen-equation residual",
+      "pass": true,
+      "max_normalised_error": 7.275544606779817e-16
+     },
+     {
+      "check": "score covariance = diag(eigenvalues)",
+      "pass": true,
+      "max_normalised_error": 2.494472436610223e-15
+     },
+     {
+      "check": "scores centred",
+      "pass": true,
+      "max_normalised_error": 1.3806869566963472e-16
+     },
+     {
+      "check": "correlation-loading identity",
+      "pass": true,
+      "max_normalised_error": 6.661338147750939e-16
+     },
+     {
+      "check": "reconstruction Z = TV'",
+      "pass": true,
+      "max_normalised_error": 2.1950087853241224e-15
+     }
+    ],
+    "tolerances": {
+     "eigenvalue_rtol": 1e-07,
+     "eigenvalue_atol": 1e-09,
+     "geometry": 1e-07,
+     "tie_rtol": 1e-06
+    }
+   }
+  }
+ }
+}

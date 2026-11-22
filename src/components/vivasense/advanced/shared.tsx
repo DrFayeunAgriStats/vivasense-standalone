@@ -1,3 +1,4 @@
+import { aspectPreservingPngSize } from "@/lib/exportFiles";
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,14 +201,67 @@ export function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(url);
 }
 
+function largestSvg(container: HTMLElement): SVGSVGElement | null {
+  let best: SVGSVGElement | null = null;
+  let area = -1;
+  container.querySelectorAll("svg").forEach((el) => {
+    const r = el.getBoundingClientRect();
+    const vb = (el as SVGSVGElement).viewBox?.baseVal;
+    const a = Math.max(r.width * r.height, vb ? vb.width * vb.height : 0);
+    if (a > area) { area = a; best = el as SVGSVGElement; }
+  });
+  return best;
+}
+
 /** Trigger PNG download of an SVG element inside a Recharts container. */
-export async function exportChartPng(container: HTMLElement | null, filename: string) {
+export async function exportChartPng(
+  container: HTMLElement | null,
+  filename: string,
+  options: { preserveAspectRatio?: boolean } = {},
+) {
   if (!container) return;
-  const svg = container.querySelector("svg");
+  // With preserveAspectRatio the chart surface (largest SVG) is exported: Recharts legends contain small icon SVGs
+  // that precede the chart, and exporting the first SVG produced a stretched legend icon (Manus PCA audit D13).
+  const svg = options.preserveAspectRatio ? largestSvg(container) : container.querySelector("svg");
   if (!svg) return;
   const svgClone = svg.cloneNode(true) as SVGSVGElement;
   // ensure xmlns
   svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  if (options.preserveAspectRatio) {
+    const size = aspectPreservingPngSize(svg);
+    svgClone.setAttribute("width", String(size.width));
+    svgClone.setAttribute("height", String(size.height));
+    svgClone.removeAttribute("style");
+    const svgString = new XMLSerializer().serializeToString(svgClone);
+    const url = URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml;charset=utf-8" }));
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("Failed to load chart image"));
+      img.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = size.width;
+    canvas.height = size.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, size.width, size.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement("a");
+      const dlUrl = URL.createObjectURL(blob);
+      a.href = dlUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(dlUrl);
+    }, "image/png");
+    return;
+  }
   const svgString = new XMLSerializer().serializeToString(svgClone);
   const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(svgBlob);

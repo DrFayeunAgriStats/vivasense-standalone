@@ -7,18 +7,55 @@ import { Card, CardContent } from "@/components/ui/card";
  * every exclusion, method error and caution returned by the backend is displayed verbatim.
  */
 
+/** What the backend's independent cross-check covered (PCA: verification_coverage.verification_scope). */
+export interface VerificationScope {
+  numerically_verified?: string[];
+  metadata_consistency_checked?: string[];
+  not_verified?: string[];
+}
+
+function ScopeList({ scope }: { scope: VerificationScope }) {
+  const row = (label: string, items?: string[]) =>
+    items?.length ? <li><span className="font-semibold">{label}:</span> {items.join(", ")}</li> : null;
+  return (
+    <ul data-testid="verification-scope" className="mt-1 list-disc space-y-0.5 pl-4">
+      {row("Numerically verified", scope.numerically_verified)}
+      {row("Consistency-checked only", scope.metadata_consistency_checked)}
+      {row("Not verified", scope.not_verified)}
+    </ul>
+  );
+}
+
 export function VerificationBanner({
-  status, reasons, subject = "This result",
-}: { status?: string | null; reasons?: string[] | null; subject?: string }) {
+  status, reasons, subject = "This result", scope,
+}: { status?: string | null; reasons?: string[] | null; subject?: string; scope?: VerificationScope | null }) {
   if (status === "verified") {
     return (
       <div className="flex items-start gap-2 rounded-md border border-emerald-300/70 bg-emerald-50/50 p-3 text-xs text-emerald-900 dark:bg-emerald-900/10 dark:text-emerald-100">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          Numerically cross-checked: the R result was reproduced by an independent implementation. This is a computational check only; it
-          is not a statistical review of the method (the module is still pre-release).
+          {scope
+            ? "Numerically cross-checked: the quantities listed below were reproduced by an independent implementation; the remaining fields were only checked for internal consistency or are not verified."
+            : "Numerically cross-checked: the R result was reproduced by an independent implementation."}{" "}
+          This is a computational check only; it is not a statistical review of the method (the module is still pre-release).
+          {scope && <ScopeList scope={scope} />}
         </span>
       </div>
+    );
+  }
+  if (status === "partially_verified") {
+    // Manus PCA audit D04: incomplete verification is never presented as fully verified.
+    return (
+      <Card className="border-amber-400 bg-amber-50/60 dark:bg-amber-900/10" data-testid="verification-partial">
+        <CardContent className="p-4 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-amber-800"><ShieldAlert className="h-4 w-4" />PARTIALLY VERIFIED — not fully cross-checked</p>
+          <p className="mt-1 text-muted-foreground">
+            {reasons?.length ? reasons.join(" ") : `${subject} could only be partly verified.`}{" "}
+            Everything the independent cross-check could test agreed with the R engine, but its coverage was incomplete. Do not treat the
+            unverified parts as validated.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
   return (

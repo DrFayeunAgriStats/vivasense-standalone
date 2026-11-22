@@ -1,0 +1,1035 @@
+{
+ "status": "success",
+ "n_traits": 5,
+ "n_genotypes": 12,
+ "variance_explained": [
+  75.6047369174922,
+  20.1397836210911,
+  3.14417316991722,
+  0.838075018766614,
+  0.273231272732835
+ ],
+ "cumulative_variance": [
+  75.6047369174922,
+  95.7445205385833,
+  98.8886937085006,
+  99.7267687272672,
+  100.0
+ ],
+ "loadings": {
+  "Yield": [
+   0.509953587176853,
+   0.0323302896444602,
+   -0.0935863859266086,
+   -0.40071828090095,
+   0.754697647417791
+  ],
+  "Height": [
+   0.464761417203874,
+   -0.348856059749705,
+   0.537995804999709,
+   0.604184628271769,
+   0.0884178908218087
+  ],
+  "Flowering": [
+   -0.488580791313942,
+   -0.0146836955493687,
+   0.763106256392988,
+   -0.34740985863905,
+   0.240932420023398
+  ],
+  "Protein": [
+   0.16938762194549,
+   0.935669132291452,
+   0.226812765099436,
+   0.210160143800788,
+   -0.0148253820926557
+  ],
+  "Biomass": [
+   0.506498576399581,
+   -0.0395204492559282,
+   0.260819694834839,
+   -0.556349618845847,
+   -0.603610399671966
+  ]
+ },
+ "scores": [
+  {
+   "genotype": "G01",
+   "scores": [
+    -1.74540742106031,
+    -0.477402142179266,
+    -0.612111171470533,
+    0.06971422851392,
+    -0.183143785594108
+   ]
+  },
+  {
+   "genotype": "G02",
+   "scores": [
+    0.635386039790205,
+    0.00449256835685612,
+    -0.539074713258698,
+    0.246674437358041,
+    0.0826303537559137
+   ]
+  },
+  {
+   "genotype": "G03",
+   "scores": [
+    -2.71786921559814,
+    0.901660937093116,
+    -0.113810902793298,
+    -0.0770011369511725,
+    -0.0147975074444281
+   ]
+  },
+  {
+   "genotype": "G04",
+   "scores": [
+    1.92530485255841,
+    -1.52165170429517,
+    -0.31058451685852,
+    0.0146303240297319,
+    0.00866041587605104
+   ]
+  },
+  {
+   "genotype": "G05",
+   "scores": [
+    -0.226884278862107,
+    1.01453459671838,
+    -0.0738450931372863,
+    0.237242320273322,
+    -0.0145906268114911
+   ]
+  },
+  {
+   "genotype": "G06",
+   "scores": [
+    -0.37007675190876,
+    -0.742688718803566,
+    0.770272238988216,
+    0.0805611288326686,
+    -0.234640335020308
+   ]
+  },
+  {
+   "genotype": "G07",
+   "scores": [
+    3.20844133658122,
+    -0.807355135714754,
+    -0.0488485634242449,
+    -0.181087975243168,
+    0.00456125917504591
+   ]
+  },
+  {
+   "genotype": "G08",
+   "scores": [
+    0.992162002551137,
+    1.52468518954992,
+    0.00957823922381362,
+    -0.237920592794104,
+    0.000729785246829207
+   ]
+  },
+  {
+   "genotype": "G09",
+   "scores": [
+    -2.61440957341285,
+    -1.46635100737779,
+    0.31504437293103,
+    -0.102315023236165,
+    0.194331472746148
+   ]
+  },
+  {
+   "genotype": "G10",
+   "scores": [
+    2.41506573652236,
+    0.855731102490093,
+    0.244676646057794,
+    -0.0940129912989641,
+    0.000616999300569354
+   ]
+  },
+  {
+   "genotype": "G11",
+   "scores": [
+    0.191657815772606,
+    0.470248522514183,
+    0.434198643555368,
+    0.3508951598093,
+    0.124970667945461
+   ]
+  },
+  {
+   "genotype": "G12",
+   "scores": [
+    -1.69337054293378,
+    0.244095791647993,
+    -0.075495179813641,
+    -0.307379879293409,
+    0.0306713008243168
+   ]
+  }
+ ],
+ "biplot_data": {
+  "loadings": {
+   "Yield": [
+    0.509953587176853,
+    0.0323302896444602,
+    -0.0935863859266086,
+    -0.40071828090095,
+    0.754697647417791
+   ],
+   "Height": [
+    0.464761417203874,
+    -0.348856059749705,
+    0.537995804999709,
+    0.604184628271769,
+    0.0884178908218087
+   ],
+   "Flowering": [
+    -0.488580791313942,
+    -0.0146836955493687,
+    0.763106256392988,
+    -0.34740985863905,
+    0.240932420023398
+   ],
+   "Protein": [
+    0.16938762194549,
+    0.935669132291452,
+    0.226812765099436,
+    0.210160143800788,
+    -0.0148253820926557
+   ],
+   "Biomass": [
+    0.506498576399581,
+    -0.0395204492559282,
+    0.260819694834839,
+    -0.556349618845847,
+    -0.603610399671966
+   ]
+  },
+  "scores": [
+   {
+    "genotype": "G01",
+    "scores": [
+     -1.74540742106031,
+     -0.477402142179266,
+     -0.612111171470533,
+     0.06971422851392,
+     -0.183143785594108
+    ]
+   },
+   {
+    "genotype": "G02",
+    "scores": [
+     0.635386039790205,
+     0.00449256835685612,
+     -0.539074713258698,
+     0.246674437358041,
+     0.0826303537559137
+    ]
+   },
+   {
+    "genotype": "G03",
+    "scores": [
+     -2.71786921559814,
+     0.901660937093116,
+     -0.113810902793298,
+     -0.0770011369511725,
+     -0.0147975074444281
+    ]
+   },
+   {
+    "genotype": "G04",
+    "scores": [
+     1.92530485255841,
+     -1.52165170429517,
+     -0.31058451685852,
+     0.0146303240297319,
+     0.00866041587605104
+    ]
+   },
+   {
+    "genotype": "G05",
+    "scores": [
+     -0.226884278862107,
+     1.01453459671838,
+     -0.0738450931372863,
+     0.237242320273322,
+     -0.0145906268114911
+    ]
+   },
+   {
+    "genotype": "G06",
+    "scores": [
+     -0.37007675190876,
+     -0.742688718803566,
+     0.770272238988216,
+     0.0805611288326686,
+     -0.234640335020308
+    ]
+   },
+   {
+    "genotype": "G07",
+    "scores": [
+     3.20844133658122,
+     -0.807355135714754,
+     -0.0488485634242449,
+     -0.181087975243168,
+     0.00456125917504591
+    ]
+   },
+   {
+    "genotype": "G08",
+    "scores": [
+     0.992162002551137,
+     1.52468518954992,
+     0.00957823922381362,
+     -0.237920592794104,
+     0.000729785246829207
+    ]
+   },
+   {
+    "genotype": "G09",
+    "scores": [
+     -2.61440957341285,
+     -1.46635100737779,
+     0.31504437293103,
+     -0.102315023236165,
+     0.194331472746148
+    ]
+   },
+   {
+    "genotype": "G10",
+    "scores": [
+     2.41506573652236,
+     0.855731102490093,
+     0.244676646057794,
+     -0.0940129912989641,
+     0.000616999300569354
+    ]
+   },
+   {
+    "genotype": "G11",
+    "scores": [
+     0.191657815772606,
+     0.470248522514183,
+     0.434198643555368,
+     0.3508951598093,
+     0.124970667945461
+    ]
+   },
+   {
+    "genotype": "G12",
+    "scores": [
+     -1.69337054293378,
+     0.244095791647993,
+     -0.075495179813641,
+     -0.307379879293409,
+     0.0306713008243168
+    ]
+   }
+  ]
+ },
+ "interpretation": "Method and data\nPCA of the correlation matrix of genotype means for 5 traits and 12 genotypes (traits centred and divided by their standard deviation). The data have 5 non-zero component(s). PC1 explained 75.6% and PC2 20.1% (cumulative 95.7%) of the total variance. 2 component(s) had an eigenvalue above 1 (Kaiser's rule, a rough guide only); For comparison, the conventional broken-stick benchmark for 5 traits is 45.7% for PC1 and 25.7% for PC2. A component explaining less than its benchmark is below this descriptive retention guide; this is not a significance test, and the number of components to interpret should not be decided by this rule alone.\n\nPC1\nPC1 (75.6%) is most strongly associated with: Yield (correlation with the component = +0.99, strong); Biomass (correlation with the component = +0.98, strong); Flowering (correlation with the component = -0.95, strong); Height (correlation with the component = +0.90, strong); Protein (correlation with the component = +0.33, weak). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary.\n\nPC2\nPC2 (20.1%) is most strongly associated with: Protein (correlation with the component = +0.94, strong); Height (correlation with the component = -0.35, weak); Biomass (correlation with the component = -0.04, weak); Yield (correlation with the component = +0.03, weak); Flowering (correlation with the component = -0.01, weak). These signs describe the direction of each trait along this component only. Two traits with the same sign are not necessarily positively correlated overall, and opposite signs do not establish a negative correlation: the overall pairwise association must be read from the trait correlation matrix (or a correlation biplot in which both traits are well represented). The sign of a whole component is arbitrary.\n\nAssumptions and limitations\nPCA summarises the covariance structure of the genotype means of this data set. Components are mathematical axes, not biological factors; their signs are arbitrary; loadings and the percentages of variance change with the traits, genotypes and scaling chosen, and are unstable when genotypes are few. The analysis is descriptive and uses no significance test. Association between traits on a component is not evidence of a causal or genetic relationship, and the results alone do not justify selecting, crossing, advancing or releasing any genotype.",
+ "analysis_context": {
+  "is_single_environment": true,
+  "environment_count": 1,
+  "design_type": "crd"
+ },
+ "matrix": "correlation",
+ "eigenvalues": [
+  3.78023684587461,
+  1.00698918105455,
+  0.157208658495861,
+  0.0419037509383307,
+  0.0136615636366418
+ ],
+ "correlation_loadings": {
+  "Yield": [
+   0.991494150896372,
+   0.0324430740438862,
+   -0.0371065781638952,
+   -0.0820286578008572,
+   0.0882110925066842
+  ],
+  "Height": [
+   0.903627777718015,
+   -0.350073046099585,
+   0.213312900080624,
+   0.123679044563713,
+   0.0103345210803483
+  ],
+  "Flowering": [
+   -0.949939384699523,
+   -0.014734919704862,
+   0.302568174524976,
+   -0.0711162074933907,
+   0.0281608297882739
+  ],
+  "Protein": [
+   0.329337493874623,
+   0.938933219384623,
+   0.0899302341190046,
+   0.0430206340485747,
+   -0.00173283056558706
+  ],
+  "Biomass": [
+   0.984776631767007,
+   -0.0396583165680802,
+   0.103413827740521,
+   -0.113887024069221,
+   -0.0705516082972291
+  ]
+ },
+ "broken_stick_pct": [
+  45.6666666666667,
+  25.6666666666667,
+  15.6666666666667,
+  9.0,
+  4.0
+ ],
+ "excluded_traits": [],
+ "excluded_genotypes": [],
+ "input_notes": null,
+ "warnings": null,
+ "sign_convention": "the loading with the largest absolute value on each component is positive",
+ "verification_status": "verified",
+ "verification_reasons": [],
+ "engine": "r",
+ "verification_coverage": {
+  "status": "agree",
+  "coverage": "complete",
+  "coverage_limitations": [],
+  "tied_blocks": [],
+  "degenerate_axes": [],
+  "n_checks": 45,
+  "discrepancies": [],
+  "checks": [
+   {
+    "check": "matrix type",
+    "pass": true
+   },
+   {
+    "check": "traits used",
+    "pass": true
+   },
+   {
+    "check": "genotypes used",
+    "pass": true
+   },
+   {
+    "check": "rank",
+    "pass": true
+   },
+   {
+    "check": "eigenvalues",
+    "pass": true
+   },
+   {
+    "check": "% variance",
+    "pass": true
+   },
+   {
+    "check": "excluded",
+    "pass": true
+   },
+   {
+    "check": "output array shapes",
+    "pass": true
+   },
+   {
+    "check": "PC1 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 5.551115123125783e-16
+   },
+   {
+    "check": "PC1 score projection",
+    "pass": true,
+    "max_normalised_error": 2.1713781034287154e-15
+   },
+   {
+    "check": "PC1 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 1.1102230246251565e-15
+   },
+   {
+    "check": "PC1 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC1 scores",
+    "pass": true,
+    "max_normalised_error": 1.660953079441117e-15
+   },
+   {
+    "check": "PC2 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 1.1102230246251565e-15
+   },
+   {
+    "check": "PC2 score projection",
+    "pass": true,
+    "max_normalised_error": 4.046793925503519e-15
+   },
+   {
+    "check": "PC2 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 1.1102230246251565e-15
+   },
+   {
+    "check": "PC2 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC2 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC2 scores",
+    "pass": true,
+    "max_normalised_error": 3.640827077729038e-15
+   },
+   {
+    "check": "PC3 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 2.220446049250313e-15
+   },
+   {
+    "check": "PC3 score projection",
+    "pass": true,
+    "max_normalised_error": 1.7763568394002505e-15
+   },
+   {
+    "check": "PC3 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 2.7582103268031233e-16
+   },
+   {
+    "check": "PC3 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC3 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC3 scores",
+    "pass": true,
+    "max_normalised_error": 1.304512053934559e-15
+   },
+   {
+    "check": "PC4 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 1.5404344466674047e-15
+   },
+   {
+    "check": "PC4 score projection",
+    "pass": true,
+    "max_normalised_error": 1.5265566588595902e-15
+   },
+   {
+    "check": "PC4 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 1.3010426069826053e-16
+   },
+   {
+    "check": "PC4 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC4 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC4 scores",
+    "pass": true,
+    "max_normalised_error": 2.733924198139448e-15
+   },
+   {
+    "check": "PC5 eigenspace projector",
+    "pass": true,
+    "max_normalised_error": 1.2212453270876722e-15
+   },
+   {
+    "check": "PC5 score projection",
+    "pass": true,
+    "max_normalised_error": 1.2073675392798577e-15
+   },
+   {
+    "check": "PC5 correlation-loading Gram",
+    "pass": true,
+    "max_normalised_error": 8.500145032286355e-17
+   },
+   {
+    "check": "PC5 loadings",
+    "pass": true
+   },
+   {
+    "check": "PC5 correlation loadings",
+    "pass": true
+   },
+   {
+    "check": "PC5 scores",
+    "pass": true,
+    "max_normalised_error": 1.7208456881689926e-15
+   },
+   {
+    "check": "orthonormal loadings (V'V = I)",
+    "pass": true,
+    "max_normalised_error": 1.7763568394002505e-15
+   },
+   {
+    "check": "scores T = ZV",
+    "pass": true,
+    "max_normalised_error": 1.5917467011310696e-15
+   },
+   {
+    "check": "eigen-equation residual",
+    "pass": true,
+    "max_normalised_error": 1.3803495464663058e-15
+   },
+   {
+    "check": "score covariance = diag(eigenvalues)",
+    "pass": true,
+    "max_normalised_error": 2.2320545857753028e-15
+   },
+   {
+    "check": "scores centred",
+    "pass": true,
+    "max_normalised_error": 2.4222232408516293e-16
+   },
+   {
+    "check": "correlation-loading identity",
+    "pass": true,
+    "max_normalised_error": 2.4424906541753444e-15
+   },
+   {
+    "check": "reconstruction Z = TV'",
+    "pass": true,
+    "max_normalised_error": 2.76331812202405e-15
+   }
+  ],
+  "tolerances": {
+   "eigenvalue_rtol": 1e-07,
+   "eigenvalue_atol": 1e-09,
+   "geometry": 1e-07,
+   "tie_rtol": 1e-06
+  }
+ },
+ "rank": 5,
+ "null_components": 0,
+ "n_components": 5,
+ "requested_n_components": null,
+ "broken_stick_dimension": 5,
+ "environment_context": {
+  "mode": "single",
+  "environment_source": null,
+  "environment_count": 1,
+  "is_single_environment": true
+ },
+ "trait_means": {
+  "Yield": 4.175,
+  "Height": 122.833333333333,
+  "Flowering": 66.25,
+  "Protein": 13.4333333333333,
+  "Biomass": 7808.33333333333
+ },
+ "trait_sds": {
+  "Yield": 0.961178254208675,
+  "Height": 13.5367065507983,
+  "Flowering": 5.39570536293786,
+  "Protein": 1.65931712862049,
+  "Biomass": 1372.75988321691
+ },
+ "n_obs_per_cell": {
+  "G01": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G02": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G03": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G04": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G05": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G06": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G07": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G08": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G09": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G10": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G11": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  },
+  "G12": {
+   "Yield": 3,
+   "Height": 3,
+   "Flowering": 3,
+   "Protein": 3,
+   "Biomass": 3
+  }
+ },
+ "dataset_dropped_empty_columns": null,
+ "provenance": {
+  "manifest_version": "vivasense-pca-provenance-1",
+  "generated_utc": "2026-11-21T07:30:12.855323+00:00",
+  "backend_commit_sha": "55a70e214826e646fe3473904323777b6f40f7ed",
+  "endpoint": "/analysis/pca",
+  "engines": {
+   "authoritative": "R stats::prcomp (vivasense_pca_engine.R)",
+   "r_engine_version": "pca-r-1.1.0",
+   "r_version": "R version 4.3.3 (2024-02-29)",
+   "crosscheck_engine_version": "pca-py-1.1.0"
+  },
+  "dataset": {
+   "dataset_token": "b78f9bc6-cc8e-41b9-9624-246cee3cde64",
+   "file_type": "csv",
+   "design_type": "crd",
+   "mode": "single",
+   "genotype_column": "Genotype",
+   "environment_source": null,
+   "n_rows": 36,
+   "uploaded_all_empty_columns": []
+  },
+  "request": {
+   "dataset_token": "b78f9bc6-cc8e-41b9-9624-246cee3cde64",
+   "trait_columns": [
+    "Yield",
+    "Height",
+    "Flowering",
+    "Protein",
+    "Biomass"
+   ],
+   "scale": true,
+   "n_components": null,
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "preprocessing": {
+   "observation_unit": "arithmetic mean of the available observations of each genotype for each trait (equal weight per genotype; no imputation, block, environment or precision adjustment)",
+   "centering": "each trait centred at the mean of its genotype means",
+   "scaling": "divided by the sample SD of the genotype means (n-1)",
+   "constant_trait_rule": "constant when max - min of the genotype means <= 1.42e-14 x max(|mean|) (relative, unit-invariant)",
+   "on_missing": "refuse",
+   "on_zero_variance": "refuse"
+  },
+  "decomposition": {
+   "matrix": "correlation",
+   "rank": 5,
+   "null_components": 0,
+   "requested_n_components": null,
+   "effective_n_components": 5,
+   "loadings": "unit-length eigenvector coefficients V",
+   "correlation_loadings": "correlation between trait and component score: V*sqrt(eigenvalue)/sd_trait",
+   "scores": "T = ZV for the centred (scaled) genotype-mean matrix Z",
+   "sign_convention": "the loading with the largest absolute value on each component is positive",
+   "broken_stick": "conventional p-dimensional benchmark, p = 5 (descriptive; not a significance test)"
+  },
+  "exclusions": {
+   "excluded_traits": [],
+   "excluded_genotypes": []
+  },
+  "environment_context": {
+   "mode": "single",
+   "environment_source": null,
+   "environment_count": 1,
+   "is_single_environment": true
+  },
+  "verification": {
+   "status": "verified",
+   "reasons": [],
+   "coverage": {
+    "status": "agree",
+    "coverage": "complete",
+    "coverage_limitations": [],
+    "tied_blocks": [],
+    "degenerate_axes": [],
+    "n_checks": 45,
+    "discrepancies": [],
+    "checks": [
+     {
+      "check": "matrix type",
+      "pass": true
+     },
+     {
+      "check": "traits used",
+      "pass": true
+     },
+     {
+      "check": "genotypes used",
+      "pass": true
+     },
+     {
+      "check": "rank",
+      "pass": true
+     },
+     {
+      "check": "eigenvalues",
+      "pass": true
+     },
+     {
+      "check": "% variance",
+      "pass": true
+     },
+     {
+      "check": "excluded",
+      "pass": true
+     },
+     {
+      "check": "output array shapes",
+      "pass": true
+     },
+     {
+      "check": "PC1 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 5.551115123125783e-16
+     },
+     {
+      "check": "PC1 score projection",
+      "pass": true,
+      "max_normalised_error": 2.1713781034287154e-15
+     },
+     {
+      "check": "PC1 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 1.1102230246251565e-15
+     },
+     {
+      "check": "PC1 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC1 scores",
+      "pass": true,
+      "max_normalised_error": 1.660953079441117e-15
+     },
+     {
+      "check": "PC2 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 1.1102230246251565e-15
+     },
+     {
+      "check": "PC2 score projection",
+      "pass": true,
+      "max_normalised_error": 4.046793925503519e-15
+     },
+     {
+      "check": "PC2 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 1.1102230246251565e-15
+     },
+     {
+      "check": "PC2 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC2 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC2 scores",
+      "pass": true,
+      "max_normalised_error": 3.640827077729038e-15
+     },
+     {
+      "check": "PC3 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 2.220446049250313e-15
+     },
+     {
+      "check": "PC3 score projection",
+      "pass": true,
+      "max_normalised_error": 1.7763568394002505e-15
+     },
+     {
+      "check": "PC3 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 2.7582103268031233e-16
+     },
+     {
+      "check": "PC3 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC3 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC3 scores",
+      "pass": true,
+      "max_normalised_error": 1.304512053934559e-15
+     },
+     {
+      "check": "PC4 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 1.5404344466674047e-15
+     },
+     {
+      "check": "PC4 score projection",
+      "pass": true,
+      "max_normalised_error": 1.5265566588595902e-15
+     },
+     {
+      "check": "PC4 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 1.3010426069826053e-16
+     },
+     {
+      "check": "PC4 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC4 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC4 scores",
+      "pass": true,
+      "max_normalised_error": 2.733924198139448e-15
+     },
+     {
+      "check": "PC5 eigenspace projector",
+      "pass": true,
+      "max_normalised_error": 1.2212453270876722e-15
+     },
+     {
+      "check": "PC5 score projection",
+      "pass": true,
+      "max_normalised_error": 1.2073675392798577e-15
+     },
+     {
+      "check": "PC5 correlation-loading Gram",
+      "pass": true,
+      "max_normalised_error": 8.500145032286355e-17
+     },
+     {
+      "check": "PC5 loadings",
+      "pass": true
+     },
+     {
+      "check": "PC5 correlation loadings",
+      "pass": true
+     },
+     {
+      "check": "PC5 scores",
+      "pass": true,
+      "max_normalised_error": 1.7208456881689926e-15
+     },
+     {
+      "check": "orthonormal loadings (V'V = I)",
+      "pass": true,
+      "max_normalised_error": 1.7763568394002505e-15
+     },
+     {
+      "check": "scores T = ZV",
+      "pass": true,
+      "max_normalised_error": 1.5917467011310696e-15
+     },
+     {
+      "check": "eigen-equation residual",
+      "pass": true,
+      "max_normalised_error": 1.3803495464663058e-15
+     },
+     {
+      "check": "score covariance = diag(eigenvalues)",
+      "pass": true,
+      "max_normalised_error": 2.2320545857753028e-15
+     },
+     {
+      "check": "scores centred",
+      "pass": true,
+      "max_normalised_error": 2.4222232408516293e-16
+     },
+     {
+      "check": "correlation-loading identity",
+      "pass": true,
+      "max_normalised_error": 2.4424906541753444e-15
+     },
+     {
+      "check": "reconstruction Z = TV'",
+      "pass": true,
+      "max_normalised_error": 2.76331812202405e-15
+     }
+    ],
+    "tolerances": {
+     "eigenvalue_rtol": 1e-07,
+     "eigenvalue_atol": 1e-09,
+     "geometry": 1e-07,
+     "tie_rtol": 1e-06
+    }
+   }
+  }
+ }
+}

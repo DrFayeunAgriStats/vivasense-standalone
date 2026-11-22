@@ -379,8 +379,14 @@ describe("exact-token failure handling", () => {
     );
   });
 
-  it("handles a Pro-mode refusal separately", () => {
-    expect(describeExportFailure(403, "forbidden")).toMatch(/product mode/i);
+  it("handles a 403 refusal without subscription wording (all released methods are free)", () => {
+    // VivaSense Free Research Access retired the Pro tier: a 403 surfaces the server's own reason, or a neutral
+    // sign-in/availability message, and never asks the user to change product mode or upgrade.
+    expect(describeExportFailure(403, "forbidden")).toBe("forbidden");
+    expect(describeExportFailure(403)).toMatch(/sign-in/i);
+    for (const text of [describeExportFailure(403, "forbidden"), describeExportFailure(403)]) {
+      expect(text).not.toMatch(/product mode|pro mode|subscription|upgrade|paid/i);
+    }
   });
 });
 
