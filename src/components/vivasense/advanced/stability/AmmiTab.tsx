@@ -325,8 +325,8 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
             </TableBody>
           </Table>
           <p className="mt-2 text-xs text-muted-foreground">
-            ASV ranks describe distance from the origin of the first two IPCA axes only. They ignore mean performance and the remaining axes, assign no
-            stability class and do not rank varieties. {ammi?.asv_convention ?? ""}
+            This table ranks genotypes by ASV, a weighted distance on the first two IPCA axes. Mean performance and the remaining axes are outside
+            this ranking. Genotype recommendations require broader evidence. {ammi?.asv_convention ?? ""}
           </p>
         </CardContent>
       </Card>
@@ -428,7 +428,7 @@ export function AmmiTab({ ammi, trait }: { ammi: AMMIResults; trait: string }) {
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-2">
-            Circles = genotypes (color → mean performance); blue triangles with vectors = environments. Points near origin are most stable.
+            Circles = genotypes (color → mean performance); blue triangles with vectors = environments. Distance from the origin summarizes scores on these two axes. Overall and future stability require more evidence.
           </p>
         </CardContent>
       </Card>
