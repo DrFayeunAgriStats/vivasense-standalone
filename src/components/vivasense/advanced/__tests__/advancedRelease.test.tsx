@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AdvancedAnalysisDashboard, isAdvancedMethodReady } from "../AdvancedAnalysisDashboard";
+import { AmmiTab } from "../stability/AmmiTab";
 import { advancedBetaBanner } from "@/lib/advancedRelease";
 
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) }, from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }) }) } }));
@@ -53,4 +54,19 @@ describe("experimental banner", () => {
     const t = container.textContent ?? "";
     expect(t).not.toMatch(/best genotype|recommended genotype|select the|causes|proves|confirmed stable/i);
   });
+});
+
+it("limits the AMMI biplot and ASV wording to the displayed projection", () => {
+  render(<AmmiTab trait="Yield" ammi={{
+    variance_explained: [60, 25],
+    cumulative_variance: [60, 85],
+    genotype_scores: [{ genotype: "G1", mean: 10, ipca1: 1, ipca2: 2 }],
+    environment_scores: [],
+    stability_measure: [{ genotype: "G1", asv: 3, rank: 1 }],
+    biplot_data: { genotypes: [{ code: "G1", mean: 10, pc1: 1, pc2: 2 }], environments: [] },
+    interpretation: "",
+  }} />);
+  expect(screen.getByText(/Overall and future stability require more evidence/)).toBeInTheDocument();
+  expect(screen.getByText(/This table ranks genotypes by ASV/)).toBeInTheDocument();
+  expect(screen.queryByText(/most stable/i)).not.toBeInTheDocument();
 });
